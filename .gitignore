@@ -1,8 +1,11 @@
 node_modules/
+.npm-cache/
 dist/
 build/
 .cache/
 .env*
+!.env.example
+!.env.production
 .vite/
 vite.config.*.timestamp-*
 *.tsbuildinfo
