@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import Logo from './Logo'
-import { useFormContext } from '../App'
+import { useFormContext } from '@/context/FormModalContext'
 
 const links = [
   { href: '#ve-du-an', label: 'Về dự án' },
@@ -22,15 +23,6 @@ export default function Nav() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  function handleNavClick(href: string) {
-    setMenuOpen(false)
-    const el = document.querySelector(href)
-    if (el) {
-      const y = el.getBoundingClientRect().top + window.scrollY - 80
-      window.scrollTo({ top: y, behavior: 'smooth' })
-    }
-  }
-
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${
@@ -43,13 +35,13 @@ export default function Nav() {
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-6">
           {links.map((l) => (
-            <button
+            <Link
               key={l.href}
-              onClick={() => handleNavClick(l.href)}
-              className="text-sm font-medium text-slate hover:text-primary transition-colors"
+              to={`/${l.href}`}
+              className="rounded-md text-sm font-medium text-slate transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
             >
               {l.label}
-            </button>
+            </Link>
           ))}
         </nav>
 
@@ -85,13 +77,14 @@ export default function Nav() {
       {menuOpen && (
         <div className="md:hidden bg-white border-t border-edge px-4 pb-6 pt-4 space-y-1">
           {links.map((l) => (
-            <button
+            <Link
               key={l.href}
-              onClick={() => handleNavClick(l.href)}
-              className="block w-full text-left py-3 text-base font-medium text-navy hover:text-primary transition-colors border-b border-edge last:border-0"
+              to={`/${l.href}`}
+              onClick={() => setMenuOpen(false)}
+              className="block w-full border-b border-edge py-3 text-left text-base font-medium text-navy transition-colors last:border-0 hover:text-primary focus-visible:outline-2 focus-visible:outline-primary"
             >
               {l.label}
-            </button>
+            </Link>
           ))}
           <div className="pt-4">
             <button

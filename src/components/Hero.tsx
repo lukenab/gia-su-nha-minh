@@ -1,4 +1,4 @@
-import { useFormContext } from '../App'
+import { useFormContext } from '@/context/FormModalContext'
 
 function HeroMockup() {
   return (
@@ -122,7 +122,7 @@ export default function Hero() {
             </h1>
 
             <p className="text-slate text-base md:text-lg leading-relaxed mb-8">
-              Gia Sư Nhà Mình đang phát triển một cách kết nối người học với gia sư dựa trên mục tiêu, lịch học và ngân sách — thay vì chỉ lựa chọn từ một danh sách hồ sơ chung.
+              Gia Sư Nhà Mình đang phát triển cách kết nối sinh viên tại Cần Thơ với gia sư tiếng Anh dựa trên mục tiêu, lịch học và ngân sách — thay vì chỉ lựa chọn từ một danh sách hồ sơ chung.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 mb-5">

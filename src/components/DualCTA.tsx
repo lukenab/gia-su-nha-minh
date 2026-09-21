@@ -1,4 +1,4 @@
-import { useFormContext } from '../App'
+import { useFormContext } from '@/context/FormModalContext'
 
 export default function DualCTA() {
   const { openLearnerForm, openTutorForm } = useFormContext()
@@ -60,15 +60,6 @@ export default function DualCTA() {
           </div>
         </div>
 
-        {/* Parent link */}
-        <div className="text-center">
-          <button
-            onClick={() => openLearnerForm('Phụ huynh')}
-            className="text-sm text-slate underline underline-offset-4 hover:text-primary transition-colors"
-          >
-            Tôi là phụ huynh đang tìm gia sư →
-          </button>
-        </div>
       </div>
     </section>
   )
