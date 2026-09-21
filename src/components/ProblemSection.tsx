@@ -45,7 +45,7 @@ export default function ProblemSection() {
             <span className="text-primary">người phù hợp</span>
           </h2>
           <p className="text-slate text-base md:text-lg max-w-2xl mx-auto">
-            Những khó khăn mà người học thường gặp khi tìm kiếm gia sư theo cách truyền thống.
+            Những khó khăn sinh viên tại Cần Thơ có thể gặp khi tìm gia sư tiếng Anh theo cách truyền thống.
           </p>
         </div>
 
