@@ -3,7 +3,11 @@ export default function Logo({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
   const dim = size === 'sm' ? 32 : size === 'lg' ? 48 : 40
 
   return (
-    <div className="flex items-center gap-2.5">
+    <Link
+      to="/"
+      className="flex items-center gap-2.5 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+      aria-label="Gia Sư Nhà Mình — Trang chủ"
+    >
       <svg
         width={dim}
         height={dim}
@@ -57,6 +61,7 @@ export default function Logo({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
         <div className="text-[11px] font-medium text-slate tracking-wide">Gia Sư</div>
         <div className="text-lg font-bold text-primary leading-tight">Nhà Mình</div>
       </div>
-    </div>
+    </Link>
   )
 }
+import { Link } from 'react-router-dom'

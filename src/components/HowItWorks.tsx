@@ -80,8 +80,12 @@ export default function HowItWorks() {
 
         {/* Tab switcher */}
         <div className="flex justify-center mb-10">
-          <div className="inline-flex bg-edge rounded-2xl p-1.5 gap-1">
+          <div className="inline-flex bg-edge rounded-2xl p-1.5 gap-1" role="tablist" aria-label="Quy trình theo vai trò">
             <button
+              id="learner-tab"
+              role="tab"
+              aria-selected={activeTab === 'learner'}
+              aria-controls="how-it-works-panel"
               onClick={() => setActiveTab('learner')}
               className={`px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
                 activeTab === 'learner'
@@ -92,6 +96,10 @@ export default function HowItWorks() {
               Dành cho người học
             </button>
             <button
+              id="tutor-tab"
+              role="tab"
+              aria-selected={activeTab === 'tutor'}
+              aria-controls="how-it-works-panel"
               onClick={() => setActiveTab('tutor')}
               className={`px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
                 activeTab === 'tutor'
@@ -105,7 +113,12 @@ export default function HowItWorks() {
         </div>
 
         {/* Steps */}
-        <div className="bg-surface rounded-2xl border border-edge p-6 md:p-8 shadow-sm">
+        <div
+          id="how-it-works-panel"
+          role="tabpanel"
+          aria-labelledby={activeTab === 'learner' ? 'learner-tab' : 'tutor-tab'}
+          className="bg-surface rounded-2xl border border-edge p-6 md:p-8 shadow-sm"
+        >
           {(activeTab === 'learner' ? learnerSteps : tutorSteps).map((s) => (
             <StepCard key={s.step} {...s} />
           ))}

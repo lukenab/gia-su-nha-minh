@@ -19,7 +19,7 @@ const faqs = [
   },
   {
     q: 'Hiện tại dự án hỗ trợ những môn học nào?',
-    a: 'Giai đoạn nghiên cứu ban đầu tập trung vào nhu cầu học Tiếng Anh của sinh viên đại học. Tuy nhiên, chúng tôi quan tâm đến nhu cầu đa dạng và khuyến khích bạn chia sẻ nhu cầu của mình dù bạn đang học môn gì.',
+    a: 'Giai đoạn nghiên cứu ban đầu chỉ tập trung vào nhu cầu học tiếng Anh của sinh viên tại Cần Thơ. Phạm vi có thể được mở rộng sau khi nhóm kiểm chứng được nhu cầu và mô hình thử nghiệm.',
   },
   {
     q: 'Gia sư được lựa chọn hoặc kiểm tra thông tin ra sao?',
@@ -49,9 +49,11 @@ export default function FAQ() {
               className="bg-surface rounded-2xl border border-edge overflow-hidden shadow-sm"
             >
               <button
+                id={`faq-button-${i}`}
                 className="w-full flex items-start justify-between gap-4 p-5 text-left hover:bg-page transition-colors"
                 onClick={() => setOpenIndex(openIndex === i ? null : i)}
                 aria-expanded={openIndex === i}
+                aria-controls={`faq-panel-${i}`}
               >
                 <span className="font-semibold text-navy text-base leading-snug">{faq.q}</span>
                 <span
@@ -65,7 +67,12 @@ export default function FAQ() {
                 </span>
               </button>
               {openIndex === i && (
-                <div className="px-5 pb-5">
+                <div
+                  id={`faq-panel-${i}`}
+                  role="region"
+                  aria-labelledby={`faq-button-${i}`}
+                  className="px-5 pb-5"
+                >
                   <p className="text-slate text-sm leading-relaxed">{faq.a}</p>
                 </div>
               )}
