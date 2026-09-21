@@ -1,28 +1,44 @@
-import { useEffect, useState } from 'react'
+import { useState, type FormEvent, type ReactNode } from 'react'
+import { Link } from 'react-router-dom'
+import { submitGoogleForm } from '@/api/googleForms'
+import { useAccessibleModal } from '@/hooks/useAccessibleModal'
+import type { LearnerFormData } from '@/types/forms'
 
 interface Props {
   initialRole?: string
   onClose: () => void
 }
 
-function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
+interface FieldProps {
+  id: string
+  label: string
+  required?: boolean
+  error?: string
+  children: ReactNode
+}
+
+function Field({ id, label, required, error, children }: FieldProps) {
   return (
     <div>
-      <label className="block text-sm font-semibold text-navy mb-1.5">
-        {label}{required && <span className="text-orange ml-1">*</span>}
+      <label htmlFor={id} className="mb-1.5 block text-sm font-semibold text-navy">
+        {label}{required && <span className="ml-1 text-orange" aria-hidden="true">*</span>}
       </label>
       {children}
+      {error && <p id={`${id}-error`} className="mt-1 text-xs text-red-600">{error}</p>}
     </div>
   )
 }
 
-const inputCls = 'w-full border border-edge rounded-xl px-4 py-3 text-navy text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors placeholder:text-slate/50'
+const inputCls = 'w-full rounded-xl border border-edge px-4 py-3 text-sm text-navy transition-colors placeholder:text-slate/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40'
 const selectCls = `${inputCls} appearance-none bg-white`
 
-export default function LearnerModal({ initialRole = '', onClose }: Props) {
+export default function LearnerModal({ initialRole = 'Sinh viên', onClose }: Props) {
+  const dialogRef = useAccessibleModal(onClose)
   const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<LearnerFormData>({
     name: '',
     role: initialRole,
     subject: '',
@@ -37,263 +53,173 @@ export default function LearnerModal({ initialRole = '', onClose }: Props) {
     consent: false,
   })
 
-  useEffect(() => {
-    document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = '' }
-  }, [])
-
-  function set(key: string, value: string | boolean) {
-    setForm((f) => ({ ...f, [key]: value }))
-    setErrors((e) => { const n = { ...e }; delete n[key]; return n })
+  function set<K extends keyof LearnerFormData>(key: K, value: LearnerFormData[K]) {
+    setForm((current) => ({ ...current, [key]: value }))
+    setErrors((current) => {
+      const next = { ...current }
+      delete next[key]
+      return next
+    })
+    setSubmitError('')
   }
 
   function validate() {
-    const e: Record<string, string> = {}
-    if (!form.name.trim()) e.name = 'Vui lòng nhập họ và tên'
-    if (!form.role) e.role = 'Vui lòng chọn vai trò của bạn'
-    if (!form.subject.trim()) e.subject = 'Vui lòng mô tả nội dung học'
-    if (!form.goal.trim()) e.goal = 'Vui lòng mô tả mục tiêu học tập'
-    if (!form.schedule.trim()) e.schedule = 'Vui lòng nhập khung thời gian'
-    if (!form.budget) e.budget = 'Vui lòng chọn ngân sách'
-    if (!form.format) e.format = 'Vui lòng chọn hình thức học'
-    if (!form.contact.trim()) e.contact = 'Vui lòng nhập email hoặc số điện thoại'
-    if (!form.consent) e.consent = 'Vui lòng đồng ý để tiếp tục'
-    return e
+    const next: Record<string, string> = {}
+    if (!form.name.trim()) next.name = 'Vui lòng nhập họ và tên'
+    if (!form.role) next.role = 'Vui lòng chọn nhóm sinh viên'
+    if (!form.subject.trim()) next.subject = 'Vui lòng nhập nội dung tiếng Anh cần học'
+    if (!form.goal.trim()) next.goal = 'Vui lòng mô tả mục tiêu học tập'
+    if (!form.schedule.trim()) next.schedule = 'Vui lòng nhập khung thời gian'
+    if (!form.budget) next.budget = 'Vui lòng chọn ngân sách'
+    if (!form.format) next.format = 'Vui lòng chọn hình thức học'
+    if (!form.contact.trim()) next.contact = 'Vui lòng nhập email hoặc số điện thoại'
+    if (!form.consent) next.consent = 'Vui lòng đồng ý để tiếp tục'
+    return next
   }
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    const errs = validate()
-    if (Object.keys(errs).length > 0) {
-      setErrors(errs)
+  async function handleSubmit(event: FormEvent) {
+    event.preventDefault()
+    const validationErrors = validate()
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors)
       return
     }
-    setSubmitted(true)
+
+    setSubmitting(true)
+    try {
+      await submitGoogleForm('learner', form)
+      setSubmitted(true)
+    } catch (error) {
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : 'Không thể gửi biểu mẫu lúc này. Vui lòng thử lại sau.',
+      )
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-navy/60 backdrop-blur-sm p-0 sm:p-4"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
+      className="fixed inset-0 z-50 flex items-end justify-center bg-navy/60 p-0 backdrop-blur-sm sm:items-center sm:p-4"
+      onMouseDown={(event) => event.target === event.currentTarget && onClose()}
     >
-      <div className="bg-white w-full sm:max-w-lg sm:rounded-2xl shadow-xl overflow-hidden max-h-screen flex flex-col rounded-t-2xl">
-        {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-edge flex-shrink-0">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="learner-dialog-title"
+        aria-describedby="learner-dialog-description"
+        tabIndex={-1}
+        className="flex max-h-screen w-full flex-col overflow-hidden rounded-t-2xl bg-white shadow-xl sm:max-w-lg sm:rounded-2xl"
+      >
+        <div className="flex flex-shrink-0 items-center justify-between border-b border-edge p-5">
           <div>
-            <h2 className="font-bold text-navy text-lg">Chia sẻ nhu cầu học tập</h2>
-            <p className="text-xs text-slate mt-0.5">Thông tin dùng cho khảo sát — không mất phí</p>
+            <h2 id="learner-dialog-title" className="text-lg font-bold text-navy">Chia sẻ nhu cầu học tiếng Anh</h2>
+            <p id="learner-dialog-description" className="mt-0.5 text-xs text-slate">Khảo sát dành cho sinh viên tại Cần Thơ — không mất phí</p>
           </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-full bg-page flex items-center justify-center hover:bg-edge transition-colors"
-            aria-label="Đóng"
-          >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <button onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-full bg-page transition-colors hover:bg-edge focus-visible:outline-2 focus-visible:outline-primary" aria-label="Đóng biểu mẫu">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
               <path d="M1 1l12 12M13 1L1 13" stroke="#64748B" strokeWidth="2" strokeLinecap="round" />
             </svg>
           </button>
         </div>
 
         {submitted ? (
-          /* Success state */
-          <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-            <div className="w-16 h-16 rounded-full bg-teal-light flex items-center justify-center mb-4">
+          <div className="flex flex-1 flex-col items-center justify-center p-8 text-center" aria-live="polite">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-teal-light" aria-hidden="true">
               <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
                 <circle cx="16" cy="16" r="14" stroke="#0D9488" strokeWidth="2" />
                 <path d="M9 16l5 5 9-9" stroke="#0D9488" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
-            <h3 className="font-bold text-navy text-xl mb-3">Cảm ơn bạn đã chia sẻ!</h3>
-            <p className="text-slate text-sm leading-relaxed max-w-sm">
-              Gia Sư Nhà Mình sẽ sử dụng thông tin này cho hoạt động khảo sát và sẽ liên hệ khi có chương trình thử nghiệm phù hợp.
-            </p>
-            <button
-              onClick={onClose}
-              className="mt-6 bg-primary text-white font-semibold px-6 py-3 rounded-xl hover:bg-primary-dark transition-colors"
-            >
-              Đóng
-            </button>
+            <h3 className="mb-3 text-xl font-bold text-navy">Cảm ơn bạn đã chia sẻ!</h3>
+            <p className="max-w-sm text-sm leading-relaxed text-slate">Thông tin đã được ghi nhận cho hoạt động khảo sát. Nhóm sẽ liên hệ khi có chương trình thử nghiệm phù hợp.</p>
+            <button onClick={onClose} className="mt-6 rounded-xl bg-primary px-6 py-3 font-semibold text-white transition-colors hover:bg-primary-dark">Đóng</button>
           </div>
         ) : (
-          /* Form */
-          <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 space-y-4" noValidate>
-            <Field label="Họ và tên" required>
-              <input
-                type="text"
-                className={`${inputCls} ${errors.name ? 'border-red-400' : ''}`}
-                placeholder="Nguyễn Văn A"
-                value={form.name}
-                onChange={(e) => set('name', e.target.value)}
-              />
-              {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+          <form onSubmit={handleSubmit} className="flex-1 space-y-4 overflow-y-auto p-5" noValidate>
+            {submitError && <div role="alert" className="rounded-xl border border-orange/30 bg-orange-light p-3 text-sm text-navy">{submitError}</div>}
+
+            <Field id="learner-name" label="Họ và tên" required error={errors.name}>
+              <input id="learner-name" autoComplete="name" className={`${inputCls} ${errors.name ? 'border-red-500' : ''}`} aria-invalid={Boolean(errors.name)} aria-describedby={errors.name ? 'learner-name-error' : undefined} placeholder="Nguyễn Văn A" value={form.name} onChange={(event) => set('name', event.target.value)} />
             </Field>
 
-            <Field label="Bạn là" required>
-              <select
-                className={`${selectCls} ${errors.role ? 'border-red-400' : ''}`}
-                value={form.role}
-                onChange={(e) => set('role', e.target.value)}
-              >
-                <option value="">-- Chọn vai trò --</option>
+            <Field id="learner-role" label="Bạn đang là" required error={errors.role}>
+              <select id="learner-role" className={`${selectCls} ${errors.role ? 'border-red-500' : ''}`} value={form.role} aria-invalid={Boolean(errors.role)} aria-describedby={errors.role ? 'learner-role-error' : undefined} onChange={(event) => set('role', event.target.value)}>
+                <option value="">-- Chọn nhóm sinh viên --</option>
                 <option>Sinh viên</option>
-                <option>Học sinh</option>
-                <option>Phụ huynh</option>
-                <option>Khác</option>
+                <option>Sinh viên năm 1</option>
+                <option>Sinh viên năm 2</option>
+                <option>Sinh viên năm 3</option>
+                <option>Sinh viên năm 4 trở lên</option>
               </select>
-              {errors.role && <p className="text-red-500 text-xs mt-1">{errors.role}</p>}
             </Field>
 
-            <Field label="Bạn đang muốn học nội dung nào?" required>
-              <input
-                type="text"
-                className={`${inputCls} ${errors.subject ? 'border-red-400' : ''}`}
-                placeholder="VD: Tiếng Anh giao tiếp, Toán đại học..."
-                value={form.subject}
-                onChange={(e) => set('subject', e.target.value)}
-              />
-              {errors.subject && <p className="text-red-500 text-xs mt-1">{errors.subject}</p>}
+            <Field id="learner-subject" label="Nội dung tiếng Anh bạn muốn học" required error={errors.subject}>
+              <input id="learner-subject" className={`${inputCls} ${errors.subject ? 'border-red-500' : ''}`} aria-invalid={Boolean(errors.subject)} aria-describedby={errors.subject ? 'learner-subject-error' : undefined} placeholder="VD: Giao tiếp, IELTS, phỏng vấn thực tập" value={form.subject} onChange={(event) => set('subject', event.target.value)} />
             </Field>
 
-            <Field label="Mục tiêu học tập cụ thể" required>
-              <textarea
-                rows={3}
-                className={`${inputCls} resize-none ${errors.goal ? 'border-red-400' : ''}`}
-                placeholder="VD: Luyện nói tiếng Anh để phỏng vấn thực tập, cải thiện kỹ năng nghe..."
-                value={form.goal}
-                onChange={(e) => set('goal', e.target.value)}
-              />
-              {errors.goal && <p className="text-red-500 text-xs mt-1">{errors.goal}</p>}
+            <Field id="learner-goal" label="Mục tiêu học tập cụ thể" required error={errors.goal}>
+              <textarea id="learner-goal" rows={3} className={`${inputCls} resize-none ${errors.goal ? 'border-red-500' : ''}`} aria-invalid={Boolean(errors.goal)} aria-describedby={errors.goal ? 'learner-goal-error' : undefined} placeholder="VD: Luyện nói để phỏng vấn thực tập trong ba tháng tới" value={form.goal} onChange={(event) => set('goal', event.target.value)} />
             </Field>
 
-            <Field label="Trình độ hiện tại">
-              <input
-                type="text"
-                className={inputCls}
-                placeholder="VD: Cơ bản, IELTS 5.0, đã học 2 năm... (không bắt buộc)"
-                value={form.level}
-                onChange={(e) => set('level', e.target.value)}
-              />
+            <Field id="learner-level" label="Trình độ hiện tại">
+              <input id="learner-level" className={inputCls} placeholder="VD: Mất gốc, cơ bản, IELTS 5.0 (không bắt buộc)" value={form.level} onChange={(event) => set('level', event.target.value)} />
             </Field>
 
-            <Field label="Khung thời gian có thể học" required>
-              <input
-                type="text"
-                className={`${inputCls} ${errors.schedule ? 'border-red-400' : ''}`}
-                placeholder="VD: Tối thứ 3, thứ 5 từ 19:00-21:00"
-                value={form.schedule}
-                onChange={(e) => set('schedule', e.target.value)}
-              />
-              {errors.schedule && <p className="text-red-500 text-xs mt-1">{errors.schedule}</p>}
+            <Field id="learner-schedule" label="Khung thời gian có thể học" required error={errors.schedule}>
+              <input id="learner-schedule" className={`${inputCls} ${errors.schedule ? 'border-red-500' : ''}`} aria-invalid={Boolean(errors.schedule)} aria-describedby={errors.schedule ? 'learner-schedule-error' : undefined} placeholder="VD: Tối thứ 3 và thứ 5, 19:00–21:00" value={form.schedule} onChange={(event) => set('schedule', event.target.value)} />
             </Field>
 
-            <Field label="Ngân sách dự kiến mỗi buổi" required>
-              <select
-                className={`${selectCls} ${errors.budget ? 'border-red-400' : ''}`}
-                value={form.budget}
-                onChange={(e) => set('budget', e.target.value)}
-              >
+            <Field id="learner-budget" label="Ngân sách dự kiến mỗi buổi" required error={errors.budget}>
+              <select id="learner-budget" className={`${selectCls} ${errors.budget ? 'border-red-500' : ''}`} value={form.budget} aria-invalid={Boolean(errors.budget)} aria-describedby={errors.budget ? 'learner-budget-error' : undefined} onChange={(event) => set('budget', event.target.value)}>
                 <option value="">-- Chọn mức học phí --</option>
-                <option>Dưới 100.000đ</option>
-                <option>100.000 – 150.000đ</option>
-                <option>150.000 – 200.000đ</option>
-                <option>200.000 – 300.000đ</option>
-                <option>Trên 300.000đ</option>
-                <option>Chưa xác định</option>
+                <option>Dưới 100.000đ</option><option>100.000 – 150.000đ</option><option>150.000 – 200.000đ</option><option>200.000 – 300.000đ</option><option>Trên 300.000đ</option><option>Chưa xác định</option>
               </select>
-              {errors.budget && <p className="text-red-500 text-xs mt-1">{errors.budget}</p>}
             </Field>
 
-            <Field label="Hình thức mong muốn" required>
+            <fieldset>
+              <legend className="mb-1.5 text-sm font-semibold text-navy">Hình thức mong muốn <span className="text-orange" aria-hidden="true">*</span></legend>
               <div className="flex gap-3">
-                {['Online', 'Trực tiếp', 'Linh hoạt'].map((v) => (
-                  <label key={v} className="flex-1 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="format"
-                      value={v}
-                      className="sr-only"
-                      checked={form.format === v}
-                      onChange={() => set('format', v)}
-                    />
-                    <div
-                      className={`text-center py-2.5 rounded-xl border-2 text-sm font-medium transition-colors ${
-                        form.format === v
-                          ? 'border-primary bg-primary-light text-primary'
-                          : 'border-edge text-slate hover:border-primary/40'
-                      }`}
-                    >
-                      {v}
-                    </div>
+                {['Online', 'Trực tiếp', 'Linh hoạt'].map((value) => (
+                  <label key={value} className="flex-1 cursor-pointer">
+                    <input type="radio" name="learner-format" value={value} className="peer sr-only" checked={form.format === value} onChange={() => set('format', value)} />
+                    <span className="block rounded-xl border-2 border-edge py-2.5 text-center text-sm font-medium text-slate transition-colors hover:border-primary/40 peer-checked:border-primary peer-checked:bg-primary-light peer-checked:text-primary peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary">{value}</span>
                   </label>
                 ))}
               </div>
-              {errors.format && <p className="text-red-500 text-xs mt-1">{errors.format}</p>}
+              {errors.format && <p className="mt-1 text-xs text-red-600">{errors.format}</p>}
+            </fieldset>
+
+            <Field id="learner-area" label="Khu vực tại Cần Thơ">
+              <input id="learner-area" className={inputCls} placeholder="VD: Ninh Kiều, Cái Răng (không bắt buộc)" value={form.area} onChange={(event) => set('area', event.target.value)} />
             </Field>
 
-            <Field label="Khu vực">
-              <input
-                type="text"
-                className={inputCls}
-                placeholder="VD: Quận 1, TP.HCM (không bắt buộc)"
-                value={form.area}
-                onChange={(e) => set('area', e.target.value)}
-              />
+            <Field id="learner-contact" label="Email hoặc số điện thoại" required error={errors.contact}>
+              <input id="learner-contact" autoComplete="email" className={`${inputCls} ${errors.contact ? 'border-red-500' : ''}`} aria-invalid={Boolean(errors.contact)} aria-describedby={errors.contact ? 'learner-contact-error' : undefined} placeholder="email@example.com hoặc 09xxxxxxxx" value={form.contact} onChange={(event) => set('contact', event.target.value)} />
             </Field>
 
-            <Field label="Email hoặc số điện thoại" required>
-              <input
-                type="text"
-                className={`${inputCls} ${errors.contact ? 'border-red-400' : ''}`}
-                placeholder="email@example.com hoặc 09xxxxxxxx"
-                value={form.contact}
-                onChange={(e) => set('contact', e.target.value)}
-              />
-              {errors.contact && <p className="text-red-500 text-xs mt-1">{errors.contact}</p>}
-            </Field>
-
-            <Field label="Kênh liên hệ ưu tiên">
+            <fieldset>
+              <legend className="mb-1.5 text-sm font-semibold text-navy">Kênh liên hệ ưu tiên</legend>
               <div className="flex flex-wrap gap-2">
-                {['Email', 'Điện thoại', 'Zalo', 'Messenger'].map((v) => (
-                  <button
-                    key={v}
-                    type="button"
-                    onClick={() => set('channel', form.channel === v ? '' : v)}
-                    className={`px-3.5 py-2 rounded-xl border text-sm font-medium transition-colors ${
-                      form.channel === v
-                        ? 'border-primary bg-primary-light text-primary'
-                        : 'border-edge text-slate hover:border-primary/40'
-                    }`}
-                  >
-                    {v}
-                  </button>
+                {(['Email', 'Điện thoại', 'Zalo', 'Messenger'] as const).map((value) => (
+                  <button key={value} type="button" aria-pressed={form.channel === value} onClick={() => set('channel', form.channel === value ? '' : value)} className={`rounded-xl border px-3.5 py-2 text-sm font-medium transition-colors ${form.channel === value ? 'border-primary bg-primary-light text-primary' : 'border-edge text-slate hover:border-primary/40'}`}>{value}</button>
                 ))}
               </div>
-            </Field>
+            </fieldset>
 
-            {/* Consent */}
             <div>
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="mt-1 w-4 h-4 accent-primary flex-shrink-0"
-                  checked={form.consent}
-                  onChange={(e) => set('consent', e.target.checked)}
-                />
-                <span className="text-sm text-slate leading-relaxed">
-                  Tôi đồng ý để Gia Sư Nhà Mình sử dụng thông tin này cho mục đích khảo sát và liên hệ khi chương trình thử nghiệm bắt đầu.
-                  <span className="text-orange ml-1">*</span>
-                </span>
+              <label className="flex cursor-pointer items-start gap-3">
+                <input type="checkbox" className="mt-1 h-4 w-4 flex-shrink-0 accent-primary" checked={form.consent} aria-invalid={Boolean(errors.consent)} aria-describedby={errors.consent ? 'learner-consent-error' : undefined} onChange={(event) => set('consent', event.target.checked)} />
+                <span className="text-sm leading-relaxed text-slate">Tôi đồng ý để Gia Sư Nhà Mình sử dụng thông tin cho mục đích khảo sát và liên hệ về chương trình thử nghiệm, theo <Link to="/privacy" onClick={onClose} className="font-medium text-primary underline">Chính sách bảo mật</Link>.<span className="ml-1 text-orange" aria-hidden="true">*</span></span>
               </label>
-              {errors.consent && <p className="text-red-500 text-xs mt-1 ml-7">{errors.consent}</p>}
+              {errors.consent && <p id="learner-consent-error" className="ml-7 mt-1 text-xs text-red-600">{errors.consent}</p>}
             </div>
 
-            <div className="pt-2 pb-4">
-              <button
-                type="submit"
-                className="w-full bg-primary text-white font-bold py-4 rounded-xl hover:bg-primary-dark transition-colors text-base"
-              >
-                Gửi nhu cầu
-              </button>
+            <div className="pb-4 pt-2">
+              <button type="submit" disabled={submitting} className="w-full rounded-xl bg-primary py-4 text-base font-bold text-white transition-colors hover:bg-primary-dark disabled:cursor-wait disabled:opacity-60">{submitting ? 'Đang gửi…' : 'Gửi nhu cầu'}</button>
             </div>
           </form>
         )}
