@@ -1,0 +1,10 @@
+{
+  "description": "Streamline project implementation by managing tasks, tracking progress, and collaborating efficiently to ensure timely and successful outcomes.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
