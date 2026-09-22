@@ -57,7 +57,7 @@ export default function TutorProfiles() {
         </div>
 
         <div className="overflow-hidden rounded-3xl border border-edge bg-white shadow-[0_16px_42px_rgba(30,41,59,0.1)]">
-          <div className="flex flex-col gap-5 border-b border-edge px-6 py-6 sm:flex-row sm:items-center sm:justify-between md:px-8">
+          <div className="border-b border-edge px-6 py-6 md:px-8">
             <div className="flex items-start gap-4">
               <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-primary-light text-primary">
                 <Icon name="profile" />
@@ -69,10 +69,6 @@ export default function TutorProfiles() {
                 </p>
               </div>
             </div>
-            <span className="inline-flex w-fit items-center gap-2 rounded-full bg-teal-light px-3 py-2 text-xs font-semibold text-teal">
-              <Icon name="shield" className="h-4 w-4" />
-              Hồ sơ chuẩn hóa
-            </span>
           </div>
 
           <div className="grid gap-3 p-6 sm:grid-cols-2 lg:grid-cols-3 md:p-8">

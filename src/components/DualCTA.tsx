@@ -14,14 +14,14 @@ export default function DualCTA() {
           </div>
 
           <div className="grid gap-5 md:grid-cols-2">
-            <article className="rounded-2xl border border-white/20 border-t-4 border-t-primary bg-white p-6 text-navy shadow-[0_14px_36px_rgba(7,16,31,0.24)] md:p-7">
+            <article className="rounded-2xl border border-edge bg-white p-6 text-navy shadow-[0_14px_36px_rgba(7,16,31,0.24)] md:p-7">
               <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl bg-primary-light text-primary"><Icon name="book" /></div>
               <h3 className="mb-2 text-xl font-bold text-navy">Bạn đang tìm gia sư?</h3>
               <p className="mb-6 text-sm leading-relaxed text-slate">Cho chúng tôi biết mục tiêu, lịch học và ngân sách để nhận hỗ trợ tìm người phù hợp.</p>
               <button onClick={() => openLearnerForm()} className="w-full rounded-xl bg-primary py-3.5 font-bold text-white transition-colors hover:bg-primary-dark">Gửi yêu cầu tìm gia sư</button>
             </article>
 
-            <article className="rounded-2xl border border-white/20 border-t-4 border-t-teal bg-white p-6 text-navy shadow-[0_14px_36px_rgba(7,16,31,0.24)] md:p-7">
+            <article className="rounded-2xl border border-edge bg-white p-6 text-navy shadow-[0_14px_36px_rgba(7,16,31,0.24)] md:p-7">
               <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl bg-teal-light text-teal"><Icon name="profile" /></div>
               <h3 className="mb-2 text-xl font-bold">Bạn muốn trở thành gia sư?</h3>
               <p className="mb-6 text-sm leading-relaxed text-slate">Gửi hồ sơ năng lực để tiếp cận những nhu cầu học phù hợp với chuyên môn và lịch của bạn.</p>
