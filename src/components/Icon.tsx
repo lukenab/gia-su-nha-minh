@@ -14,6 +14,7 @@ export type IconName =
   | 'experience'
   | 'profile'
   | 'message'
+  | 'inbox'
   | 'clipboard'
   | 'search'
   | 'check'
@@ -34,6 +35,7 @@ const icons: Record<IconName, ReactNode> = {
   experience: <><rect x="3" y="7" width="18" height="13" rx="2" /><path d="M9 7V5h6v2M3 12h18M10 12v2h4v-2" /></>,
   profile: <><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8" /></>,
   message: <><path d="M21 14a4 4 0 0 1-4 4H9l-5 3v-7a4 4 0 0 1-1-2.7V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z" /><path d="M8 9h8M8 13h5" /></>,
+  inbox: <><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 14h5l2 3h4l2-3h5M8 8h8M8 11h5" /></>,
   clipboard: <><rect x="5" y="4" width="14" height="17" rx="2" /><path d="M9 4V3h6v1M8.5 9h7M8.5 13h7M8.5 17h4" /></>,
   search: <><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 5 5" /></>,
   check: <path d="m5 12 4 4L19 6" />,

@@ -37,7 +37,7 @@ const tutorSteps: Step[] = [
     description: 'Đội ngũ kiểm tra danh tính, chứng chỉ và kinh nghiệm trước khi đưa hồ sơ vào nguồn kết nối.',
   },
   {
-    icon: 'message',
+    icon: 'inbox',
     title: 'Nhận nhu cầu phù hợp',
     description: 'Chúng tôi liên hệ khi có người học phù hợp để hai bên trao đổi và thống nhất việc học.',
   },
