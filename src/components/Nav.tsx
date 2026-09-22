@@ -5,7 +5,7 @@ import { useFormContext } from '@/context/FormModalContext'
 
 const links = [
   { href: '#ve-du-an', label: 'Dành cho người học' },
-  { href: '#cach-hoat-dong', label: 'Cách hoạt động' },
+  { href: '#cach-hoat-dong', label: 'Quy trình kết nối' },
   { href: '#danh-cho-gia-su', label: 'Dành cho gia sư' },
   { href: '#cau-hoi-thuong-gap', label: 'FAQ' },
 ]
