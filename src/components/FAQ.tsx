@@ -31,7 +31,7 @@ export default function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(0)
 
   return (
-    <section className="border-t border-edge bg-section py-16 md:py-24">
+    <section className="border-t border-edge bg-section pb-16 pt-12 md:pb-24 md:pt-16">
       <div className="mx-auto max-w-3xl px-4 md:px-8">
         <div className="mb-10 text-center">
           <p className="mb-3 text-sm font-semibold text-primary">THÔNG TIN CẦN BIẾT</p>
