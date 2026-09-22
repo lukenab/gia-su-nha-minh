@@ -1,8 +1,8 @@
 # Gia Sư Nhà Mình
 
-Landing page phục vụ khảo sát nhu cầu cho dự án EXE101: kết nối sinh viên tại Cần Thơ với gia sư tiếng Anh dựa trên mục tiêu học tập, lịch học và ngân sách.
+Landing page của dịch vụ kết nối sinh viên tại Cần Thơ với gia sư tiếng Anh dựa trên mục tiêu học tập, lịch học, ngân sách và hình thức học.
 
-Website đang ở giai đoạn nghiên cứu, chưa cung cấp dịch vụ kết nối chính thức. Các hồ sơ gia sư hiển thị trên trang đều là nội dung minh họa.
+Gia Sư Nhà Mình vận hành theo mô hình concierge: đội ngũ tiếp nhận yêu cầu, đối chiếu tiêu chí và phản hồi trong vòng 24 giờ. Hồ sơ gia sư được kiểm tra thông tin danh tính, chứng chỉ và kinh nghiệm trước khi giới thiệu.
 
 ## Chạy dự án
 
@@ -33,7 +33,7 @@ Website dùng hai Google Form riêng: một cho người học và một cho gia
 4. Điền URL kết thúc bằng `/formResponse` và JSON mapping đầy đủ cho từng form.
 5. Không đặt thông tin bí mật trong biến `VITE_*`; các biến này được đưa vào mã phía trình duyệt.
 
-Khi thiếu cấu hình, website sẽ báo biểu mẫu đang được hoàn thiện và không hiển thị thông báo gửi thành công giả.
+Khi thiếu cấu hình, website hướng người dùng đến Facebook chính thức và không hiển thị thông báo gửi thành công giả.
 
 ## Deploy lên Vercel
 

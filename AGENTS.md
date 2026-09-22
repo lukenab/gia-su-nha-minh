@@ -1,6 +1,6 @@
 # Gia Sư Nhà Mình
 
-Landing page khảo sát nhu cầu cho dự án EXE101. Sản phẩm tập trung vào sinh viên tại Cần Thơ cần tìm gia sư tiếng Anh theo mục tiêu, lịch học và ngân sách.
+Landing page của dịch vụ kết nối sinh viên tại Cần Thơ với gia sư tiếng Anh theo mục tiêu, lịch học và ngân sách. Đội ngũ tiếp nhận và xử lý yêu cầu theo mô hình concierge, với thời gian phản hồi trong 24 giờ.
 
 ## Commands
 
@@ -26,7 +26,8 @@ Landing page khảo sát nhu cầu cho dự án EXE101. Sản phẩm tập trung
 ## Rules
 
 - Không công bố số liệu, testimonial hoặc hồ sơ gia sư chưa được kiểm chứng.
-- Hồ sơ mẫu phải luôn được ghi rõ là “Minh họa”.
-- Không hiển thị email, fanpage hoặc thông tin liên hệ giả; để trống biến môi trường cho đến khi kênh thật hoạt động.
+- Không sử dụng hồ sơ giả hoặc ngôn ngữ khiến người dùng hiểu nhầm rằng việc so khớp được tự động hóa.
+- Các tuyên bố công khai phải nhất quán với mô hình vận hành hiện tại: xử lý thủ công, phản hồi trong 24 giờ, chưa thu phí kết nối và kiểm tra danh tính, chứng chỉ, kinh nghiệm của gia sư.
+- Chỉ hiển thị kênh liên hệ đã được xác nhận; Facebook chính thức là `https://facebook.com/giasunhaminh`.
 - Google Forms phải được cấu hình đầy đủ trước khi form hiển thị trạng thái gửi thành công.
 - Giữ khả năng sử dụng bằng bàn phím, focus state, label và dialog semantics khi chỉnh UI.
