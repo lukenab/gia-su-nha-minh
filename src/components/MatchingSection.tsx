@@ -14,7 +14,7 @@ export default function MatchingSection() {
     <section className="bg-navy py-16 text-white md:py-24">
       <div className="mx-auto max-w-6xl px-4 md:px-8">
         <div className="grid items-start gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
-          <div className="lg:sticky lg:top-28">
+          <div>
             <p className="mb-3 text-sm font-semibold text-[#8FA6FF]">TIÊU CHÍ ĐỐI CHIẾU</p>
             <h2 className="mb-5 text-3xl font-bold tracking-[-0.02em] md:text-4xl">
               Mỗi yêu cầu được xem xét trên nhiều yếu tố thực tế
