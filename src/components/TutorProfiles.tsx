@@ -24,7 +24,7 @@ export default function TutorProfiles() {
       <div className="mx-auto max-w-6xl px-4 md:px-8">
         <div className="mb-12 text-center">
           <p className="mb-3 text-sm font-semibold text-primary">THÔNG TIN CÓ CƠ SỞ</p>
-          <h2 className="mx-auto mb-4 max-w-3xl text-3xl font-bold tracking-[-0.02em] text-navy md:text-4xl">
+          <h2 className="mx-auto mb-4 max-w-4xl text-3xl font-bold tracking-[-0.02em] text-navy md:text-4xl">
             Hồ sơ gia sư được kiểm tra trước khi giới thiệu
           </h2>
           <p className="mx-auto max-w-2xl text-base leading-relaxed text-slate md:text-lg">
