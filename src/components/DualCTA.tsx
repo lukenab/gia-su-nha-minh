@@ -7,42 +7,36 @@ export default function DualCTA() {
   return (
     <section className="bg-white py-16 md:py-24">
       <div className="mx-auto max-w-6xl px-4 md:px-8">
-        <div className="grid overflow-hidden rounded-3xl border border-edge bg-white shadow-[0_20px_55px_rgba(30,41,59,0.14)] lg:grid-cols-[0.82fr_1.18fr]">
-          <div className="flex flex-col justify-center bg-navy p-8 text-white md:p-10 lg:p-12">
-            <p className="mb-4 text-xs font-semibold tracking-wide text-white/60">BẮT ĐẦU</p>
-            <h2 className="mb-4 text-3xl font-bold tracking-[-0.02em] md:text-4xl">Bắt đầu với vai trò phù hợp</h2>
-            <p className="max-w-md text-sm leading-relaxed text-white/70 md:text-base">
-              Chọn nhu cầu của bạn để gửi đúng thông tin ngay từ bước đầu. Đội ngũ Gia Sư Nhà Mình sẽ tiếp nhận và hỗ trợ trong vòng 24 giờ.
-            </p>
-            <div className="mt-7 flex w-fit items-center gap-2 rounded-full border border-white/15 px-3.5 py-2 text-xs font-semibold text-white/80">
-              <Icon name="clock" className="h-4 w-4" />
-              Phản hồi yêu cầu trong 24 giờ
+        <div className="mb-10 text-center">
+          <p className="mb-3 text-sm font-semibold text-primary">BẮT ĐẦU</p>
+          <h2 className="mb-4 text-3xl font-bold tracking-[-0.02em] text-navy md:text-4xl">Bắt đầu với vai trò phù hợp</h2>
+          <p className="mx-auto max-w-2xl text-base leading-relaxed text-slate md:text-lg">
+            Chọn nhu cầu của bạn để gửi đúng thông tin ngay từ bước đầu.
+          </p>
+        </div>
+
+        <div className="overflow-hidden rounded-3xl border border-edge bg-white px-6 shadow-[0_16px_44px_rgba(30,41,59,0.1)] md:px-8">
+          <article className="flex flex-col gap-5 py-7 md:flex-row md:items-center md:gap-6">
+            <div className="flex min-w-0 flex-1 items-start gap-4">
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-primary-light text-primary"><Icon name="book" /></div>
+              <div>
+                <h3 className="mb-2 text-xl font-bold text-navy">Tôi cần tìm gia sư</h3>
+                <p className="text-sm leading-relaxed text-slate">Cho chúng tôi biết mục tiêu học tập, lịch học và ngân sách của bạn.</p>
+              </div>
             </div>
-          </div>
+            <button onClick={() => openLearnerForm()} className="w-full rounded-xl bg-primary px-6 py-3.5 font-bold text-white transition-colors hover:bg-primary-dark md:w-auto md:min-w-56">Gửi yêu cầu →</button>
+          </article>
 
-          <div className="space-y-4 bg-page p-5 sm:p-6 md:p-8">
-            <article className="rounded-2xl border border-edge bg-white p-6 text-navy shadow-[0_8px_24px_rgba(30,41,59,0.08)] md:p-7">
-              <div className="flex items-start gap-4">
-                <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-primary-light text-primary"><Icon name="book" /></div>
-                <div>
-                  <h3 className="mb-2 text-xl font-bold text-navy">Bạn đang tìm gia sư?</h3>
-                  <p className="text-sm leading-relaxed text-slate">Cho chúng tôi biết mục tiêu, lịch học và ngân sách để nhận hỗ trợ tìm người phù hợp.</p>
-                </div>
+          <article className="flex flex-col gap-5 border-t border-edge py-7 md:flex-row md:items-center md:gap-6">
+            <div className="flex min-w-0 flex-1 items-start gap-4">
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-teal-light text-teal"><Icon name="profile" /></div>
+              <div>
+                <h3 className="mb-2 text-xl font-bold text-navy">Tôi muốn làm gia sư</h3>
+                <p className="text-sm leading-relaxed text-slate">Cung cấp chuyên môn, kinh nghiệm và lịch dạy để nhận nhu cầu phù hợp.</p>
               </div>
-              <button onClick={() => openLearnerForm()} className="mt-6 w-full rounded-xl bg-primary py-3.5 font-bold text-white transition-colors hover:bg-primary-dark">Gửi yêu cầu tìm gia sư</button>
-            </article>
-
-            <article className="rounded-2xl border border-edge bg-white p-6 text-navy shadow-[0_8px_24px_rgba(30,41,59,0.08)] md:p-7">
-              <div className="flex items-start gap-4">
-                <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-teal-light text-teal"><Icon name="profile" /></div>
-                <div>
-                  <h3 className="mb-2 text-xl font-bold">Bạn muốn trở thành gia sư?</h3>
-                  <p className="text-sm leading-relaxed text-slate">Gửi hồ sơ năng lực để tiếp cận những nhu cầu học phù hợp với chuyên môn và lịch của bạn.</p>
-                </div>
-              </div>
-              <button onClick={openTutorForm} className="mt-6 w-full rounded-xl bg-teal py-3.5 font-bold text-white transition-colors hover:bg-[#0B7F75]">Đăng ký làm gia sư</button>
-            </article>
-          </div>
+            </div>
+            <button onClick={openTutorForm} className="w-full rounded-xl bg-teal px-6 py-3.5 font-bold text-white transition-colors hover:bg-[#0B7F75] md:w-auto md:min-w-56">Đăng ký hồ sơ →</button>
+          </article>
         </div>
       </div>
     </section>
