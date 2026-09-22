@@ -144,3 +144,7 @@
 *.stl                filter=lfs diff=lfs merge=lfs -text
 *.nc                 filter=lfs diff=lfs merge=lfs -text
 *.mat                filter=lfs diff=lfs merge=lfs -text
+
+# Production web font must be available in Vercel's source checkout.
+# Keep this small asset in regular Git instead of committing an LFS pointer.
+public/fonts/BeVietnamPro-Variable.ttf -filter -diff -merge -text
