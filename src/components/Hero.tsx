@@ -1,69 +1,57 @@
 import { useFormContext } from '@/context/FormModalContext'
 import Icon from './Icon'
 
-const requestDetails = [
-  { icon: 'target' as const, label: 'Mục tiêu', value: 'Tiếng Anh cho phỏng vấn thực tập' },
-  { icon: 'calendar' as const, label: 'Thời gian', value: 'Tối thứ Ba và thứ Năm' },
-  { icon: 'laptop' as const, label: 'Hình thức', value: 'Online hoặc trực tiếp tại Cần Thơ' },
-]
-
-const verificationItems = [
-  { icon: 'identity' as const, label: 'Danh tính' },
-  { icon: 'certificate' as const, label: 'Chứng chỉ' },
-  { icon: 'experience' as const, label: 'Kinh nghiệm' },
+const processSteps = [
+  {
+    title: 'Gửi mục tiêu và lịch học',
+    description: 'Cho chúng tôi biết nội dung cần học, thời gian và hình thức phù hợp với bạn.',
+  },
+  {
+    title: 'Đối chiếu hồ sơ gia sư',
+    description: 'Đội ngũ xem xét chuyên môn, lịch dạy và mức độ phù hợp với yêu cầu.',
+  },
+  {
+    title: 'Nhận thông tin để trao đổi',
+    description: 'Bạn xem hồ sơ, trao đổi trực tiếp và tự quyết định trước khi bắt đầu học.',
+  },
 ]
 
 function MatchingOverview() {
   return (
     <div className="relative mx-auto w-full max-w-md lg:mx-0">
       <div className="absolute -inset-8 -z-10 rounded-full bg-primary/10 blur-3xl" />
-      <div className="overflow-hidden rounded-3xl border border-primary/15 bg-white shadow-[0_24px_70px_rgba(30,41,59,0.12)]">
-        <div className="flex items-center justify-between gap-4 border-b border-edge px-5 py-5 sm:px-6 sm:py-6">
+      <div className="rounded-3xl border border-primary/15 bg-white p-6 shadow-[0_24px_70px_rgba(30,41,59,0.12)] sm:p-7">
+        <div className="mb-7 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="text-xs font-semibold text-primary">YÊU CẦU TÌM GIA SƯ</p>
-            <p className="mt-1 text-sm font-semibold text-navy">Tiếng Anh dành cho sinh viên</p>
+            <p className="text-xs font-semibold text-primary">QUY TRÌNH HỖ TRỢ</p>
+            <h2 className="mt-1 text-xl font-bold tracking-[-0.02em] text-navy">Từ nhu cầu đến kết nối phù hợp</h2>
           </div>
-          <div className="flex items-center gap-2 rounded-full bg-teal-light px-3 py-1.5 text-xs font-semibold text-teal">
+          <div className="flex flex-shrink-0 items-center gap-2 text-xs font-semibold text-teal">
             <Icon name="clock" className="h-4 w-4" />
-            Phản hồi trong 24h
+            Trong 24 giờ
           </div>
         </div>
 
-        <div className="space-y-5 p-5 sm:p-6">
-          {requestDetails.map((item) => (
-            <div key={item.label} className="flex items-center gap-3">
-              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary-light text-primary">
-                <Icon name={item.icon} />
+        <ol>
+          {processSteps.map((step, index) => (
+            <li key={step.title} className="relative grid min-h-24 grid-cols-[2.75rem_1fr] gap-4 last:min-h-0">
+              {index < processSteps.length - 1 && (
+                <span className="absolute bottom-2 left-[1.34375rem] top-11 w-px bg-edge" aria-hidden="true" />
+              )}
+              <span className={`relative z-10 grid h-11 w-11 place-items-center rounded-full text-xs font-bold ${index === processSteps.length - 1 ? 'bg-teal-light text-teal' : 'bg-primary-light text-primary'}`}>
+                0{index + 1}
+              </span>
+              <div className="pb-6 pt-1 last:pb-0">
+                <h3 className="mb-1.5 text-sm font-bold text-navy">{step.title}</h3>
+                <p className="text-xs leading-relaxed text-slate">{step.description}</p>
               </div>
-              <div>
-                <p className="text-xs text-slate">{item.label}</p>
-                <p className="mt-0.5 text-sm font-semibold text-navy">{item.value}</p>
-              </div>
-            </div>
+            </li>
           ))}
-        </div>
+        </ol>
 
-        <div className="mx-5 border-t border-edge sm:mx-6" />
-
-        <div className="p-5 sm:p-6">
-          <div className="mb-4 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-navy text-white">
-              <Icon name="search" />
-            </div>
-            <div>
-              <p className="text-xs text-slate">Đội ngũ Gia Sư Nhà Mình</p>
-              <p className="text-sm font-semibold text-navy">Đối chiếu nhu cầu với hồ sơ phù hợp</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-2">
-            {verificationItems.map((item) => (
-              <div key={item.label} className="rounded-xl border border-edge bg-page px-2 py-3 text-center">
-                <Icon name={item.icon} className="mx-auto mb-1.5 h-4 w-4 text-teal" />
-                <p className="text-[11px] font-semibold text-navy">{item.label}</p>
-              </div>
-            ))}
-          </div>
+        <div className="mt-7 flex flex-col gap-2 border-t border-edge pt-5 text-xs text-slate sm:flex-row sm:items-center sm:justify-between">
+          <span>Không mất phí khi gửi yêu cầu</span>
+          <strong className="font-semibold text-navy">Online hoặc trực tiếp tại Cần Thơ</strong>
         </div>
       </div>
     </div>
@@ -109,7 +97,7 @@ export default function Hero() {
             </div>
 
             <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate">
-              {['Phản hồi trong 24 giờ', 'Chưa thu phí kết nối', 'Online hoặc trực tiếp'].map((item) => (
+              {['Phản hồi trong 24 giờ', 'Gửi yêu cầu miễn phí', 'Hỗ trợ online và trực tiếp'].map((item) => (
                 <span key={item} className="flex items-center gap-1.5">
                   <span className="flex h-5 w-5 items-center justify-center rounded-full bg-teal-light text-teal">
                     <Icon name="check" className="h-3.5 w-3.5" />
