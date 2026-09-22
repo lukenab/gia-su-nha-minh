@@ -18,7 +18,7 @@ function MatchingOverview() {
     <div className="relative mx-auto w-full max-w-md lg:mx-0">
       <div className="absolute -inset-8 -z-10 rounded-full bg-primary/10 blur-3xl" />
       <div className="overflow-hidden rounded-3xl border border-primary/15 bg-white shadow-[0_24px_70px_rgba(30,41,59,0.12)]">
-        <div className="flex items-center justify-between border-b border-edge px-5 py-4">
+        <div className="flex items-center justify-between gap-4 border-b border-edge px-5 py-5 sm:px-6 sm:py-6">
           <div>
             <p className="text-xs font-semibold text-primary">YÊU CẦU TÌM GIA SƯ</p>
             <p className="mt-1 text-sm font-semibold text-navy">Tiếng Anh dành cho sinh viên</p>
@@ -29,7 +29,7 @@ function MatchingOverview() {
           </div>
         </div>
 
-        <div className="space-y-4 p-5">
+        <div className="space-y-5 p-5 sm:p-6">
           {requestDetails.map((item) => (
             <div key={item.label} className="flex items-center gap-3">
               <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary-light text-primary">
@@ -43,9 +43,9 @@ function MatchingOverview() {
           ))}
         </div>
 
-        <div className="mx-5 border-t border-edge" />
+        <div className="mx-5 border-t border-edge sm:mx-6" />
 
-        <div className="p-5">
+        <div className="p-5 sm:p-6">
           <div className="mb-4 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-navy text-white">
               <Icon name="search" />
