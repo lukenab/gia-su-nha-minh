@@ -13,7 +13,7 @@ describe('TutorModal', () => {
       </MemoryRouter>,
     )
 
-    await user.click(screen.getByRole('button', { name: /gửi thông tin/i }))
+    await user.click(screen.getByRole('button', { name: /gửi hồ sơ gia sư/i }))
     expect(screen.getByText('Vui lòng nhập họ và tên')).toBeInTheDocument()
     expect(screen.getByText('Vui lòng mô tả kinh nghiệm giảng dạy')).toBeInTheDocument()
     expect(screen.getByText('Vui lòng đồng ý để tiếp tục')).toBeInTheDocument()

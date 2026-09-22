@@ -18,8 +18,8 @@ describe('LearnerModal', () => {
     const user = userEvent.setup()
     renderModal()
 
-    expect(screen.getByRole('dialog', { name: /chia sẻ nhu cầu học tiếng anh/i })).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: /gửi nhu cầu/i }))
+    expect(screen.getByRole('dialog', { name: /yêu cầu tìm gia sư tiếng anh/i })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /gửi yêu cầu tìm gia sư/i }))
 
     expect(screen.getByText('Vui lòng nhập họ và tên')).toBeInTheDocument()
     expect(screen.getByText('Vui lòng mô tả mục tiêu học tập')).toBeInTheDocument()
