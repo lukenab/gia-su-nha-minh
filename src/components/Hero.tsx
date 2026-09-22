@@ -21,15 +21,15 @@ function MatchingOverview() {
     <div className="relative mx-auto w-full max-w-md lg:mx-0">
       <div className="absolute -inset-8 -z-10 rounded-full bg-primary/10 blur-3xl" />
       <div className="rounded-3xl border border-primary/15 bg-white p-6 shadow-[0_24px_70px_rgba(30,41,59,0.12)] sm:p-7">
-        <div className="mb-7 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div>
+        <div className="mb-7">
+          <div className="flex items-center justify-between gap-4">
             <p className="text-xs font-semibold text-primary">QUY TRÌNH HỖ TRỢ</p>
-            <h2 className="mt-1 text-xl font-bold tracking-[-0.02em] text-navy">Từ nhu cầu đến kết nối phù hợp</h2>
+            <div className="flex flex-shrink-0 items-center gap-2 text-xs font-semibold text-teal">
+              <Icon name="clock" className="h-4 w-4" />
+              Trong 24 giờ
+            </div>
           </div>
-          <div className="flex flex-shrink-0 items-center gap-2 text-xs font-semibold text-teal">
-            <Icon name="clock" className="h-4 w-4" />
-            Trong 24 giờ
-          </div>
+          <h2 className="mt-2 text-lg font-bold tracking-[-0.02em] text-navy sm:text-xl">Từ nhu cầu đến kết nối phù hợp</h2>
         </div>
 
         <ol>
@@ -96,9 +96,9 @@ export default function Hero() {
               </button>
             </div>
 
-            <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate">
+            <div className="grid gap-2 text-xs text-slate sm:grid-cols-3">
               {['Phản hồi trong 24 giờ', 'Gửi yêu cầu miễn phí', 'Hỗ trợ online và trực tiếp'].map((item) => (
-                <span key={item} className="flex items-center gap-1.5">
+                <span key={item} className="flex items-center gap-1.5 whitespace-nowrap">
                   <span className="flex h-5 w-5 items-center justify-center rounded-full bg-teal-light text-teal">
                     <Icon name="check" className="h-3.5 w-3.5" />
                   </span>
