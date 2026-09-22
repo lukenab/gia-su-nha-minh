@@ -1,104 +1,43 @@
-const criteria = [
-  { label: 'Mục tiêu học tập', color: 'bg-primary-light text-primary border-primary/30', icon: '🎯' },
-  { label: 'Trình độ hiện tại', color: 'bg-teal-light text-teal border-teal/30', icon: '📊' },
-  { label: 'Lịch có thể học', color: 'bg-orange-light text-orange border-orange/30', icon: '📅' },
-  { label: 'Ngân sách dự kiến', color: 'bg-primary-light text-primary border-primary/30', icon: '💰' },
-  { label: 'Hình thức học', color: 'bg-teal-light text-teal border-teal/30', icon: '💻' },
-  { label: 'Phương pháp mong muốn', color: 'bg-orange-light text-orange border-orange/30', icon: '✏️' },
+import Icon, { type IconName } from './Icon'
+
+const criteria: Array<{ icon: IconName; title: string; description: string }> = [
+  { icon: 'target', title: 'Mục tiêu học tập', description: 'Giao tiếp, IELTS, phỏng vấn hoặc củng cố nền tảng' },
+  { icon: 'level', title: 'Trình độ hiện tại', description: 'Xuất phát điểm và những kỹ năng cần cải thiện' },
+  { icon: 'calendar', title: 'Lịch học', description: 'Khung giờ có thể duy trì ổn định giữa hai bên' },
+  { icon: 'wallet', title: 'Ngân sách', description: 'Mức học phí người học có thể chủ động lựa chọn' },
+  { icon: 'laptop', title: 'Hình thức học', description: 'Online hoặc trực tiếp tại khu vực Cần Thơ' },
+  { icon: 'sliders', title: 'Phương pháp', description: 'Cách học phù hợp với mục tiêu và thói quen cá nhân' },
 ]
 
 export default function MatchingSection() {
   return (
-    <section className="py-16 md:py-24 bg-page">
-      <div className="max-w-6xl mx-auto px-4 md:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-navy mb-4">
-            Không chỉ tìm theo <span className="text-primary">tên môn học</span>
-          </h2>
-          <p className="text-slate text-base md:text-lg max-w-2xl mx-auto">
-            Gia Sư Nhà Mình dự kiến đối chiếu nhiều tiêu chí thực tế để đề xuất hồ sơ phù hợp hơn.
-          </p>
-        </div>
-
-        {/* Criteria chips */}
-        <div className="flex flex-wrap justify-center gap-3 mb-12">
-          {criteria.map((c) => (
-            <div
-              key={c.label}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border font-medium text-sm ${c.color}`}
-            >
-              <span>{c.icon}</span>
-              {c.label}
-            </div>
-          ))}
-        </div>
-
-        {/* Example match */}
-        <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-          {/* Learner request */}
-          <div className="bg-white rounded-2xl border border-edge shadow-sm p-6">
-            <div className="text-xs font-semibold text-slate uppercase tracking-wide mb-4">
-              Ví dụ: yêu cầu người học
-            </div>
-            <div className="flex items-start gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-primary-light flex items-center justify-center flex-shrink-0">
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                  <circle cx="9" cy="6" r="3.5" stroke="#4361EE" strokeWidth="1.5" />
-                  <path d="M2 17c0-3.9 3.1-7 7-7s7 3.1 7 7" stroke="#4361EE" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
-              </div>
-              <div>
-                <div className="font-semibold text-navy text-sm">Sinh viên đại học</div>
-                <p className="text-sm text-slate mt-1 leading-relaxed">
-                  "Sinh viên cần luyện tiếng Anh để chuẩn bị phỏng vấn thực tập, có thể học vào tối thứ Ba và thứ Năm."
-                </p>
-              </div>
-            </div>
-            <div className="space-y-2">
-              {[
-                { k: 'Mục tiêu', v: 'Phỏng vấn thực tập', c: 'bg-primary-light text-primary' },
-                { k: 'Lịch học', v: 'Tối T3 & T5', c: 'bg-teal-light text-teal' },
-                { k: 'Ngân sách', v: '150k – 200k/buổi', c: 'bg-orange-light text-orange' },
-                { k: 'Hình thức', v: 'Linh hoạt', c: 'bg-primary-light text-primary' },
-              ].map((item) => (
-                <div key={item.k} className="flex items-center justify-between text-sm">
-                  <span className="text-slate">{item.k}</span>
-                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${item.c}`}>{item.v}</span>
-                </div>
-              ))}
+    <section className="bg-navy py-16 text-white md:py-24">
+      <div className="mx-auto max-w-6xl px-4 md:px-8">
+        <div className="grid items-start gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
+          <div className="lg:sticky lg:top-28">
+            <p className="mb-3 text-sm font-semibold text-[#8FA6FF]">TIÊU CHÍ ĐỐI CHIẾU</p>
+            <h2 className="mb-5 text-3xl font-bold tracking-[-0.02em] md:text-4xl">
+              Mỗi yêu cầu được xem xét trên nhiều yếu tố thực tế
+            </h2>
+            <p className="mb-7 text-base leading-relaxed text-white/65 md:text-lg">
+              Chuyên môn là điều kiện cần. Một kết nối có thể duy trì còn phụ thuộc vào thời gian, chi phí, hình thức học và phương pháp của gia sư.
+            </p>
+            <div className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/80">
+              <Icon name="clock" className="h-5 w-5 text-[#8FA6FF]" />
+              Đội ngũ phản hồi yêu cầu trong vòng 24 giờ
             </div>
           </div>
 
-          {/* Tutor profile */}
-          <div className="bg-white rounded-2xl border-2 border-primary/25 shadow-sm p-6 relative">
-            <div className="absolute -top-3 right-4 bg-primary text-white text-[10px] font-semibold px-3 py-1 rounded-full">
-              Phù hợp
-            </div>
-            <div className="text-xs font-semibold text-slate uppercase tracking-wide mb-4">
-              Hồ sơ minh họa — chưa phải gia sư đang hoạt động trên nền tảng
-            </div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-11 h-11 rounded-full bg-gradient-to-br from-primary to-teal flex items-center justify-center text-white font-bold text-sm">
-                TH
-              </div>
-              <div>
-                <div className="font-bold text-navy">Nguyễn Thu H.</div>
-                <div className="text-xs text-teal font-medium">Gia sư Tiếng Anh giao tiếp</div>
-              </div>
-            </div>
-            <div className="space-y-2">
-              {[
-                { k: 'Chuyên môn', v: 'Giao tiếp, phỏng vấn', c: 'bg-primary-light text-primary' },
-                { k: 'Lịch dạy', v: 'Tối T2, T3, T5', c: 'bg-teal-light text-teal' },
-                { k: 'Học phí', v: '150k – 200k/buổi', c: 'bg-orange-light text-orange' },
-                { k: 'Hình thức', v: 'Online & trực tiếp', c: 'bg-primary-light text-primary' },
-              ].map((item) => (
-                <div key={item.k} className="flex items-center justify-between text-sm">
-                  <span className="text-slate">{item.k}</span>
-                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${item.c}`}>{item.v}</span>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {criteria.map((criterion) => (
+              <article key={criterion.title} className="rounded-2xl border border-white/10 bg-white/[0.06] p-5 transition-colors hover:bg-white/[0.09]">
+                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-[#A8B7FF]">
+                  <Icon name={criterion.icon} />
                 </div>
-              ))}
-            </div>
+                <h3 className="mb-2 font-bold text-white">{criterion.title}</h3>
+                <p className="text-sm leading-relaxed text-white/60">{criterion.description}</p>
+              </article>
+            ))}
           </div>
         </div>
       </div>

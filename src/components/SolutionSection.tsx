@@ -1,63 +1,47 @@
-const solutions = [
+import Icon from './Icon'
+
+const values = [
   {
-    number: '01',
-    title: 'Bắt đầu từ mục tiêu học tập',
-    desc: 'Dự kiến hỗ trợ người học xác định rõ mục tiêu — luyện giao tiếp, chuẩn bị phỏng vấn, củng cố nền tảng hoặc cải thiện một kỹ năng cụ thể.',
-    color: 'text-primary',
-    border: 'border-primary/20',
-    numBg: 'bg-primary-light text-primary',
-    accent: 'bg-primary',
+    icon: 'message' as const,
+    title: 'Tiếp nhận nhu cầu cụ thể',
+    description: 'Mục tiêu, trình độ, lịch học, ngân sách và hình thức học được ghi nhận ngay từ đầu.',
   },
   {
-    number: '02',
-    title: 'So khớp điều kiện thực tế',
-    desc: 'Hướng tới so sánh lịch trống, ngân sách dự kiến, hình thức online hoặc trực tiếp và khu vực địa lý để đề xuất những hồ sơ thực sự phù hợp.',
-    color: 'text-teal',
-    border: 'border-teal/20',
-    numBg: 'bg-teal-light text-teal',
-    accent: 'bg-teal',
+    icon: 'search' as const,
+    title: 'Đối chiếu bởi đội ngũ',
+    description: 'Chúng tôi xem xét từng yêu cầu và tìm trong nguồn gia sư có điều kiện phù hợp.',
   },
   {
-    number: '03',
-    title: 'Hồ sơ gia sư có cấu trúc',
-    desc: 'Đang phát triển định dạng hồ sơ thống nhất — môn dạy, nhóm người học phù hợp, kinh nghiệm, phương pháp, mức học phí và lịch dạy — để người học dễ so sánh.',
-    color: 'text-orange',
-    border: 'border-orange/20',
-    numBg: 'bg-orange-light text-orange',
-    accent: 'bg-orange',
+    icon: 'shield' as const,
+    title: 'Thông tin gia sư có cơ sở',
+    description: 'Danh tính, chứng chỉ và kinh nghiệm được kiểm tra trước khi hồ sơ được giới thiệu.',
   },
 ]
 
 export default function SolutionSection() {
   return (
-    <section className="py-16 md:py-24 bg-page">
-      <div className="max-w-6xl mx-auto px-4 md:px-8">
-        <div className="text-center mb-12">
-          <div className="inline-block text-xs font-semibold text-primary bg-primary-light px-3 py-1.5 rounded-full mb-4 uppercase tracking-wide">
-            Đề xuất của chúng tôi
-          </div>
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-navy mb-4">
-            Gia Sư Nhà Mình đang đề xuất một cách{' '}
-            <span className="text-primary">kết nối rõ ràng hơn</span>
+    <section className="bg-section py-16 md:py-24">
+      <div className="mx-auto max-w-6xl px-4 md:px-8">
+        <div className="mb-12 text-center">
+          <p className="mb-3 text-sm font-semibold text-primary">CÁCH GIA SƯ NHÀ MÌNH HỖ TRỢ</p>
+          <h2 className="mx-auto mb-4 max-w-3xl text-3xl font-bold tracking-[-0.02em] text-navy md:text-4xl">
+            Từ nhu cầu học tập đến lựa chọn phù hợp, rõ ràng ở từng bước
           </h2>
-          <p className="text-slate text-base md:text-lg max-w-2xl mx-auto">
-            Nền tảng đang trong giai đoạn nghiên cứu và phát triển. Dưới đây là hướng tiếp cận chúng tôi đang xây dựng.
+          <p className="mx-auto max-w-2xl text-base leading-relaxed text-slate md:text-lg">
+            Thay vì để người học tự tìm kiếm và hỏi lại từng thông tin, đội ngũ hỗ trợ thu hẹp lựa chọn theo các tiêu chí đã thống nhất.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
-          {solutions.map((s) => (
-            <div
-              key={s.number}
-              className={`bg-surface rounded-2xl border-2 ${s.border} p-6 shadow-sm relative overflow-hidden`}
-            >
-              <div className={`absolute top-0 left-0 w-1 h-full ${s.accent} rounded-l-2xl`} />
-              <div className={`inline-block text-sm font-black px-3 py-1 rounded-lg ${s.numBg} mb-4`}>
-                {s.number}
+        <div className="grid gap-5 md:grid-cols-3">
+          {values.map((item, index) => (
+            <article key={item.title} className="relative rounded-2xl border border-primary/10 bg-white p-7 shadow-sm">
+              <span className="absolute right-6 top-6 text-sm font-bold text-primary/30">0{index + 1}</span>
+              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-navy text-white">
+                <Icon name={item.icon} />
               </div>
-              <h3 className={`font-bold text-lg mb-3 ${s.color}`}>{s.title}</h3>
-              <p className="text-slate text-sm leading-relaxed">{s.desc}</p>
-            </div>
+              <h3 className="mb-3 text-lg font-bold text-navy">{item.title}</h3>
+              <p className="text-sm leading-relaxed text-slate">{item.description}</p>
+            </article>
           ))}
         </div>
       </div>

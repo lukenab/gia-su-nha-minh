@@ -2,7 +2,6 @@ import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import DualCTA from '@/components/DualCTA'
 import FAQ from '@/components/FAQ'
-import FinalCTA from '@/components/FinalCTA'
 import Hero from '@/components/Hero'
 import HowItWorks from '@/components/HowItWorks'
 import MatchingSection from '@/components/MatchingSection'
@@ -14,7 +13,7 @@ import { usePageMetadata } from '@/hooks/usePageMetadata'
 
 const title = 'Gia Sư Nhà Mình | Tìm gia sư tiếng Anh phù hợp'
 const description =
-  'Gia Sư Nhà Mình kết nối sinh viên tại Cần Thơ với gia sư tiếng Anh theo mục tiêu, lịch học và ngân sách.'
+  'Dịch vụ kết nối sinh viên tại Cần Thơ với gia sư tiếng Anh theo mục tiêu, lịch học và ngân sách. Phản hồi trong 24 giờ.'
 
 export default function HomePage() {
   const location = useLocation()
@@ -42,14 +41,13 @@ export default function HomePage() {
       <div id="danh-cho-gia-su"><TutorProfiles /></div>
       <DualCTA />
       <div id="cau-hoi-thuong-gap"><FAQ /></div>
-      <FinalCTA />
 
       <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-edge bg-white p-4 shadow-xl md:hidden">
         <button
           onClick={() => openLearnerForm()}
           className="w-full rounded-xl bg-primary py-3.5 text-base font-bold tracking-wide text-white transition-colors hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
-          Đăng ký quan tâm
+          Gửi yêu cầu tìm gia sư
         </button>
       </div>
     </>

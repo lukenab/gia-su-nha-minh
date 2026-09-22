@@ -4,10 +4,10 @@ import Logo from './Logo'
 import { useFormContext } from '@/context/FormModalContext'
 
 const links = [
-  { href: '#ve-du-an', label: 'Về dự án' },
+  { href: '#ve-du-an', label: 'Dành cho người học' },
   { href: '#cach-hoat-dong', label: 'Cách hoạt động' },
   { href: '#danh-cho-gia-su', label: 'Dành cho gia sư' },
-  { href: '#cau-hoi-thuong-gap', label: 'Câu hỏi thường gặp' },
+  { href: '#cau-hoi-thuong-gap', label: 'FAQ' },
 ]
 
 export default function Nav() {
@@ -26,7 +26,7 @@ export default function Nav() {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${
-        scrolled ? 'bg-white/95 backdrop-blur-sm shadow-sm border-b border-edge' : 'bg-white'
+        scrolled ? 'bg-white/95 shadow-[0_8px_30px_rgba(30,41,59,0.08)] backdrop-blur-md' : 'bg-white/95'
       }`}
     >
       <div className="max-w-6xl mx-auto px-4 md:px-8 flex items-center justify-between h-16">
@@ -50,7 +50,7 @@ export default function Nav() {
             onClick={() => openLearnerForm()}
             className="bg-primary text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-primary-dark transition-colors"
           >
-            Đăng ký quan tâm
+            Tìm gia sư
           </button>
         </div>
 
@@ -75,7 +75,7 @@ export default function Nav() {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="md:hidden bg-white border-t border-edge px-4 pb-6 pt-4 space-y-1">
+        <div className="space-y-1 bg-white px-4 pb-6 pt-4 shadow-lg md:hidden">
           {links.map((l) => (
             <Link
               key={l.href}
@@ -94,7 +94,7 @@ export default function Nav() {
               }}
               className="w-full bg-primary text-white font-bold py-3.5 rounded-xl text-base"
             >
-              Đăng ký quan tâm
+              Gửi yêu cầu tìm gia sư
             </button>
           </div>
         </div>
