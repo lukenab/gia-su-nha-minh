@@ -2,81 +2,64 @@ import { useState } from 'react'
 
 const faqs = [
   {
-    q: 'Gia Sư Nhà Mình đã chính thức hoạt động chưa?',
-    a: 'Hiện tại, Gia Sư Nhà Mình đang trong giai đoạn nghiên cứu nhu cầu người dùng và chưa chính thức hoạt động như một nền tảng kết nối gia sư. Chúng tôi đang thu thập thông tin để hiểu rõ hơn những khó khăn thực tế của người học và gia sư trước khi phát triển sản phẩm.',
+    question: 'Gia Sư Nhà Mình hỗ trợ những nội dung tiếng Anh nào?',
+    answer: 'Dịch vụ hiện tập trung vào nhu cầu tiếng Anh của sinh viên tại Cần Thơ, gồm tiếng Anh nền tảng, giao tiếp, phỏng vấn, IELTS và các mục tiêu học tập cụ thể khác.',
   },
   {
-    q: 'Việc đăng ký quan tâm có mất phí không?',
-    a: 'Hoàn toàn miễn phí. Đăng ký quan tâm chỉ là cách bạn cho chúng tôi biết nhu cầu của bạn và nhận thông báo khi chương trình thử nghiệm bắt đầu. Không có bất kỳ khoản phí nào được thu trong giai đoạn này.',
+    question: 'Sau khi gửi yêu cầu, bao lâu tôi nhận được phản hồi?',
+    answer: 'Đội ngũ sẽ tiếp nhận và phản hồi trong vòng 24 giờ. Thời gian giới thiệu được gia sư phù hợp có thể khác nhau tùy mục tiêu, lịch học và ngân sách của bạn.',
   },
   {
-    q: 'Sau khi gửi thông tin, tôi có được kết nối ngay không?',
-    a: 'Chưa. Hiện tại chúng tôi chưa có tính năng kết nối tự động. Thông tin bạn cung cấp sẽ được sử dụng cho hoạt động khảo sát và chúng tôi sẽ liên hệ lại khi có chương trình thử nghiệm phù hợp.',
+    question: 'Dịch vụ có hỗ trợ học online và trực tiếp không?',
+    answer: 'Có. Bạn có thể chọn học online, học trực tiếp tại khu vực Cần Thơ hoặc linh hoạt giữa hai hình thức khi gửi yêu cầu.',
   },
   {
-    q: 'Thông tin tôi cung cấp được sử dụng như thế nào?',
-    a: 'Thông tin bạn chia sẻ được sử dụng hoàn toàn cho mục đích nghiên cứu nhu cầu người dùng — để chúng tôi hiểu rõ hơn những khó khăn và tiêu chí quan trọng khi tìm gia sư. Thông tin không được chia sẻ với bên thứ ba và sẽ chỉ được dùng để liên lạc trong khuôn khổ dự án này.',
+    question: 'Tôi có phải trả phí kết nối không?',
+    answer: 'Hiện tại Gia Sư Nhà Mình chưa thu phí kết nối. Học phí được người học và gia sư trao đổi, thống nhất trực tiếp trước khi bắt đầu học.',
   },
   {
-    q: 'Hiện tại dự án hỗ trợ những môn học nào?',
-    a: 'Giai đoạn nghiên cứu ban đầu chỉ tập trung vào nhu cầu học tiếng Anh của sinh viên tại Cần Thơ. Phạm vi có thể được mở rộng sau khi nhóm kiểm chứng được nhu cầu và mô hình thử nghiệm.',
+    question: 'Thông tin gia sư được kiểm tra như thế nào?',
+    answer: 'Trước khi giới thiệu hồ sơ, đội ngũ kiểm tra thông tin danh tính, chứng chỉ liên quan và kinh nghiệm do gia sư cung cấp. Người học vẫn nên trao đổi trực tiếp để tự đánh giá mức độ phù hợp.',
   },
   {
-    q: 'Gia sư được lựa chọn hoặc kiểm tra thông tin ra sao?',
-    a: 'Quy trình xác minh thông tin gia sư đang được nghiên cứu và phát triển. Chúng tôi chưa có quy trình kiểm tra chính thức trong giai đoạn này và không xác nhận rằng bất kỳ gia sư nào đã được kiểm chứng. Quy trình này sẽ được công bố rõ ràng khi nền tảng chính thức ra mắt.',
+    question: 'Thông tin tôi gửi được sử dụng cho mục đích gì?',
+    answer: 'Thông tin được sử dụng để xử lý yêu cầu kết nối, liên hệ với bạn và hỗ trợ quá trình lựa chọn gia sư. Chi tiết được trình bày trong Chính sách bảo mật.',
   },
 ]
 
 export default function FAQ() {
-  const [openIndex, setOpenIndex] = useState<number | null>(null)
+  const [openIndex, setOpenIndex] = useState<number | null>(0)
 
   return (
-    <section className="py-16 md:py-24 bg-section">
-      <div className="max-w-3xl mx-auto px-4 md:px-8">
-        <div className="text-center mb-10">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-navy mb-4">
-            Câu hỏi thường gặp
-          </h2>
-          <p className="text-slate text-base md:text-lg">
-            Những thắc mắc phổ biến về Gia Sư Nhà Mình và cách hoạt động.
-          </p>
+    <section className="bg-section py-16 md:py-24">
+      <div className="mx-auto max-w-3xl px-4 md:px-8">
+        <div className="mb-10 text-center">
+          <p className="mb-3 text-sm font-semibold text-primary">THÔNG TIN CẦN BIẾT</p>
+          <h2 className="mb-4 text-3xl font-bold tracking-[-0.02em] text-navy md:text-4xl">Câu hỏi thường gặp</h2>
+          <p className="text-base text-slate md:text-lg">Các thông tin quan trọng trước khi bạn gửi yêu cầu.</p>
         </div>
 
         <div className="space-y-3">
-          {faqs.map((faq, i) => (
-            <div
-              key={i}
-              className="bg-surface rounded-2xl border border-edge overflow-hidden shadow-sm"
-            >
+          {faqs.map((faq, index) => (
+            <article key={faq.question} className="overflow-hidden rounded-2xl border border-edge bg-white">
               <button
-                id={`faq-button-${i}`}
-                className="w-full flex items-start justify-between gap-4 p-5 text-left hover:bg-page transition-colors"
-                onClick={() => setOpenIndex(openIndex === i ? null : i)}
-                aria-expanded={openIndex === i}
-                aria-controls={`faq-panel-${i}`}
+                id={`faq-button-${index}`}
+                className="flex w-full items-start justify-between gap-4 p-5 text-left transition-colors hover:bg-page"
+                onClick={() => setOpenIndex(openIndex === index ? null : index)}
+                aria-expanded={openIndex === index}
+                aria-controls={`faq-panel-${index}`}
               >
-                <span className="font-semibold text-navy text-base leading-snug">{faq.q}</span>
-                <span
-                  className={`flex-shrink-0 w-6 h-6 rounded-full bg-primary-light text-primary flex items-center justify-center transition-transform duration-200 mt-0.5 ${
-                    openIndex === i ? 'rotate-180' : ''
-                  }`}
-                >
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path d="M2 4l4 4 4-4" stroke="#4361EE" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                <span className="font-semibold leading-snug text-navy">{faq.question}</span>
+                <span className={`mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary-light text-primary transition-transform ${openIndex === index ? 'rotate-180' : ''}`} aria-hidden="true">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
                 </span>
               </button>
-              {openIndex === i && (
-                <div
-                  id={`faq-panel-${i}`}
-                  role="region"
-                  aria-labelledby={`faq-button-${i}`}
-                  className="px-5 pb-5"
-                >
-                  <p className="text-slate text-sm leading-relaxed">{faq.a}</p>
+              {openIndex === index && (
+                <div id={`faq-panel-${index}`} role="region" aria-labelledby={`faq-button-${index}`} className="px-5 pb-5">
+                  <p className="text-sm leading-relaxed text-slate">{faq.answer}</p>
                 </div>
               )}
-            </div>
+            </article>
           ))}
         </div>
       </div>

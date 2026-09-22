@@ -1,21 +1,22 @@
 import { Link } from 'react-router-dom'
 import { usePageMetadata } from '@/hooks/usePageMetadata'
+import { siteConfig } from '@/lib/config'
 
 export default function PrivacyPage() {
   usePageMetadata(
     'Chính sách bảo mật | Gia Sư Nhà Mình',
-    'Cách Gia Sư Nhà Mình thu thập và sử dụng thông tin trong giai đoạn khảo sát nhu cầu.',
+    'Cách Gia Sư Nhà Mình thu thập, sử dụng và bảo vệ thông tin của người học và gia sư.',
     '/privacy',
   )
 
   return (
     <article className="mx-auto max-w-3xl px-4 pb-20 pt-28 md:px-8 md:pt-32">
-      <p className="mb-3 text-sm font-semibold text-primary">Cập nhật ngày 21/09/2026</p>
+      <p className="mb-3 text-sm font-semibold text-primary">Cập nhật ngày 22/09/2026</p>
       <h1 className="mb-6 text-3xl font-bold text-navy md:text-4xl">Chính sách bảo mật</h1>
       <div className="legal-content">
         <p>
-          Gia Sư Nhà Mình hiện là dự án sinh viên đang khảo sát nhu cầu, chưa phải nền tảng gia sư
-          chính thức. Chính sách này giải thích cách nhóm sử dụng thông tin bạn tự nguyện cung cấp.
+          Chính sách này giải thích cách Gia Sư Nhà Mình tiếp nhận, sử dụng và bảo vệ thông tin bạn
+          cung cấp khi gửi yêu cầu tìm gia sư hoặc đăng ký trở thành gia sư.
         </p>
 
         <h2>1. Thông tin được thu thập</h2>
@@ -26,32 +27,37 @@ export default function PrivacyPage() {
 
         <h2>2. Mục đích sử dụng</h2>
         <p>
-          Nhóm chỉ sử dụng dữ liệu để nghiên cứu nhu cầu, cải thiện ý tưởng sản phẩm và liên hệ về
-          chương trình thử nghiệm nếu phù hợp với lựa chọn đồng ý của bạn.
+          Thông tin được sử dụng để liên hệ, xác nhận nhu cầu, kiểm tra hồ sơ gia sư và hỗ trợ kết
+          nối giữa hai bên. Gia Sư Nhà Mình chỉ xử lý dữ liệu trong phạm vi cần thiết cho các mục
+          đích này.
         </p>
 
         <h2>3. Nơi lưu trữ và bên xử lý dữ liệu</h2>
         <p>
-          Trong giai đoạn khảo sát, câu trả lời dự kiến được gửi đến Google Forms. Vì vậy, dữ liệu
-          cũng chịu sự điều chỉnh của các điều khoản và chính sách bảo mật của Google.
+          Câu trả lời từ biểu mẫu có thể được chuyển đến và lưu trữ bằng Google Forms. Việc xử lý
+          dữ liệu trên dịch vụ này đồng thời chịu sự điều chỉnh của chính sách bảo mật của Google.
         </p>
 
         <h2>4. Chia sẻ và thời gian lưu trữ</h2>
         <p>
-          Nhóm không bán dữ liệu cá nhân. Quyền truy cập được giới hạn cho thành viên phụ trách dự
-          án. Dữ liệu khảo sát sẽ được rà soát và xóa khi không còn cần thiết cho mục đích nghiên cứu.
+          Gia Sư Nhà Mình không bán dữ liệu cá nhân. Quyền truy cập được giới hạn cho thành viên phụ
+          trách việc xác minh và kết nối. Dữ liệu được lưu trong thời gian cần thiết để xử lý yêu cầu
+          và sẽ được rà soát, xóa khi không còn phục vụ mục đích đã nêu.
         </p>
 
         <h2>5. Quyền của bạn</h2>
         <p>
-          Bạn có thể yêu cầu xem, điều chỉnh hoặc xóa câu trả lời. Kênh tiếp nhận yêu cầu sẽ được công
-          bố tại trang này trước khi biểu mẫu chính thức mở nhận dữ liệu.
+          Bạn có thể yêu cầu xem, điều chỉnh hoặc xóa thông tin đã cung cấp bằng cách liên hệ qua{' '}
+          <a href={siteConfig.facebookUrl} target="_blank" rel="noreferrer">
+            Facebook chính thức của Gia Sư Nhà Mình
+          </a>
+          .
         </p>
 
         <h2>6. Thay đổi chính sách</h2>
         <p>
-          Chính sách có thể được cập nhật khi dự án chuyển sang giai đoạn thử nghiệm. Ngày cập nhật
-          gần nhất luôn được hiển thị ở đầu trang.
+          Chính sách có thể được cập nhật để phản ánh thay đổi trong quy trình vận hành hoặc yêu cầu
+          pháp lý. Ngày cập nhật gần nhất luôn được hiển thị ở đầu trang.
         </p>
       </div>
       <Link className="mt-8 inline-flex font-semibold text-primary hover:underline" to="/">

@@ -2,6 +2,7 @@ import { useState, type FormEvent, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { submitGoogleForm } from '@/api/googleForms'
 import { useAccessibleModal } from '@/hooks/useAccessibleModal'
+import { siteConfig } from '@/lib/config'
 import type { LearnerFormData } from '@/types/forms'
 
 interface Props {
@@ -116,8 +117,8 @@ export default function LearnerModal({ initialRole = 'Sinh viên', onClose }: Pr
       >
         <div className="flex flex-shrink-0 items-center justify-between border-b border-edge p-5">
           <div>
-            <h2 id="learner-dialog-title" className="text-lg font-bold text-navy">Chia sẻ nhu cầu học tiếng Anh</h2>
-            <p id="learner-dialog-description" className="mt-0.5 text-xs text-slate">Khảo sát dành cho sinh viên tại Cần Thơ — không mất phí</p>
+            <h2 id="learner-dialog-title" className="text-lg font-bold text-navy">Yêu cầu tìm gia sư tiếng Anh</h2>
+            <p id="learner-dialog-description" className="mt-0.5 text-xs text-slate">Dành cho sinh viên tại Cần Thơ — phản hồi trong 24 giờ</p>
           </div>
           <button onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-full bg-page transition-colors hover:bg-edge focus-visible:outline-2 focus-visible:outline-primary" aria-label="Đóng biểu mẫu">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
@@ -134,13 +135,18 @@ export default function LearnerModal({ initialRole = 'Sinh viên', onClose }: Pr
                 <path d="M9 16l5 5 9-9" stroke="#0D9488" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
-            <h3 className="mb-3 text-xl font-bold text-navy">Cảm ơn bạn đã chia sẻ!</h3>
-            <p className="max-w-sm text-sm leading-relaxed text-slate">Thông tin đã được ghi nhận cho hoạt động khảo sát. Nhóm sẽ liên hệ khi có chương trình thử nghiệm phù hợp.</p>
+            <h3 className="mb-3 text-xl font-bold text-navy">Yêu cầu đã được tiếp nhận</h3>
+            <p className="max-w-sm text-sm leading-relaxed text-slate">Đội ngũ Gia Sư Nhà Mình sẽ xem xét nhu cầu và phản hồi với bạn trong vòng 24 giờ.</p>
             <button onClick={onClose} className="mt-6 rounded-xl bg-primary px-6 py-3 font-semibold text-white transition-colors hover:bg-primary-dark">Đóng</button>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex-1 space-y-4 overflow-y-auto p-5" noValidate>
-            {submitError && <div role="alert" className="rounded-xl border border-orange/30 bg-orange-light p-3 text-sm text-navy">{submitError}</div>}
+            {submitError && (
+              <div role="alert" className="rounded-xl border border-orange/30 bg-orange-light p-3 text-sm text-navy">
+                <p>{submitError}</p>
+                <a href={siteConfig.facebookUrl} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex font-semibold text-primary underline">Liên hệ qua Facebook</a>
+              </div>
+            )}
 
             <Field id="learner-name" label="Họ và tên" required error={errors.name}>
               <input id="learner-name" autoComplete="name" className={`${inputCls} ${errors.name ? 'border-red-500' : ''}`} aria-invalid={Boolean(errors.name)} aria-describedby={errors.name ? 'learner-name-error' : undefined} placeholder="Nguyễn Văn A" value={form.name} onChange={(event) => set('name', event.target.value)} />
@@ -213,13 +219,13 @@ export default function LearnerModal({ initialRole = 'Sinh viên', onClose }: Pr
             <div>
               <label className="flex cursor-pointer items-start gap-3">
                 <input type="checkbox" className="mt-1 h-4 w-4 flex-shrink-0 accent-primary" checked={form.consent} aria-invalid={Boolean(errors.consent)} aria-describedby={errors.consent ? 'learner-consent-error' : undefined} onChange={(event) => set('consent', event.target.checked)} />
-                <span className="text-sm leading-relaxed text-slate">Tôi đồng ý để Gia Sư Nhà Mình sử dụng thông tin cho mục đích khảo sát và liên hệ về chương trình thử nghiệm, theo <Link to="/privacy" onClick={onClose} className="font-medium text-primary underline">Chính sách bảo mật</Link>.<span className="ml-1 text-orange" aria-hidden="true">*</span></span>
+                <span className="text-sm leading-relaxed text-slate">Tôi đồng ý để Gia Sư Nhà Mình sử dụng thông tin nhằm xử lý yêu cầu kết nối và liên hệ hỗ trợ, theo <Link to="/privacy" onClick={onClose} className="font-medium text-primary underline">Chính sách bảo mật</Link>.<span className="ml-1 text-orange" aria-hidden="true">*</span></span>
               </label>
               {errors.consent && <p id="learner-consent-error" className="ml-7 mt-1 text-xs text-red-600">{errors.consent}</p>}
             </div>
 
             <div className="pb-4 pt-2">
-              <button type="submit" disabled={submitting} className="w-full rounded-xl bg-primary py-4 text-base font-bold text-white transition-colors hover:bg-primary-dark disabled:cursor-wait disabled:opacity-60">{submitting ? 'Đang gửi…' : 'Gửi nhu cầu'}</button>
+              <button type="submit" disabled={submitting} className="w-full rounded-xl bg-primary py-4 text-base font-bold text-white transition-colors hover:bg-primary-dark disabled:cursor-wait disabled:opacity-60">{submitting ? 'Đang gửi…' : 'Gửi yêu cầu tìm gia sư'}</button>
             </div>
           </form>
         )}

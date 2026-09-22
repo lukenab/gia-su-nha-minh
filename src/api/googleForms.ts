@@ -12,7 +12,7 @@ const requiredFields: Record<SurveyFormKind, string[]> = {
 
 export class FormConfigurationError extends Error {
   constructor() {
-    super('Biểu mẫu khảo sát đang được hoàn thiện. Vui lòng quay lại sau.')
+    super('Biểu mẫu tạm thời chưa sẵn sàng. Bạn có thể gửi yêu cầu trực tiếp qua Facebook.')
     this.name = 'FormConfigurationError'
   }
 }
