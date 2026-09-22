@@ -9,7 +9,7 @@ interface Step {
 
 const learnerSteps: Step[] = [
   {
-    icon: 'message',
+    icon: 'clipboard',
     title: 'Gửi yêu cầu học tập',
     description: 'Cho chúng tôi biết mục tiêu, trình độ hiện tại, lịch học, ngân sách và hình thức bạn mong muốn.',
   },
