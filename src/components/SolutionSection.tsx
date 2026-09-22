@@ -20,7 +20,7 @@ const values = [
 
 export default function SolutionSection() {
   return (
-    <section className="bg-section py-16 md:py-24">
+    <section className="border-b border-edge bg-section py-16 md:py-24">
       <div className="mx-auto max-w-6xl px-4 md:px-8">
         <div className="mb-12 text-center">
           <p className="mb-3 text-sm font-semibold text-primary">CÁCH GIA SƯ NHÀ MÌNH HỖ TRỢ</p>
@@ -34,7 +34,10 @@ export default function SolutionSection() {
 
         <div className="grid gap-5 md:grid-cols-3">
           {values.map((item, index) => (
-            <article key={item.title} className="relative rounded-2xl border border-primary/10 bg-white p-7 shadow-sm">
+            <article
+              key={item.title}
+              className="relative rounded-2xl border border-edge bg-white p-7 shadow-[0_10px_30px_rgba(30,41,59,0.08)]"
+            >
               <span className="absolute right-6 top-6 text-sm font-bold text-primary/30">0{index + 1}</span>
               <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-navy text-white">
                 <Icon name={item.icon} />

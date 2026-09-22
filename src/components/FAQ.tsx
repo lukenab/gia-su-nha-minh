@@ -31,7 +31,7 @@ export default function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(0)
 
   return (
-    <section className="bg-section py-16 md:py-24">
+    <section className="border-t border-edge bg-section py-16 md:py-24">
       <div className="mx-auto max-w-3xl px-4 md:px-8">
         <div className="mb-10 text-center">
           <p className="mb-3 text-sm font-semibold text-primary">THÔNG TIN CẦN BIẾT</p>
@@ -41,7 +41,10 @@ export default function FAQ() {
 
         <div className="space-y-3">
           {faqs.map((faq, index) => (
-            <article key={faq.question} className="overflow-hidden rounded-2xl border border-edge bg-white">
+            <article
+              key={faq.question}
+              className="overflow-hidden rounded-2xl border border-edge bg-white shadow-[0_6px_20px_rgba(30,41,59,0.06)]"
+            >
               <button
                 id={`faq-button-${index}`}
                 className="flex w-full items-start justify-between gap-4 p-5 text-left transition-colors hover:bg-page"

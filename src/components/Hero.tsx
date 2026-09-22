@@ -74,7 +74,7 @@ export default function Hero() {
   const { openLearnerForm, openTutorForm } = useFormContext()
 
   return (
-    <section className="relative overflow-hidden bg-page pb-16 pt-28 md:pb-24 md:pt-36">
+    <section className="relative overflow-hidden border-b border-edge bg-page pb-16 pt-28 md:pb-24 md:pt-36">
       <div className="absolute left-0 top-20 h-72 w-72 -translate-x-1/2 rounded-full bg-primary/5 blur-3xl" />
       <div className="mx-auto max-w-6xl px-4 md:px-8">
         <div className="grid items-center gap-14 lg:grid-cols-[1.08fr_0.92fr] lg:gap-20">

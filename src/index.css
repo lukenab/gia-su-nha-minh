@@ -18,12 +18,12 @@
   --color-teal-light: #CCFBF1;
   --color-orange: #F97316;
   --color-orange-light: #FFF7ED;
-  --color-page: #F8F9FC;
-  --color-section: #EFF4FF;
+  --color-page: #F5F7FB;
+  --color-section: #EAF0F8;
   --color-navy: #1E293B;
   --color-slate: #64748B;
   --color-surface: #FFFFFF;
-  --color-edge: #E2E8F0;
+  --color-edge: #D7E0EC;
 }
 
 html {
@@ -32,7 +32,7 @@ html {
 
 body {
   font-family: 'Be Vietnam Pro', sans-serif;
-  background-color: #F8F9FC;
+  background-color: #F5F7FB;
   color: #1E293B;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;

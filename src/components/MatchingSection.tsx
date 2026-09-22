@@ -30,7 +30,10 @@ export default function MatchingSection() {
 
           <div className="grid gap-4 sm:grid-cols-2">
             {criteria.map((criterion) => (
-              <article key={criterion.title} className="rounded-2xl border border-white/10 bg-white/[0.06] p-5 transition-colors hover:bg-white/[0.09]">
+              <article
+                key={criterion.title}
+                className="rounded-2xl border border-white/15 bg-white/[0.08] p-5 shadow-[0_10px_30px_rgba(0,0,0,0.14)] transition-colors hover:bg-white/[0.11]"
+              >
                 <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-[#A8B7FF]">
                   <Icon name={criterion.icon} />
                 </div>

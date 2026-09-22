@@ -20,7 +20,7 @@ const challenges = [
 
 export default function ProblemSection() {
   return (
-    <section className="bg-white py-16 md:py-24">
+    <section className="border-b border-edge bg-white py-16 md:py-24">
       <div className="mx-auto max-w-6xl px-4 md:px-8">
         <div className="mb-12 max-w-3xl">
           <p className="mb-3 text-sm font-semibold text-primary">BẮT ĐẦU TỪ SỰ PHÙ HỢP</p>
@@ -34,7 +34,10 @@ export default function ProblemSection() {
 
         <div className="grid gap-5 md:grid-cols-3">
           {challenges.map((item) => (
-            <article key={item.title} className="rounded-2xl border border-edge bg-page p-6">
+            <article
+              key={item.title}
+              className="rounded-2xl border border-edge bg-white p-6 shadow-[0_10px_30px_rgba(30,41,59,0.08)]"
+            >
               <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl bg-primary-light text-primary">
                 <Icon name={item.icon} />
               </div>

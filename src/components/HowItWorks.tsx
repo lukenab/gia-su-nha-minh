@@ -47,7 +47,10 @@ function StepGrid({ steps }: { steps: Step[] }) {
   return (
     <div className="grid gap-4 md:grid-cols-3">
       {steps.map((step, index) => (
-        <article key={step.title} className="relative rounded-2xl border border-edge bg-white p-6">
+        <article
+          key={step.title}
+          className="relative rounded-2xl border border-edge bg-white p-6 shadow-[0_10px_30px_rgba(30,41,59,0.08)]"
+        >
           <div className="mb-5 flex items-center justify-between">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-light text-primary">
               <Icon name={step.icon} />
@@ -67,7 +70,7 @@ export default function HowItWorks() {
   const steps = activeTab === 'learner' ? learnerSteps : tutorSteps
 
   return (
-    <section className="bg-white py-16 md:py-24">
+    <section className="border-b border-edge bg-white py-16 md:py-24">
       <div className="mx-auto max-w-6xl px-4 md:px-8">
         <div className="mb-9 text-center">
           <p className="mb-3 text-sm font-semibold text-primary">QUY TRÌNH KẾT NỐI</p>
