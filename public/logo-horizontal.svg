@@ -5,7 +5,7 @@
   <rect width="840" height="250" fill="#fff"/>
 
   <!-- Biểu tượng: sử dụng nguyên vùng ảnh từ PNG gốc -->
-  <svg x="10" y="8" width="280" height="235" viewBox="280 130 720 605" preserveAspectRatio="xMidYMid meet">
+  <svg x="10" y="10" width="280" height="230" viewBox="280 130 720 590" preserveAspectRatio="xMidYMid meet">
     <image href="logo-original.png" x="0" y="0" width="1280" height="1280"/>
   </svg>
 
