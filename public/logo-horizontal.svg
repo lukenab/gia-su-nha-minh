@@ -1,43 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 180" role="img" aria-labelledby="logo-title logo-desc">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 250" role="img" aria-labelledby="logo-title logo-desc">
   <title id="logo-title">Gia Sư Nhà Mình</title>
-  <desc id="logo-desc">Biểu tượng gia sư và người học dưới mái nhà, đặt ngang hàng với tên thương hiệu</desc>
+  <desc id="logo-desc">Logo nguyên bản được sắp xếp lại theo chiều ngang</desc>
 
-  <g transform="translate(4 2)">
-    <path d="M15 70 84 18l70 52" fill="none" stroke="#4A86C8" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M125 40V22h20v33" fill="#4A86C8" stroke="#4A86C8" stroke-width="8" stroke-linejoin="round"/>
-    <g fill="#4A86C8">
-      <rect x="76" y="45" width="9" height="9" rx="2"/>
-      <rect x="90" y="45" width="9" height="9" rx="2"/>
-      <rect x="76" y="59" width="9" height="9" rx="2"/>
-      <rect x="90" y="59" width="9" height="9" rx="2"/>
-    </g>
+  <rect width="840" height="250" fill="#fff"/>
 
-    <path d="M26 130c2-31 18-50 43-50 26 0 42 19 44 50-23 10-64 10-87 0Z" fill="#4A86C8"/>
-    <path d="M52 82c0-22 13-36 33-36 20 0 32 14 32 35 0 24-13 40-33 40-19 0-32-16-32-39Z" fill="#FFD5AD" stroke="#503D37" stroke-width="4"/>
-    <path d="M51 82c-8-9-5-25 4-35 13-15 42-16 55-3 13 12 14 30 5 40-2-13-7-22-16-29-6 14-15 23-28 28-7 3-14 2-20-1Z" fill="#503D37"/>
-    <ellipse cx="78" cy="87" rx="3.2" ry="5" fill="#503D37"/>
-    <ellipse cx="101" cy="86" rx="3.2" ry="5" fill="#503D37"/>
-    <circle cx="67" cy="97" r="6" fill="#FFB84D"/>
-    <circle cx="109" cy="96" r="6" fill="#FFB84D"/>
-    <path d="M83 101q8 8 15-1c0 12-13 16-15 1Z" fill="#fff" stroke="#503D37" stroke-width="3" stroke-linejoin="round"/>
+  <!-- Biểu tượng: sử dụng nguyên vùng ảnh từ PNG gốc -->
+  <svg x="10" y="8" width="280" height="235" viewBox="280 130 720 605" preserveAspectRatio="xMidYMid meet">
+    <image href="logo-original.png" x="0" y="0" width="1280" height="1280"/>
+  </svg>
 
-    <path d="M93 134c3-24 17-39 38-39 21 0 35 16 38 39-20 10-56 10-76 0Z" fill="#FFB84D"/>
-    <path d="M104 94c0-20 12-33 30-33 19 0 31 14 31 34 0 21-12 35-31 35-18 0-30-14-30-36Z" fill="#FFD5AD" stroke="#503D37" stroke-width="4"/>
-    <path d="M105 91c-4-18 8-35 28-37 21-2 38 12 39 34l-9-2c-2 4-4 8-7 11-2-13-9-22-20-28-6 12-16 20-31 22Z" fill="#503D37"/>
-    <ellipse cx="124" cy="99" rx="3.1" ry="4.8" fill="#503D37"/>
-    <ellipse cx="146" cy="98" rx="3.1" ry="4.8" fill="#503D37"/>
-    <circle cx="114" cy="108" r="5.5" fill="#FFB84D"/>
-    <circle cx="154" cy="107" r="5.5" fill="#FFB84D"/>
-    <path d="M128 112q7 7 13-1c0 11-11 14-13 1Z" fill="#fff" stroke="#503D37" stroke-width="3" stroke-linejoin="round"/>
-
-    <path d="M158 48l4-13M169 54l8-11M177 65l11-5" fill="none" stroke="#FFB84D" stroke-width="6" stroke-linecap="round"/>
-
-    <path d="M38 139c22-13 42-13 63 0 21-13 42-13 64 0l-4 17c-20-10-40-10-60 2-20-12-40-12-59-2Z" fill="#fff" stroke="#503D37" stroke-width="4" stroke-linejoin="round"/>
-    <path d="M101 139v19" fill="none" stroke="#503D37" stroke-width="3" stroke-linecap="round"/>
-  </g>
-
-  <text x="215" y="111" font-family="'Arial Rounded MT Bold', 'Trebuchet MS', Arial, sans-serif" font-size="58" font-weight="800" letter-spacing="-1.6">
-    <tspan fill="#4A86C8">Gia Sư</tspan>
-    <tspan fill="#FFB84D"> Nhà Mình</tspan>
-  </text>
+  <!-- Wordmark hai dòng: giữ nguyên toàn bộ vùng chữ từ PNG gốc -->
+  <svg x="310" y="14" width="520" height="222" viewBox="220 725 880 375" preserveAspectRatio="xMidYMid meet">
+    <image href="logo-original.png" x="0" y="0" width="1280" height="1280"/>
+  </svg>
 </svg>
