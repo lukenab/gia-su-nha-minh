@@ -6,14 +6,24 @@ const sizes = {
   lg: { width: 188, height: 56 },
 } as const
 
-export default function Logo({ size = 'md' }: { size?: keyof typeof sizes }) {
+type LogoProps = {
+  size?: keyof typeof sizes
+  framed?: boolean
+}
+
+export default function Logo({ size = 'md', framed = false }: LogoProps) {
   const dimensions = sizes[size]
+  const frameSpace = framed ? 16 : 0
 
   return (
     <Link
       to="/"
-      className="inline-flex shrink-0 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
-      style={{ width: dimensions.width, height: dimensions.height }}
+      className={`inline-flex shrink-0 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary ${
+        framed
+          ? 'border border-primary/30 bg-white p-2 shadow-[0_8px_24px_rgba(15,23,42,0.18)]'
+          : ''
+      }`}
+      style={{ width: dimensions.width + frameSpace, height: dimensions.height + frameSpace }}
       aria-label="Gia Sư Nhà Mình — Trang chủ"
     >
       <img

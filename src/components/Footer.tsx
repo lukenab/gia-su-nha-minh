@@ -15,7 +15,7 @@ export default function Footer() {
       <div className="mx-auto max-w-6xl px-4 md:px-8">
         <div className="mb-10 grid gap-10 md:grid-cols-4">
           <div className="md:col-span-2">
-            <div className="mb-5"><Logo size="lg" /></div>
+            <div className="mb-5"><Logo size="lg" framed /></div>
             <p className="mb-5 max-w-md text-sm leading-relaxed text-white/65">
               Dịch vụ kết nối sinh viên tại Cần Thơ với gia sư tiếng Anh dựa trên mục tiêu, lịch học, ngân sách và hình thức học.
             </p>
