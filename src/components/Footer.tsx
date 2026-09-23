@@ -4,7 +4,7 @@ import Logo from './Logo'
 
 const informationLinks = [
   { to: '/#ve-du-an', label: 'Dành cho người học' },
-  { to: '/#cach-hoat-dong', label: 'Cách hoạt động' },
+  { to: '/#cach-hoat-dong', label: 'Quy trình kết nối' },
   { to: '/#danh-cho-gia-su', label: 'Dành cho gia sư' },
   { to: '/#cau-hoi-thuong-gap', label: 'Câu hỏi thường gặp' },
 ]
