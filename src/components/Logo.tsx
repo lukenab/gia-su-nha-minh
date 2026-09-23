@@ -12,15 +12,16 @@ export default function Logo({ size = 'md' }: { size?: keyof typeof sizes }) {
   return (
     <Link
       to="/"
-      className="inline-flex rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+      className="inline-flex shrink-0 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+      style={{ width: dimensions.width, height: dimensions.height }}
       aria-label="Gia Sư Nhà Mình — Trang chủ"
     >
       <img
-        src="/logo-horizontal.svg?v=2"
+        src="/logo-horizontal.svg?v=3"
         alt="Gia Sư Nhà Mình"
         width={dimensions.width}
         height={dimensions.height}
-        className="block h-auto"
+        className="block h-full w-full object-contain"
         draggable="false"
       />
     </Link>
