@@ -21,6 +21,8 @@ export default function Logo({ size = 'md' }: { size?: keyof typeof sizes }) {
         alt="Gia Sư Nhà Mình"
         width={dimensions.width}
         height={dimensions.height}
+        decoding="sync"
+        fetchPriority="high"
         className="block h-full w-full object-contain"
         draggable="false"
       />
