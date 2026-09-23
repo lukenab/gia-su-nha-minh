@@ -67,7 +67,7 @@ export default function LearnerModal({ initialRole = 'Sinh viên', onClose }: Pr
   function validate() {
     const next: Record<string, string> = {}
     if (!form.name.trim()) next.name = 'Vui lòng nhập họ và tên'
-    if (!form.role) next.role = 'Vui lòng chọn nhóm sinh viên'
+    if (!form.role) next.role = 'Vui lòng chọn nhóm người học'
     if (!form.subject.trim()) next.subject = 'Vui lòng nhập nội dung tiếng Anh cần học'
     if (!form.goal.trim()) next.goal = 'Vui lòng mô tả mục tiêu học tập'
     if (!form.schedule.trim()) next.schedule = 'Vui lòng nhập khung thời gian'
@@ -152,14 +152,14 @@ export default function LearnerModal({ initialRole = 'Sinh viên', onClose }: Pr
               <input id="learner-name" autoComplete="name" className={`${inputCls} ${errors.name ? 'border-red-500' : ''}`} aria-invalid={Boolean(errors.name)} aria-describedby={errors.name ? 'learner-name-error' : undefined} placeholder="Nguyễn Văn A" value={form.name} onChange={(event) => set('name', event.target.value)} />
             </Field>
 
-            <Field id="learner-role" label="Bạn đang là" required error={errors.role}>
+            <Field id="learner-role" label="Người học thuộc nhóm nào?" required error={errors.role}>
               <select id="learner-role" className={`${selectCls} ${errors.role ? 'border-red-500' : ''}`} value={form.role} aria-invalid={Boolean(errors.role)} aria-describedby={errors.role ? 'learner-role-error' : undefined} onChange={(event) => set('role', event.target.value)}>
-                <option value="">-- Chọn nhóm sinh viên --</option>
+                <option value="">-- Chọn nhóm người học --</option>
+                <option>Học sinh THCS</option>
+                <option>Học sinh THPT</option>
                 <option>Sinh viên</option>
-                <option>Sinh viên năm 1</option>
-                <option>Sinh viên năm 2</option>
-                <option>Sinh viên năm 3</option>
-                <option>Sinh viên năm 4 trở lên</option>
+                <option>Người đi làm</option>
+                <option>Khác</option>
               </select>
             </Field>
 
