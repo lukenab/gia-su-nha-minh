@@ -22,7 +22,7 @@ export const tutorCta = {
 };
 
 export const navLinks = [
-  { href: "/#quy-trinh", label: "Quy trình" },
+  { href: "/#quy-trinh", label: "Cách hoạt động" },
   { href: "/#trai-nghiem", label: "Trải nghiệm" },
   { href: "/#danh-cho-ai", label: "Dành cho ai" },
   { href: "/#cau-hoi", label: "Câu hỏi" },
@@ -33,17 +33,17 @@ export const heroGoals = (
   ["communication", "ielts", "toeic", "work", "foundation"] as const
 ).map((key) => ({
   key,
-  label: goalLabels[key],
+  label: key === "foundation" ? "Tiếng Anh nền tảng" : goalLabels[key],
   href: `${LEARNER_REQUEST_HREF}?goal=${key}`,
 }));
 
 export const hero = {
   kicker: "GIA SƯ TIẾNG ANH 1 KÈM 1 · CẦN THƠ",
-  titleLines: ["Học đúng", "điều mình cần.", "Cùng đúng người."],
-  lead: "Chia sẻ mục tiêu, trình độ, lịch học và ngân sách. Đội ngũ Gia Sư Nhà Mình xem từng yêu cầu và giới thiệu gia sư tiếng Anh phù hợp với bạn.",
+  titleLines: ["Học tiếng Anh", "theo nhịp của bạn."],
+  lead: "Chia sẻ mục tiêu, lịch học và ngân sách. Gia Sư Nhà Mình xem xét nhu cầu và giới thiệu gia sư phù hợp để bạn chủ động lựa chọn.",
   primaryCta: "Gửi yêu cầu tìm gia sư",
   secondaryCta: "Xem quy trình",
-  goalsLabel: "Bạn đang cần:",
+  goalsLabel: "Bạn muốn học gì?",
   trust: [
     { value: "24 giờ", label: "Phản hồi mọi yêu cầu" },
     { value: "Hồ sơ đã kiểm tra", label: "Danh tính, chứng chỉ, kinh nghiệm" },
@@ -57,8 +57,8 @@ export const hero = {
 };
 
 export const manifesto = {
-  label: "VÌ SAO CHỌN GIA SƯ NHÀ MÌNH",
-  text: "Một kết nối tốt bắt đầu bằng việc hiểu nhu cầu thật, không phải bằng một danh sách thật dài.",
+  label: "VÌ SAO CHỌN NHÀ MÌNH?",
+  text: "Bạn chia sẻ điều muốn học. Nhà Mình tìm người dạy phù hợp.",
 };
 
 export type BentoItem = {
@@ -72,30 +72,30 @@ export const bento: BentoItem[] = [
   {
     id: "time",
     eyebrow: "BIỂU MẪU NGẮN",
-    title: "Khoảng 3 phút để nói rõ nhu cầu.",
-    text: "Mục tiêu, trình độ, hình thức học, ngân sách và thời gian rảnh nằm gọn trong một biểu mẫu.",
+    title: "3 phút là xong.",
+    text: "Mục tiêu, trình độ, hình thức, ngân sách, lịch rảnh — gọn trong một form duy nhất.",
   },
   {
     id: "account",
     eyebrow: "KHÔNG CẦN TÀI KHOẢN",
-    title: "Gửi ngay, không cần đăng ký.",
-    text: "Chỉ cần email hoặc số điện thoại để đội ngũ liên hệ lại.",
+    title: "Không cần đăng ký. Gửi ngay.",
+    text: "Chỉ cần email hoặc số điện thoại để mình liên hệ lại nha.",
   },
   {
     id: "reply",
-    eyebrow: "PHẢN HỒI NHANH",
-    title: "Phản hồi trong 24 giờ.",
-    text: "Đội ngũ liên hệ để xác nhận nhu cầu sau khi nhận được yêu cầu của bạn.",
+    eyebrow: "PHẢN HỒI TRONG 24 GIỜ",
+    title: "Liên hệ trong 24 giờ.",
+    text: "Sau khi nhận yêu cầu, đội ngũ liên hệ để xác nhận mục tiêu, lịch học và ngân sách của bạn.",
   },
   {
     id: "verified",
     eyebrow: "GIA SƯ ĐƯỢC KIỂM TRA",
     title: "Hồ sơ rõ ràng trước khi giới thiệu.",
-    text: "Danh tính, chứng chỉ và kinh nghiệm của gia sư được đối chiếu trước khi đến với bạn.",
+    text: "Nhà Mình đối chiếu danh tính, chứng chỉ và kinh nghiệm do gia sư cung cấp để bạn có thêm cơ sở lựa chọn.",
   },
 ];
 
-export type JourneyStep = {
+type JourneyStep = {
   id: string;
   actor: string;
   title: string;
@@ -103,27 +103,27 @@ export type JourneyStep = {
 };
 
 export const journey = {
-  label: "QUY TRÌNH KẾT NỐI",
-  title: ["Từ một yêu cầu", "đến một cuộc trao đổi."],
-  intro: "Ba bước đơn giản, có người đồng hành ở mỗi bước.",
+  label: "CÁCH MÌNH HOẠT ĐỘNG",
+  title: ["Từ một tin nhắn", "đến một buổi học đầu tiên."],
+  intro: "Ba bước đơn giản, có mình đồng hành ở mỗi bước.",
   steps: [
     {
       id: "chia-se",
       actor: "BƯỚC 01 · BẠN",
-      title: "Nói rõ điều mình cần học.",
-      text: "Cho chúng tôi biết mục tiêu, trình độ, hình thức học, ngân sách và thời gian bạn có thể học. Không cần tạo tài khoản; gửi xong bạn nhận ngay mã yêu cầu.",
+      title: "Kể mình nghe bạn cần gì.",
+      text: "Muốn học gì, trình độ đang ở đâu, học online hay gặp mặt, ngân sách và lịch rảnh — điền xong là nhận mã yêu cầu ngay.",
     },
     {
       id: "xem-xet",
-      actor: "BƯỚC 02 · ĐỘI NGŨ",
-      title: "Đội ngũ tìm gia sư phù hợp.",
-      text: "Trong vòng 24 giờ, đội ngũ liên hệ để xác nhận nhu cầu, rồi đối chiếu với những gia sư đã được kiểm tra danh tính, chứng chỉ và kinh nghiệm.",
+      actor: "BƯỚC 02 · NHÀ MÌNH",
+      title: "Mình tìm người dạy hợp với bạn.",
+      text: "Trong vòng 24h, mình liên hệ xác nhận nhu cầu rồi tìm gia sư đã được verify phù hợp với bạn.",
     },
     {
       id: "trao-doi",
-      actor: "BƯỚC 03 · HAI BÊN",
-      title: "Trao đổi trước khi quyết định.",
-      text: "Bạn xem thông tin gia sư, trao đổi trực tiếp về cách học, lịch học và học phí, rồi tự quyết định có bắt đầu hay không.",
+      actor: "BƯỚC 03 · CẢ HAI",
+      title: "Bạn chọn, bạn quyết.",
+      text: "Xem thông tin gia sư, chat thử, trao đổi về cách học và học phí. Hợp thì bắt đầu, chưa hợp thì không sao.",
     },
   ] satisfies JourneyStep[],
 };
@@ -144,46 +144,46 @@ export type StripCard = {
 };
 
 export const strip = {
-  label: "TRẢI NGHIỆM CỦA BẠN",
-  title: ["Bắt đầu ở bất cứ đâu.", "Trên máy tính hay điện thoại."],
+  label: "TRẢI NGHIỆM THỰC TẾ",
+  title: ["Mượt mà trên mọi thiết bị.", "Chỉ cần mở trình duyệt."],
   intro:
-    "Chỉ cần trình duyệt, bạn có thể gửi yêu cầu, nhận mã và trao đổi với đội ngũ ngay trên thiết bị quen thuộc.",
+    "Gửi yêu cầu, nhận mã và kết nối với mình — ngay trên thiết bị bạn đang cầm.",
   cards: [
     {
       id: "web-form",
       step: "Máy tính",
-      title: "Điền yêu cầu trong vài phút",
-      text: "Biểu mẫu gồm nhu cầu học tập và thông tin liên hệ, rõ ràng từng bước.",
+      title: "Điền form nhanh trong vài phút",
+      text: "Nhu cầu học tập và thông tin liên hệ, rõ ràng từng bước.",
     },
     {
       id: "phone-form",
       step: "Điện thoại",
-      title: "Hoặc ngay trên điện thoại",
-      text: "Giao diện tự điều chỉnh cho màn hình nhỏ, không cần cài thêm ứng dụng.",
+      title: "Hoặc làm ngay trên điện thoại",
+      text: "Giao diện tự fit màn hình nhỏ, không cần cài app.",
     },
     {
       id: "phone-code",
       step: "Sau khi gửi",
       title: "Nhận mã yêu cầu ngay",
-      text: "Giữ mã để tiện đối chiếu khi đội ngũ liên hệ với bạn.",
+      text: "Giữ mã này lại nha — để tiện đối chiếu khi mình liên hệ bạn.",
     },
     {
       id: "contact",
       step: "Trong 24 giờ",
-      title: "Đội ngũ liên hệ xác nhận",
-      text: "Chúng tôi trao đổi thêm để hiểu đúng mục tiêu và điều kiện học của bạn.",
+      title: "Mình liên hệ xác nhận",
+      text: "Trao đổi thêm để hiểu đúng mục tiêu và điều kiện học của bạn.",
     },
     {
       id: "meet",
       step: "Kết nối",
-      title: "Gặp gia sư phù hợp",
-      text: "Xem thông tin gia sư đã được kiểm tra hồ sơ và trao đổi trước khi bắt đầu.",
+      title: "Match với gia sư của bạn",
+      text: "Xem hồ sơ gia sư đã verify và trao đổi trước khi bắt đầu.",
     },
   ] satisfies StripCard[],
   note: "Hình ảnh giao diện mang tính minh họa.",
 };
 
-export type AudienceGroup = {
+type AudienceGroup = {
   id: "communication" | "exam" | "tutor";
   titleStrong: string;
   titleSoft: string;
@@ -195,13 +195,13 @@ export type AudienceGroup = {
 
 export const audience = {
   label: "Dành cho ai",
-  title: ["Gia Sư Nhà Mình", "dành cho ai?"],
+  title: ["Nhà Mình", "dành cho ai?"],
   groups: [
     {
       id: "communication",
       titleStrong: "Người học",
       titleSoft: "muốn nói tự tin",
-      text: "Sinh viên cần tiếng Anh giao tiếp, phỏng vấn hoặc đi làm, muốn một gia sư 1 kèm 1 hợp lịch và hợp ngân sách.",
+      text: "Bạn muốn tự tin giao tiếp, chuẩn bị phỏng vấn hoặc đi làm — cần một người dạy 1:1 hợp lịch và hợp túi.",
       panelLabel: "VÍ DỤ NHU CẦU",
       panelRows: [
         { label: "Mục tiêu", value: goalLabels.communication },
@@ -214,7 +214,7 @@ export const audience = {
       id: "exam",
       titleStrong: "Người học",
       titleSoft: "đang luyện thi",
-      text: "Sinh viên chuẩn bị IELTS hoặc TOEIC, cần người đồng hành theo đúng trình độ hiện tại và thời gian còn lại.",
+      text: "Đang chuẩn bị IELTS hoặc TOEIC, cần một buddy đồng hành theo đúng trình độ và thời gian còn lại.",
       panelLabel: "VÍ DỤ NHU CẦU",
       panelRows: [
         { label: "Mục tiêu", value: goalLabels.ielts },
@@ -227,7 +227,7 @@ export const audience = {
       id: "tutor",
       titleStrong: "Gia sư",
       titleSoft: "dạy đúng thế mạnh",
-      text: "Gia sư tiếng Anh tại Cần Thơ chia sẻ chuyên môn, chứng chỉ, kinh nghiệm và lịch dạy. Sau khi hồ sơ được kiểm tra, đội ngũ giới thiệu người học phù hợp với thế mạnh của bạn.",
+      text: "Bạn là gia sư tiếng Anh tại Cần Thơ? Chia sẻ chuyên môn và lịch dạy — mình giới thiệu người học hợp với thế mạnh của bạn.",
       panelLabel: "HỒ SƠ GIA SƯ",
       panelRows: [
         { label: "Danh tính", value: "Đã kiểm tra", check: true },
@@ -239,7 +239,7 @@ export const audience = {
   ] as AudienceGroup[],
 };
 
-export type FaqItem = {
+type FaqItem = {
   question: string;
   answer: string;
   link?: "privacy" | "tutor";
@@ -252,27 +252,27 @@ export const faq: { label: string; title: string; items: FaqItem[] } = {
     {
       question: "Gia Sư Nhà Mình hỗ trợ những nội dung tiếng Anh nào?",
       answer:
-        "Chúng tôi tập trung vào nhu cầu tiếng Anh của sinh viên tại Cần Thơ: tiếng Anh nền tảng, giao tiếp, phỏng vấn hoặc công việc, IELTS, TOEIC và các mục tiêu cụ thể khác.",
+        "Mình tập trung vào nhu cầu tiếng Anh của sinh viên tại Cần Thơ: tiếng Anh nền tảng, giao tiếp, phỏng vấn hoặc công việc, IELTS, TOEIC và các mục tiêu cụ thể khác.",
     },
     {
       question: "Sau khi gửi yêu cầu, bao lâu tôi nhận được phản hồi?",
       answer:
-        "Đội ngũ phản hồi trong vòng 24 giờ. Thời gian tìm được gia sư phù hợp có thể khác nhau tùy mục tiêu, lịch học và ngân sách của bạn.",
+        "Mình rep trong vòng 24 giờ. Thời gian tìm được gia sư phù hợp có thể khác nhau tùy mục tiêu, lịch học và ngân sách của bạn.",
     },
     {
       question: "Tôi có thể học trực tuyến hoặc trực tiếp không?",
       answer:
-        "Có. Bạn có thể chọn học trực tuyến, học trực tiếp tại Cần Thơ hoặc linh hoạt cả hai khi gửi yêu cầu.",
+        "Được luôn. Bạn chọn học online, gặp mặt tại Cần Thơ hoặc linh hoạt cả hai khi gửi yêu cầu.",
     },
     {
       question: "Thông tin gia sư được kiểm tra như thế nào?",
       answer:
-        "Trước khi giới thiệu, đội ngũ đối chiếu danh tính, chứng chỉ liên quan và kinh nghiệm do gia sư cung cấp. Bạn vẫn nên trao đổi trực tiếp với gia sư để tự đánh giá mức độ phù hợp.",
+        "Trước khi giới thiệu, mình kiểm tra danh tính, chứng chỉ liên quan và kinh nghiệm do gia sư cung cấp. Bạn vẫn nên trao đổi trực tiếp với gia sư để tự đánh giá mức độ phù hợp nha.",
     },
     {
       question: "Gửi yêu cầu có chắc chắn tìm được gia sư không?",
       answer:
-        "Chúng tôi không bảo đảm luôn có gia sư đáp ứng mọi tiêu chí. Yêu cầu càng rõ về mục tiêu, lịch học và ngân sách thì việc tìm gia sư phù hợp càng thuận lợi.",
+        "Mình không bảo đảm luôn có gia sư đáp ứng mọi tiêu chí. Yêu cầu càng rõ về mục tiêu, lịch học và ngân sách thì việc tìm gia sư phù hợp càng thuận lợi.",
     },
     {
       question: "Học phí và lịch học được thống nhất như thế nào?",
@@ -282,13 +282,13 @@ export const faq: { label: string; title: string; items: FaqItem[] } = {
     {
       question: "Thông tin tôi gửi được sử dụng cho mục đích gì?",
       answer:
-        "Thông tin chỉ dùng để liên hệ, xác nhận nhu cầu và hỗ trợ kết nối gia sư cho yêu cầu của bạn.",
+        "Có nha. Thông tin chỉ dùng để liên hệ, xác nhận nhu cầu và hỗ trợ kết nối gia sư cho yêu cầu của bạn.",
       link: "privacy",
     },
     {
       question: "Tôi muốn trở thành gia sư thì làm thế nào?",
       answer:
-        "Bạn điền hồ sơ gia sư gồm chuyên môn, kinh nghiệm, chứng chỉ và lịch dạy. Đội ngũ liên hệ trong vòng 24 giờ để kiểm tra hồ sơ trước khi giới thiệu người học phù hợp.",
+        "Bạn điền hồ sơ gia sư gồm chuyên môn, kinh nghiệm, chứng chỉ và lịch dạy. Mình liên hệ trong vòng 24 giờ để kiểm tra hồ sơ trước khi giới thiệu người học phù hợp.",
       link: "tutor",
     },
   ],
@@ -296,13 +296,13 @@ export const faq: { label: string; title: string; items: FaqItem[] } = {
 
 export const finalCta = {
   label: "BẮT ĐẦU NGAY",
-  title: ["Bắt đầu từ", "một nhu cầu thật."],
-  text: "Cho chúng tôi biết bạn muốn học gì. Phần còn lại bắt đầu bằng việc lắng nghe.",
+  title: ["Sẵn sàng chưa?", "Bắt đầu từ đây."],
+  text: "Chỉ cần nói mình nghe bạn muốn học gì. Phần còn lại, để Nhà Mình lo.",
   cta: "Gửi yêu cầu tìm gia sư",
   secondary: "Nhắn tin qua Facebook",
   chips: [
     { label: "MỤC TIÊU", value: goalLabels.communication },
     { label: "LỊCH HỌC", value: "Buổi tối trong tuần" },
-    { label: "NGÂN SÁCH", value: "Theo khả năng của bạn" },
+    { label: "NGÂN SÁCH", value: "Theo túi của bạn" },
   ],
 };

@@ -56,7 +56,7 @@ export function Audience() {
                       className={styles.audienceLink}
                       href={LEARNER_REQUEST_HREF}
                     >
-                      Gửi yêu cầu tìm gia sư <ArrowUpRight />
+                      Tìm gia sư cho mình <ArrowUpRight />
                     </Link>
                   )}
                   {isTutor && (

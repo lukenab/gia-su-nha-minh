@@ -5,7 +5,7 @@ export const site = {
   domain: "giasunhaminh.id.vn",
   facebookUrl: "https://facebook.com/giasunhaminh",
   description:
-    "Kết nối sinh viên tại Cần Thơ với gia sư tiếng Anh 1 kèm 1 theo mục tiêu, lịch học và ngân sách. Phản hồi trong 24 giờ.",
+    "Kết nối bạn với gia sư tiếng Anh 1 kèm 1 phù hợp tại Cần Thơ. Phản hồi yêu cầu trong vòng 24 giờ.",
   ogImage: "/brand/og-image.jpg",
 } as const;
 

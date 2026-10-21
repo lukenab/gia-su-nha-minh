@@ -14,7 +14,7 @@ export function Faq() {
           <span className={styles.sectionNo}>{faq.label}</span>
           <h2 id="faq-title">{faq.title}</h2>
           <p>
-            Chưa thấy câu trả lời bạn cần? Nhắn tin cho{" "}
+            Chưa tìm thấy câu trả lời bạn cần? Nhắn tin cho{" "}
             <a
               href={site.facebookUrl}
               target="_blank"

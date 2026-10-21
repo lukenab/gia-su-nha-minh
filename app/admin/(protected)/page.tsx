@@ -24,7 +24,7 @@ export default async function AdminHomePage() {
     <>
       <div className="admin-page-heading">
         <div>
-          <span className="eyebrow">DASHBOARD · FE-01</span>
+          <span className="eyebrow">DASHBOARD</span>
           <h1>Tổng quan yêu cầu</h1>
           <p>Theo dõi những người học đã gửi nhu cầu tìm gia sư tiếng Anh.</p>
         </div>
@@ -47,12 +47,7 @@ export default async function AdminHomePage() {
         <article className="stat-card accent">
           <span>Chờ xem xét</span>
           <strong>{dataUnavailable ? "—" : total}</strong>
-          <small>Giai đoạn FE-01</small>
-        </article>
-        <article className="stat-card muted">
-          <span>Tính năng tiếp theo</span>
-          <strong>FE-02</strong>
-          <small>Hồ sơ gia sư</small>
+          <small>Yêu cầu của người học</small>
         </article>
       </div>
       <section className="data-panel">

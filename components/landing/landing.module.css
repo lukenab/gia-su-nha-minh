@@ -323,7 +323,7 @@
 
 .heroLayout {
   display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
+  grid-template-columns: minmax(0, 1.65fr) minmax(0, 0.65fr);
   align-items: center;
   gap: 32px;
 }
@@ -346,22 +346,27 @@
 }
 
 .heroTitle {
-  font-size: clamp(48px, 5.7vw, 84px);
+  font-family: var(--body);
+  font-size: clamp(48px, 5.2vw, 74px);
   font-weight: 700;
-  line-height: 1.03;
-  letter-spacing: -0.06em;
+  line-height: 1.14;
+  letter-spacing: -0.035em;
   margin: 22px 0 22px;
 }
 
 .heroLine {
   display: block;
   overflow: hidden;
-  padding-bottom: 0.07em;
+  padding-bottom: 0.1em;
 }
 
 .heroLine > span {
   display: block;
   animation: rise 1s var(--ease-out) both;
+}
+
+.heroLine:last-child {
+  white-space: nowrap;
 }
 
 .heroTitle em,
@@ -386,6 +391,7 @@
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+  margin-bottom: 28px;
   animation: fade-up 0.8s 0.6s both;
 }
 
@@ -2095,9 +2101,14 @@
 
 .ctaHeading h2 {
   margin: 20px 0;
-  font-size: clamp(44px, 5.4vw, 80px);
-  line-height: 1.02;
-  letter-spacing: -0.06em;
+  font-size: clamp(40px, 4.4vw, 64px);
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+}
+
+.ctaHeading h2 span {
+  display: block;
+  white-space: nowrap;
 }
 
 .ctaHeading p {
@@ -2675,8 +2686,8 @@
   }
 
   .heroTitle {
-    font-size: clamp(42px, 12vw, 64px);
-    letter-spacing: -0.055em;
+    font-size: clamp(38px, 9.5vw, 56px);
+    letter-spacing: -0.035em;
   }
 
   .heroLead {
@@ -2880,7 +2891,7 @@
   }
 
   .ctaHeading h2 {
-    font-size: clamp(38px, 11vw, 54px);
+    font-size: clamp(29px, 8.5vw, 44px);
     margin: 14px 0;
   }
 
@@ -3627,8 +3638,8 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 10px 12px;
-  margin: 0 0 28px;
-  animation: fade-up 0.8s 0.55s both;
+  margin: 0;
+  animation: fade-up 0.8s 0.7s both;
 }
 
 .heroGoals > span {
@@ -3694,35 +3705,14 @@
 
 .trustBar li {
   display: flex;
-  align-items: center;
-  gap: 14px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
   padding: 20px 24px;
 }
 
 .trustBar li + li {
   border-left: 1px solid #e6ebf6;
-}
-
-.trustIcon {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  background: var(--primary-soft);
-  color: var(--primary);
-  font-size: 20px;
-}
-
-.trustBar li:nth-child(2) .trustIcon {
-  background: #e5f6ef;
-  color: #1a7f5f;
-}
-
-.trustBar li:nth-child(3) .trustIcon {
-  background: var(--accent-soft);
-  color: var(--accent-ink);
 }
 
 .trustBar strong {
@@ -3783,7 +3773,12 @@
 }
 
 @media (max-width: 720px) {
-  .heroGoals {
+  .heroLine:last-child {
+    white-space: normal;
+    text-wrap: balance;
+  }
+
+  .heroActions {
     margin-bottom: 22px;
   }
 

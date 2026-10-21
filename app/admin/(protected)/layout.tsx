@@ -30,7 +30,7 @@ export default async function AdminLayout({
           <div className="sidebar-phase">
             <span className="sidebar-phase-dot" />
             <div>
-              <strong>Giai đoạn FE-01</strong>
+              <strong>Quản trị</strong>
               <small>Tiếp nhận yêu cầu học</small>
             </div>
           </div>

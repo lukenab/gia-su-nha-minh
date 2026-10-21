@@ -6,7 +6,7 @@ import { Check } from "@/components/landing/icons";
 
 import styles from "./form.module.css";
 
-export type Option = { value: string; label: string; hint?: string };
+type Option = { value: string; label: string; hint?: string };
 
 export function toOptions<T extends Record<string, string>>(
   labels: T,
