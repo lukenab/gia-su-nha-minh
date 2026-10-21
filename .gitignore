@@ -1,17 +1,31 @@
+# dependencies
 node_modules/
 .npm-cache/
-dist/
-build/
-.cache/
+
+# next.js
+/.next/
+/out/
+/build
+next-env.d.ts
+*.tsbuildinfo
+
+# testing
+/coverage
+
+# env files
 .env*
 !.env.example
-!.env.production
-.vite/
-vite.config.*.timestamp-*
-*.tsbuildinfo
+
+# vercel
+.vercel
+
+# misc
+.DS_Store
+*.pem
 *-debug.log*
 logs/
 *.log
+.cache/
 .claude-replay.*
 .tmp-*
 /.figma/design-context/
