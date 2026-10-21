@@ -61,11 +61,6 @@ export const Target = (p: IconProps) => (
     <circle cx="12" cy="12" r="0.8" fill="currentColor" />
   </Base>
 );
-export const Sparkle = (p: IconProps) => (
-  <Base {...p}>
-    <path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6 5.6 18.4" />
-  </Base>
-);
 export const Menu = (p: IconProps) => (
   <Base {...p}>
     <path d="M4 7h16M4 12h16M4 17h16" />
@@ -80,16 +75,6 @@ export const Lock = (p: IconProps) => (
   <Base {...p}>
     <rect x="5" y="10.5" width="14" height="10" rx="2.5" />
     <path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" />
-  </Base>
-);
-export const Pause = (p: IconProps) => (
-  <Base {...p}>
-    <path d="M9 6v12M15 6v12" />
-  </Base>
-);
-export const Play = (p: IconProps) => (
-  <Base {...p}>
-    <path d="M8 5.5v13l10.5-6.5Z" fill="currentColor" stroke="none" />
   </Base>
 );
 export const User = (p: IconProps) => (

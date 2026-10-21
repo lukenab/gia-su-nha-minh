@@ -20,6 +20,29 @@ test("CTAs point to the existing form routes", () => {
   assert.ok(existsSync(join(root, "app/become-a-tutor/page.tsx")));
 });
 
+test("hero uses the approved headline, shortcuts, and trust copy", () => {
+  const content = readFileSync(join(landingDir, "content.ts"), "utf8");
+  for (const phrase of [
+    "GIA SƯ TIẾNG ANH 1 KÈM 1 · CẦN THƠ",
+    "Học tiếng Anh",
+    "theo nhịp của bạn.",
+    "Chia sẻ mục tiêu, lịch học và ngân sách.",
+    "Bạn muốn học gì?",
+    "Gửi yêu cầu tìm gia sư",
+    "Xem quy trình",
+    "Phản hồi mọi yêu cầu",
+    "Hồ sơ đã kiểm tra",
+    "Danh tính, chứng chỉ, kinh nghiệm",
+    "Online hoặc trực tiếp tại Cần Thơ",
+  ]) {
+    assert.ok(content.includes(phrase), `Missing approved copy: ${phrase}`);
+  }
+  assert.doesNotMatch(
+    content,
+    /Muốn nói chuyện tự tin 💬|Match gia sư ngay 🔥/,
+  );
+});
+
 test("legal pages linked from the landing page exist", () => {
   assert.ok(existsSync(join(root, "app/privacy/page.tsx")));
   assert.ok(existsSync(join(root, "app/terms/page.tsx")));

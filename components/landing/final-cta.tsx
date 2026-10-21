@@ -29,7 +29,10 @@ export function FinalCta() {
           <div className={`${styles.shell} ${styles.ctaHeading}`}>
             <span className={styles.sectionNo}>{finalCta.label}</span>
             <h2 id="final-cta-title">
-              {finalCta.title[0]} <em>{finalCta.title[1]}</em>
+              <span>{finalCta.title[0]}</span>
+              <span>
+                <em>{finalCta.title[1]}</em>
+              </span>
             </h2>
             <p>{finalCta.text}</p>
             <div className={styles.ctaActions}>
@@ -88,10 +91,10 @@ export function FinalCta() {
 }
 
 const footerLinks = [
-  { href: "/#quy-trinh", label: "Quy trình kết nối" },
+  { href: "/#quy-trinh", label: "Cách mình hoạt động" },
   { href: "/#danh-cho-ai", label: "Dành cho người học & gia sư" },
   { href: "/#cau-hoi", label: "Câu hỏi thường gặp" },
-  { href: LEARNER_REQUEST_HREF, label: "Gửi yêu cầu tìm gia sư" },
+  { href: LEARNER_REQUEST_HREF, label: "Tìm gia sư cho mình" },
   { href: TUTOR_APPLICATION_HREF, label: "Đăng ký làm gia sư" },
 ];
 
@@ -139,7 +142,7 @@ export function LandingFooter() {
       </div>
       <div className={`${styles.shell} ${styles.footerBottom}`}>
         <span>© 2026 Gia Sư Nhà Mình. Bảo lưu mọi quyền.</span>
-        <span>Kết nối phù hợp bắt đầu từ nhu cầu rõ ràng.</span>
+        <span>Đúng người, đúng cách, đúng lúc.</span>
       </div>
     </footer>
   );

@@ -37,7 +37,7 @@ export function LandingHeader() {
           ))}
         </nav>
         <Link className={styles.navCta} href={LEARNER_REQUEST_HREF}>
-          Gửi yêu cầu <ArrowUpRight />
+          Bắt đầu ngay <ArrowUpRight />
         </Link>
         <button
           ref={toggle}
@@ -68,7 +68,7 @@ export function LandingHeader() {
           href={LEARNER_REQUEST_HREF}
           onClick={() => setOpen(false)}
         >
-          Gửi yêu cầu tìm gia sư <ArrowUpRight />
+          Match gia sư ngay 🔥 <ArrowUpRight />
         </Link>
       </nav>
     </header>

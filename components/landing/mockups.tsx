@@ -10,7 +10,7 @@ import styles from "./landing.module.css";
  * technology) and never show real people, real data or real reference codes.
  */
 
-export const SAMPLE_CODE = "GSNM-20261021-••••";
+const SAMPLE_CODE = "GSNM-20261021-••••";
 
 type FrameProps = {
   className?: string;

@@ -5,7 +5,7 @@ import { useRef } from "react";
 
 import { BrandMark } from "./brand-logo";
 import { LEARNER_REQUEST_HREF, hero, heroGoals } from "./content";
-import { ArrowDown, ArrowUpRight, Check, Clock, Target } from "./icons";
+import { ArrowDown, ArrowUpRight } from "./icons";
 import styles from "./landing.module.css";
 import { ConnectOrb } from "./mockups";
 import { useReducedMotion } from "./use-reduced-motion";
@@ -39,19 +39,6 @@ export function Hero() {
             ))}
           </h1>
           <p className={styles.heroLead}>{hero.lead}</p>
-          <nav
-            className={styles.heroGoals}
-            aria-label="Chọn nhanh mục tiêu học"
-          >
-            <span>{hero.goalsLabel}</span>
-            <ul>
-              {heroGoals.map((goal) => (
-                <li key={goal.key}>
-                  <Link href={goal.href}>{goal.label}</Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
           <div className={styles.heroActions}>
             <Link
               className={`${styles.button} ${styles.buttonPrimary}`}
@@ -66,6 +53,19 @@ export function Hero() {
               {hero.secondaryCta} <ArrowDown />
             </Link>
           </div>
+          <nav
+            className={styles.heroGoals}
+            aria-label="Chọn nhanh mục tiêu học"
+          >
+            <span>{hero.goalsLabel}</span>
+            <ul>
+              {heroGoals.map((goal) => (
+                <li key={goal.key}>
+                  <Link href={goal.href}>{goal.label}</Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
         </div>
 
         <figure className={styles.heroVisual}>
@@ -79,13 +79,13 @@ export function Hero() {
                 </div>
                 <small>YÊU CẦU CỦA BẠN</small>
                 <ConnectOrb />
-                <strong>Kết nối theo nhu cầu thật</strong>
+                <strong>Tìm gia sư phù hợp</strong>
                 <ol className={styles.heroPhoneSteps}>
-                  <li>Chia sẻ nhu cầu</li>
-                  <li>Đội ngũ xem xét</li>
-                  <li>Trao đổi, tự quyết định</li>
+                  <li>Kể mình nghe</li>
+                  <li>Mình tìm cho bạn</li>
+                  <li>Bạn chọn, bạn quyết</li>
                 </ol>
-                <span className={styles.heroPhoneButton}>Gửi yêu cầu →</span>
+                <span className={styles.heroPhoneButton}>Bắt đầu ngay →</span>
               </div>
             </div>
             <ul className={styles.heroNotes} aria-hidden="true">
@@ -104,20 +104,12 @@ export function Hero() {
       </div>
       <div className={`${styles.shell} ${styles.trustBar}`}>
         <ul>
-          {hero.trust.map((item, index) => {
-            const Icon = [Clock, Check, Target][index] ?? Check;
-            return (
-              <li key={item.value}>
-                <span className={styles.trustIcon} aria-hidden="true">
-                  <Icon />
-                </span>
-                <div>
-                  <strong>{item.value}</strong>
-                  <small>{item.label}</small>
-                </div>
-              </li>
-            );
-          })}
+          {hero.trust.map((item) => (
+            <li key={item.value}>
+              <strong>{item.value}</strong>
+              <small>{item.label}</small>
+            </li>
+          ))}
         </ul>
       </div>
       <a className={styles.scrollCue} href="#vi-sao">
