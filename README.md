@@ -1,46 +1,42 @@
 # Gia Sư Nhà Mình
 
-Website kết nối sinh viên tại Cần Thơ với gia sư tiếng Anh 1 kèm 1 dựa trên mục tiêu học tập, lịch học, ngân sách và hình thức học. Đội ngũ tiếp nhận yêu cầu, đối chiếu tiêu chí và phản hồi trong vòng 24 giờ; hồ sơ gia sư được kiểm tra danh tính, chứng chỉ và kinh nghiệm trước khi giới thiệu.
+**Find the right English tutor for the way you learn.**
 
-Dự án dùng Next.js 16 (App Router), MongoDB (Mongoose) và CSS Modules. Bản Vite trước đây vẫn nằm trên nhánh `main` cho tới khi nhánh này được merge.
+Gia Sư Nhà Mình is a web platform that connects learners with one-on-one English tutors in Cần Thơ. Rather than asking learners to browse a long list of profiles, the platform starts with their learning goals, current level, availability, preferred learning format, and budget. The team uses this information to review suitable tutor profiles and support an informed introduction.
 
-## Chạy dự án
+Learners can study online or meet their tutor in person in Cần Thơ. They remain in control of the decision: teaching approach, schedule, and tuition are discussed before lessons begin.
 
-Yêu cầu Node.js 22 trở lên và một MongoDB (local hoặc Atlas).
+## How it works
+
+1. **Learners share their needs.** A guided form collects their English learning goals and practical preferences.
+2. **Tutors present their experience.** Tutors submit their teaching areas, supported learner levels, availability, qualifications, and expected fee.
+3. **The team reviews and connects.** Gia Sư Nhà Mình reviews tutor information, compares profiles against each request, and records introductions through the admin dashboard.
+4. **Both sides decide.** Learners and tutors discuss the proposed arrangement and decide whether to begin lessons.
+
+## Platform features
+
+- Guided learner request and tutor application forms, with data stored in MongoDB
+- A private dashboard for managing learner requests and tutor profiles
+- Tutor profile review and status tracking
+- Filters to identify tutors based on learning needs
+- Introduction records and outcome tracking
+- Responsive interfaces for desktop and mobile
+- Privacy and terms pages
+
+Matching is **team assisted**: the platform organizes relevant information, while the team reviews each introduction. It does not automatically select a tutor or decide on behalf of either party.
+
+## Technology
+
+Built with **Next.js, TypeScript, MongoDB, and Mongoose**.
+
+## Run locally
+
+Requires Node.js 22 or later and a MongoDB connection.
 
 ```bash
-cp .env.example .env.local   # điền MONGODB_URI, ADMIN_PASSWORD, ADMIN_SESSION_SECRET (≥ 32 ký tự)
 npm install
+cp .env.example .env.local
 npm run dev
 ```
 
-Mở `http://localhost:3000`. Trang quản trị: `/admin/login`.
-
-## Các trang
-
-| Đường dẫn | Nội dung |
-| --- | --- |
-| `/` | Landing page |
-| `/get-started` | Biểu mẫu người học 3 bước; `?goal=ielts` chọn sẵn mục tiêu. Lưu vào MongoDB (`POST /api/requests`) và trả về mã yêu cầu |
-| `/become-a-tutor` | Hồ sơ gia sư 3 bước (`POST /api/tutor-applications`) |
-| `/privacy`, `/terms` | Trang pháp lý |
-| `/admin` | Trang quản trị có mật khẩu: yêu cầu học và hồ sơ gia sư (không index, không liên kết công khai) |
-
-Các đường dẫn tiếng Việt cũ (`/yeu-cau-tim-gia-su`, `/chinh-sach-bao-mat`, `/dieu-khoan`) được chuyển hướng 308 sang đường dẫn mới.
-
-## Kiểm tra trước khi deploy
-
-```bash
-npm run lint
-npm run fmt:check
-npm test
-npm run build
-npm run test:e2e   # sau khi build; dùng MongoDB tạm
-```
-
-## Deploy lên Vercel
-
-1. Trong Vercel → Project Settings → Build & Development, đổi Framework Preset sang **Next.js** và xoá Output Directory `dist` nếu còn (`vercel.json` đã khai báo `framework: nextjs`).
-2. Thêm biến môi trường `MONGODB_URI`, `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET` cho Production và Preview.
-3. Cho phép IP của Vercel truy cập MongoDB Atlas (Network Access).
-4. Deploy nhánh này dưới dạng Preview, kiểm tra form, trang quản trị và các trang pháp lý trước khi merge vào `main`.
+Set `MONGODB_URI`, `ADMIN_ALLOWED_EMAILS`, and `ADMIN_SESSION_SECRET` in `.env.local`, then open `http://localhost:3000`. The private dashboard is available at `/admin/login`. Authorized team members can set a password through a one-time email link; configure `RESEND_API_KEY` and `EMAIL_FROM` to deliver these links outside local development.
