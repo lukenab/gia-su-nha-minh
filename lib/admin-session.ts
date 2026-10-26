@@ -1,58 +1,40 @@
 import { cookies } from "next/headers";
-import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 
-export const ADMIN_COOKIE = "gsnm_admin";
-const SESSION_SECONDS = 8 * 60 * 60;
+import {
+  ADMIN_COOKIE,
+  SESSION_SECONDS,
+  readAdminSession,
+} from "./admin-token.ts";
 
-function secret() {
-  const value = process.env.ADMIN_SESSION_SECRET;
-  return value && value.length >= 32 ? value : null;
-}
+export {
+  ADMIN_COOKIE,
+  adminIsConfigured,
+  createAdminSession,
+  googleIsConfigured,
+  localLoginEnabled,
+  readAdminSession,
+  verifyAdminSession,
+} from "./admin-token.ts";
+export type { AdminIdentity } from "./admin-token.ts";
 
-export function adminIsConfigured() {
-  return Boolean(process.env.ADMIN_PASSWORD?.trim() && secret());
-}
-
-export function checkAdminPassword(candidate: string) {
-  const expected = process.env.ADMIN_PASSWORD;
-  if (!expected || !secret()) return false;
-  const left = createHash("sha256").update(candidate).digest();
-  const right = createHash("sha256").update(expected).digest();
-  return timingSafeEqual(left, right);
-}
-
-export function createAdminSession() {
-  const key = secret();
-  if (!key) throw new Error("Admin session secret is not configured");
-  const expiry = String(Date.now() + SESSION_SECONDS * 1000);
-  const signature = createHmac("sha256", key).update(expiry).digest("hex");
-  return `${expiry}.${signature}`;
-}
-
-export function verifyAdminSession(value?: string) {
-  const key = secret();
-  if (!key || !value) return false;
-  const [expiry, signature, extra] = value.split(".");
-  if (
-    extra ||
-    !/^\d{13}$/.test(expiry ?? "") ||
-    !/^[a-f0-9]{64}$/.test(signature ?? "")
-  )
-    return false;
-  if (Number(expiry) <= Date.now()) return false;
-  const expected = createHmac("sha256", key).update(expiry).digest("hex");
-  return timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
+export async function getAdminSession() {
+  const store = await cookies();
+  return readAdminSession(store.get(ADMIN_COOKIE)?.value);
 }
 
 export async function isAdminAuthenticated() {
-  const store = await cookies();
-  return verifyAdminSession(store.get(ADMIN_COOKIE)?.value);
+  return (await getAdminSession()) !== null;
 }
 
+/*
+ * Lax (not Strict) so the cookie set when Google redirects back is sent on
+ * the next navigation. Cross-site writes are still blocked: admin APIs only
+ * accept JSON with a same-origin Origin header.
+ */
 export const adminCookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
-  sameSite: "strict" as const,
-  path: "/admin",
+  sameSite: "lax" as const,
+  path: "/",
   maxAge: SESSION_SECONDS,
 };

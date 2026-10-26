@@ -17,6 +17,11 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       { source: "/dieu-khoan", destination: "/terms", permanent: true },
+      // Easy-to-guess entry points for the team. They only forward to the
+      // admin area, which still requires a signed-in, allow-listed account.
+      { source: "/login", destination: "/admin/login", permanent: false },
+      { source: "/signin", destination: "/admin/login", permanent: false },
+      { source: "/dashboard", destination: "/admin", permanent: false },
     ];
   },
 };

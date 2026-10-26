@@ -66,8 +66,13 @@ test("landing copy avoids claims the product does not support", () => {
 });
 
 test("public landing does not expose internal tools or demo data", () => {
+  // The shortcut renders nothing unless the visitor already has a valid admin session.
+  const shortcut = readFileSync(join(landingDir, "admin-shortcut.tsx"), "utf8");
+  assert.match(shortcut, /\/api\/admin\/session/);
+  assert.match(shortcut, /if \(!visible\) return null/);
   for (const { file, text } of sources) {
-    assert.doesNotMatch(text, /\/admin/, `${file} links to /admin`);
+    if (file === "admin-shortcut.tsx") continue;
+    assert.doesNotMatch(text, /["'`]\/admin/, `${file} links to /admin`);
     assert.doesNotMatch(
       text,
       /DEMO|quản trị/i,

@@ -1,3 +1,4 @@
+import { AdminShortcut } from "./admin-shortcut";
 import { LandingFooter } from "./final-cta";
 import { bodyFont, displayFont } from "./fonts";
 import { LandingHeader } from "./landing-header";
@@ -34,6 +35,7 @@ export function SiteShell({
         {children}
       </main>
       <LandingFooter />
+      <AdminShortcut />
     </div>
   );
 }

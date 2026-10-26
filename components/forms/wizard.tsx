@@ -15,6 +15,7 @@ type WizardProps = {
   onNext: () => void;
   submitting: boolean;
   submitLabel: string;
+  submitNote?: string;
   formError?: string;
   children: React.ReactNode;
 };
@@ -31,6 +32,7 @@ export function Wizard({
   onNext,
   submitting,
   submitLabel,
+  submitNote,
   formError,
   children,
 }: WizardProps) {
@@ -102,6 +104,10 @@ export function Wizard({
         <p className={styles.formError} role="alert">
           {formError}
         </p>
+      )}
+
+      {isLast && submitNote && (
+        <p className={styles.submitNote}>{submitNote}</p>
       )}
 
       <div className={styles.nav}>

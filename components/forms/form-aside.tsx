@@ -9,15 +9,15 @@ export function FormAside({
   text,
   points,
 }: {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   highlight: string;
   text: string;
   points: { title: string; text: string }[];
 }) {
   return (
-    <aside className={styles.aside}>
-      <span className={styles.eyebrow}>{eyebrow}</span>
+    <aside className={styles.aside} data-has-eyebrow={Boolean(eyebrow)}>
+      {eyebrow && <span className={styles.eyebrow}>{eyebrow}</span>}
       <h1>
         {title} <em>{highlight}</em>
       </h1>

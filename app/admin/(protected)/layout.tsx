@@ -1,10 +1,13 @@
-import Link from "next/link";
-import { redirect } from "next/navigation";
+import type { Metadata } from "next";
 
-import { isAdminAuthenticated } from "@/lib/admin-session";
+import { AdminShell } from "@/components/admin/admin-shell";
+import { bodyFont, displayFont } from "@/components/landing/fonts";
+import { requireAdminSession } from "@/lib/admin-guard";
 
-import { LogoutButton } from "./logout-button";
-import { AdminNavigation } from "./navigation";
+export const metadata: Metadata = {
+  title: "Quản trị | Gia Sư Nhà Mình",
+  robots: { index: false, follow: false },
+};
 
 export const dynamic = "force-dynamic";
 
@@ -13,46 +16,16 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  if (!(await isAdminAuthenticated())) redirect("/admin/login");
+  const session = await requireAdminSession();
 
   return (
-    <div className="admin-shell">
-      <aside className="admin-sidebar">
-        <Link className="brand admin-brand" href="/admin">
-          <span className="brand-mark">NM</span>
-          <span className="brand-name">
-            Gia Sư <strong>Nhà Mình</strong>
-          </span>
-        </Link>
-        <div className="workspace-label">KHÔNG GIAN LÀM VIỆC</div>
-        <AdminNavigation />
-        <div className="sidebar-bottom">
-          <div className="sidebar-phase">
-            <span className="sidebar-phase-dot" />
-            <div>
-              <strong>Quản trị</strong>
-              <small>Tiếp nhận yêu cầu học</small>
-            </div>
-          </div>
-          <Link href="/" target="_blank">
-            Xem trang người học <span aria-hidden="true">↗</span>
-          </Link>
-        </div>
-      </aside>
-      <div className="admin-main">
-        <header className="admin-topbar">
-          <div className="topbar-caption">
-            Gia Sư Nhà Mình <span>/</span> Quản trị
-          </div>
-          <div className="topbar-right">
-            <span className="admin-badge">
-              <span /> Quản trị viên
-            </span>
-            <LogoutButton />
-          </div>
-        </header>
-        <main className="admin-content">{children}</main>
-      </div>
+    <div className={`${displayFont.variable} ${bodyFont.variable}`}>
+      <AdminShell
+        operator={session.operator}
+        email={session.method === "local" ? "Đăng nhập local" : session.email}
+      >
+        {children}
+      </AdminShell>
     </div>
   );
 }

@@ -4,6 +4,14 @@ import { ADMIN_COOKIE } from "@/lib/admin-session";
 
 export async function POST() {
   const response = NextResponse.json({ ok: true });
-  response.cookies.set(ADMIN_COOKIE, "", { path: "/admin", maxAge: 0 });
+  // Clear the current cookie and the older one that was scoped to /admin.
+  // NextResponse.cookies.set() replaces cookies with the same name even when
+  // their paths differ, so emit both Set-Cookie headers explicitly.
+  for (const path of ["/", "/admin"]) {
+    response.headers.append(
+      "Set-Cookie",
+      `${ADMIN_COOKIE}=; Path=${path}; Max-Age=0; HttpOnly; SameSite=Lax`,
+    );
+  }
   return response;
 }

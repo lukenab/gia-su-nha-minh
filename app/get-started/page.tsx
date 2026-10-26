@@ -25,22 +25,21 @@ export default async function GetStartedPage({
     <SiteShell mainClassName={styles.page}>
       <div className={styles.layout}>
         <FormAside
-          eyebrow="Tìm gia sư tiếng Anh"
           title="Bắt đầu từ"
           highlight="mục tiêu của bạn."
-          text="Trả lời vài câu hỏi ngắn về mục tiêu, lịch học và ngân sách. Không cần tạo tài khoản."
+          text="Chia sẻ mục tiêu, lịch học và ngân sách dự kiến. Đội ngũ Gia Sư Nhà Mình sẽ xem xét yêu cầu và liên hệ để hỗ trợ bạn tìm gia sư phù hợp."
           points={[
             {
-              title: "Phản hồi trong 24 giờ",
-              text: "Đội ngũ liên hệ để xác nhận nhu cầu qua kênh bạn chọn.",
+              title: "Liên hệ trong 24 giờ",
+              text: "Đội ngũ xác nhận nhu cầu qua kênh liên hệ bạn chọn.",
             },
             {
-              title: "Gia sư được kiểm tra hồ sơ",
-              text: "Danh tính, chứng chỉ và kinh nghiệm được đối chiếu trước khi giới thiệu.",
+              title: "Hồ sơ được xem xét",
+              text: "Nhà Mình xem xét thông tin và tài liệu do gia sư cung cấp trước khi giới thiệu.",
             },
             {
-              title: "Bạn là người quyết định",
-              text: "Trao đổi với gia sư về cách học, lịch học và học phí trước khi bắt đầu.",
+              title: "Bạn chủ động lựa chọn",
+              text: "Trao đổi về cách học, lịch học và học phí trước khi quyết định bắt đầu.",
             },
           ]}
         />
