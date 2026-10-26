@@ -47,15 +47,15 @@ export default async function MatchPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  await requireAdminPage();
+  const actor = await requireAdminPage();
   const { id } = await params;
   const options = parseMatchParams(await searchParams);
 
   let request: Awaited<ReturnType<typeof getRequest>>;
   let result: Awaited<ReturnType<typeof findTutorCandidates>> | null = null;
   try {
-    request = await getRequest(id);
-    if (request) result = await findTutorCandidates(request, options);
+    request = await getRequest(actor, id);
+    if (request) result = await findTutorCandidates(actor, request, options);
   } catch {
     return (
       <>

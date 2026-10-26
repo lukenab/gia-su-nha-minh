@@ -2,6 +2,7 @@
  * Minimal "Sign in with Google" (OpenID Connect, authorization code + PKCE).
  * Only the verified email and display name are used.
  */
+import "server-only";
 import { createHash, randomBytes } from "node:crypto";
 
 export const GOOGLE_AUTHORIZE_URL =

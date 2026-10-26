@@ -23,10 +23,10 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function AdminHomePage() {
-  await requireAdminPage();
+  const actor = await requireAdminPage();
   let data: Awaited<ReturnType<typeof getDashboard>> | null = null;
   try {
-    data = await getDashboard();
+    data = await getDashboard(actor);
   } catch {
     data = null;
   }

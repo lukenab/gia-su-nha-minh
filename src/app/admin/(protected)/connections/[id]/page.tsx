@@ -47,14 +47,17 @@ export default async function ConnectionDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireAdminPage();
+  const actor = await requireAdminPage();
   const { id } = await params;
   let data: Awaited<ReturnType<typeof getConnection>>;
   let siblings: Awaited<ReturnType<typeof connectionsForRequest>> = [];
   try {
-    data = await getConnection(id);
+    data = await getConnection(actor, id);
     if (data)
-      siblings = await connectionsForRequest(String(data.connection.request));
+      siblings = await connectionsForRequest(
+        actor,
+        String(data.connection.request),
+      );
   } catch {
     return (
       <>

@@ -1,8 +1,10 @@
+import "server-only";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
 
 import { ADMIN_PATH_HEADER } from "../admin-path";
+import { createAdminActor, type AdminActor } from "./actor.ts";
 import { getAdminSession } from "./session";
 import { safeNextPath } from "./token";
 
@@ -23,13 +25,13 @@ export async function requireAdminSession() {
   return session;
 }
 
-export async function requireAdminPage() {
-  return (await requireAdminSession()).operator;
+export async function requireAdminPage(): Promise<AdminActor> {
+  return createAdminActor((await requireAdminSession()).operator);
 }
 
 export async function requireAdminApi(
   request?: Request,
-): Promise<{ operator: string } | { response: NextResponse }> {
+): Promise<{ actor: AdminActor } | { response: NextResponse }> {
   const session = await getAdminSession();
   if (!session) {
     return {
@@ -58,5 +60,5 @@ export async function requireAdminApi(
       };
     }
   }
-  return { operator: session.operator };
+  return { actor: createAdminActor(session.operator) };
 }

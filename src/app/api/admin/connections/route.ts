@@ -8,6 +8,6 @@ export async function POST(request: Request) {
   return adminMutation(request, {
     schema: createConnectionSchema,
     successStatus: 201,
-    run: (input, operator) => createConnection(input, operator),
+    run: (input, actor) => createConnection(input, actor),
   });
 }

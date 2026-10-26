@@ -1,7 +1,10 @@
 /*
- * Reads for the /admin pages. Pages call requireAdminPage() before using
- * these; nothing here is reachable from public routes.
+ * Reads for the /admin pages. Every function takes the AdminActor issued by
+ * requireAdminPage() and refuses to run without one, so authorization is
+ * enforced here and not only in the pages. Nothing here is reachable from
+ * public routes.
  */
+import "server-only";
 import mongoose from "mongoose";
 
 import type { ConnectionDoc, Paged, RequestDoc, TutorDoc } from "../types.ts";
@@ -13,6 +16,10 @@ import {
   tutorStatuses,
 } from "../../../shared/lib/workflow.ts";
 import { connectToDatabase } from "../../../shared/server/mongodb.ts";
+import {
+  assertAdminActor,
+  type AdminActor,
+} from "../../admin-auth/server/actor.ts";
 import { LearnerRequest } from "../../learner-requests/server/model.ts";
 import { TutorApplication } from "../../tutor-applications/server/model.ts";
 import { buildTutorFilter } from "../matching.ts";
@@ -61,8 +68,10 @@ function id(value: string) {
 /* ------------------------------- lists ------------------------------- */
 
 export async function listRequests(
+  actor: AdminActor,
   params: ReturnType<typeof parseRequestListParams>,
 ) {
+  assertAdminActor(actor);
   await connectToDatabase();
   const filter: Record<string, unknown> = {};
   if (params.q)
@@ -85,8 +94,10 @@ export async function listRequests(
 }
 
 export async function listTutors(
+  actor: AdminActor,
   params: ReturnType<typeof parseTutorListParams>,
 ) {
+  assertAdminActor(actor);
   await connectToDatabase();
   const filter: Record<string, unknown> = {};
   if (params.q)
@@ -105,8 +116,10 @@ export async function listTutors(
 }
 
 export async function listConnections(
+  actor: AdminActor,
   params: ReturnType<typeof parseConnectionListParams>,
 ) {
+  assertAdminActor(actor);
   await connectToDatabase();
   const filter: Record<string, unknown> = {};
   if (params.q)
@@ -149,7 +162,8 @@ export async function listConnections(
 
 /* ------------------------------ details ------------------------------ */
 
-export async function getRequest(value: string) {
+export async function getRequest(actor: AdminActor, value: string) {
+  assertAdminActor(actor);
   if (!id(value)) return null;
   await connectToDatabase();
   return (await LearnerRequest.findById(
@@ -157,7 +171,8 @@ export async function getRequest(value: string) {
   ).lean()) as unknown as RequestDoc | null;
 }
 
-export async function getTutor(value: string) {
+export async function getTutor(actor: AdminActor, value: string) {
+  assertAdminActor(actor);
   if (!id(value)) return null;
   await connectToDatabase();
   return (await TutorApplication.findById(
@@ -165,7 +180,8 @@ export async function getTutor(value: string) {
   ).lean()) as unknown as TutorDoc | null;
 }
 
-export async function getConnection(value: string) {
+export async function getConnection(actor: AdminActor, value: string) {
+  assertAdminActor(actor);
   if (!id(value)) return null;
   await connectToDatabase();
   const connection = (await Connection.findById(
@@ -183,7 +199,11 @@ export async function getConnection(value: string) {
   };
 }
 
-export async function connectionsForRequest(requestId: string) {
+export async function connectionsForRequest(
+  actor: AdminActor,
+  requestId: string,
+) {
+  assertAdminActor(actor);
   await connectToDatabase();
   const items = (await Connection.find({ request: requestId })
     .sort({ createdAt: -1 })
@@ -202,7 +222,8 @@ export async function connectionsForRequest(requestId: string) {
   }));
 }
 
-export async function connectionsForTutor(tutorId: string) {
+export async function connectionsForTutor(actor: AdminActor, tutorId: string) {
+  assertAdminActor(actor);
   await connectToDatabase();
   const items = (await Connection.find({ tutor: tutorId })
     .sort({ createdAt: -1 })
@@ -226,9 +247,11 @@ export async function connectionsForTutor(tutorId: string) {
 const MATCH_PAGE_SIZE = 10;
 
 export async function findTutorCandidates(
+  actor: AdminActor,
   request: RequestDoc,
   options: ReturnType<typeof parseMatchParams>,
 ) {
+  assertAdminActor(actor);
   await connectToDatabase();
   const base = options.showAll
     ? {}
@@ -289,7 +312,8 @@ async function countByStatus(
   return result;
 }
 
-export async function getDashboard() {
+export async function getDashboard(actor: AdminActor) {
+  assertAdminActor(actor);
   await connectToDatabase();
   const overdueBefore = new Date(Date.now() - RESPONSE_SLA_MS);
   const [learners, tutors, connections, overdue, contact, waiting] =

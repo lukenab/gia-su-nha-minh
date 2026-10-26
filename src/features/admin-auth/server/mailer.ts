@@ -3,6 +3,8 @@
  * Requires RESEND_API_KEY and EMAIL_FROM, e.g.
  * EMAIL_FROM="Gia Sư Nhà Mình <no-reply@giasunhaminh.vn>".
  */
+import "server-only";
+
 export function emailIsConfigured() {
   return Boolean(
     process.env.RESEND_API_KEY?.trim() && process.env.EMAIL_FROM?.trim(),

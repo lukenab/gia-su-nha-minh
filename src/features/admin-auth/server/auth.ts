@@ -3,6 +3,7 @@
  * set/reset by email, and recording Google sign-ins. Who may sign in is
  * always decided by ADMIN_ALLOWED_EMAILS.
  */
+import "server-only";
 import { createHash, randomBytes } from "node:crypto";
 
 import { connectToDatabase } from "../../../shared/server/mongodb.ts";

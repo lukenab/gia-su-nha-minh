@@ -12,6 +12,6 @@ export async function PATCH(
   return adminMutation(request, {
     id,
     schema: connectionStatusChangeSchema,
-    run: (input, operator) => changeConnectionStatus(id, input, operator),
+    run: (input, actor) => changeConnectionStatus(id, input, actor),
   });
 }

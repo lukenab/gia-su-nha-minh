@@ -45,13 +45,13 @@ export default async function RequestDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireAdminPage();
+  const actor = await requireAdminPage();
   const { id } = await params;
   let item: Awaited<ReturnType<typeof getRequest>>;
   let connections: Awaited<ReturnType<typeof connectionsForRequest>> = [];
   try {
-    item = await getRequest(id);
-    if (item) connections = await connectionsForRequest(id);
+    item = await getRequest(actor, id);
+    if (item) connections = await connectionsForRequest(actor, id);
   } catch {
     return (
       <>

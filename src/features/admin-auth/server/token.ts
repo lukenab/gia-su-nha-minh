@@ -4,6 +4,7 @@
  *
  * Cookie value: `<expiry>.<base64url JSON identity>.<hmac-sha256>`.
  */
+import "server-only";
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 
 export const ADMIN_COOKIE = "gsnm_admin";

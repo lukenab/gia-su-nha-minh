@@ -12,6 +12,6 @@ export async function PATCH(
   return adminMutation(request, {
     id,
     schema: tutorStatusChangeSchema,
-    run: (input, operator) => changeTutorStatus(id, input, operator),
+    run: (input, actor) => changeTutorStatus(id, input, actor),
   });
 }

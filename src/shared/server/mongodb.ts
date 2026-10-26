@@ -1,3 +1,4 @@
+import "server-only";
 import mongoose from "mongoose";
 
 type ConnectionCache = {

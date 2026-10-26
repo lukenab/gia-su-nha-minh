@@ -22,11 +22,11 @@ export default async function ConnectionsPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  await requireAdminPage();
+  const actor = await requireAdminPage();
   const params = parseConnectionListParams(await searchParams);
   let result: Awaited<ReturnType<typeof listConnections>> | null = null;
   try {
-    result = await listConnections(params);
+    result = await listConnections(actor, params);
   } catch {
     result = null;
   }

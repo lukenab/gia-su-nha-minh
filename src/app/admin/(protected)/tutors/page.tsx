@@ -32,11 +32,11 @@ export default async function TutorsPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  await requireAdminPage();
+  const actor = await requireAdminPage();
   const params = parseTutorListParams(await searchParams);
   let result: Awaited<ReturnType<typeof listTutors>> | null = null;
   try {
-    result = await listTutors(params);
+    result = await listTutors(actor, params);
   } catch {
     result = null;
   }

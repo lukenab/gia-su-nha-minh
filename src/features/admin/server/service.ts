@@ -1,11 +1,13 @@
 /*
- * Writes for the /admin workflow. Callers (route handlers) must already have
- * checked the admin session; the operator name comes from that session.
+ * Writes for the /admin workflow. Every function takes the AdminActor issued
+ * by requireAdminApi() and refuses to run without one; the operator name
+ * written to status history comes from that actor.
  *
  * Every status change is conditional on the status the person saw ("from"),
  * so a double click or a second admin working from a stale page gets a clear
  * conflict instead of a silent overwrite or a duplicate history entry.
  */
+import "server-only";
 import mongoose from "mongoose";
 
 import {
@@ -19,6 +21,10 @@ import {
   type TutorStatus,
 } from "../../../shared/lib/workflow.ts";
 import { connectToDatabase } from "../../../shared/server/mongodb.ts";
+import {
+  assertAdminActor,
+  type AdminActor,
+} from "../../admin-auth/server/actor.ts";
 import { LearnerRequest } from "../../learner-requests/server/model.ts";
 import { TutorApplication } from "../../tutor-applications/server/model.ts";
 import { Connection } from "./connection-model.ts";
@@ -63,8 +69,9 @@ function reasonProblem(
 export async function changeLearnerStatus(
   id: string,
   input: { from: LearnerStatus; to: LearnerStatus; note: string },
-  operator: string,
+  actor: AdminActor,
 ): Promise<ServiceResult<{ status: LearnerStatus }>> {
+  assertAdminActor(actor);
   await connectToDatabase();
   const current = await LearnerRequest.findById(id)
     .select("status contactedAt")
@@ -86,7 +93,7 @@ export async function changeLearnerStatus(
   const set: Record<string, unknown> = {
     status: input.to,
     statusUpdatedAt: now,
-    statusUpdatedBy: operator,
+    statusUpdatedBy: actor.operator,
   };
   // The 24-hour clock stops only when the team records the first contact.
   if (input.to === "CONTACTED" && !current.contactedAt) set.contactedAt = now;
@@ -100,7 +107,7 @@ export async function changeLearnerStatus(
           from,
           to: input.to,
           at: now,
-          by: operator,
+          by: actor.operator,
           note: input.note,
         },
       },
@@ -116,8 +123,9 @@ export async function changeLearnerStatus(
 export async function setLearnerNote(
   id: string,
   note: string,
-  operator: string,
+  actor: AdminActor,
 ): Promise<ServiceResult> {
+  assertAdminActor(actor);
   await connectToDatabase();
   const result = await LearnerRequest.updateOne(
     { _id: id },
@@ -125,7 +133,7 @@ export async function setLearnerNote(
       $set: {
         internalNote: note,
         internalNoteUpdatedAt: new Date(),
-        internalNoteUpdatedBy: operator,
+        internalNoteUpdatedBy: actor.operator,
       },
     },
   );
@@ -153,8 +161,9 @@ export function missingReviews(reviews: ReviewsShape | null | undefined) {
 export async function changeTutorStatus(
   id: string,
   input: { from: TutorStatus; to: TutorStatus; note: string },
-  operator: string,
+  actor: AdminActor,
 ): Promise<ServiceResult<{ status: TutorStatus }>> {
+  assertAdminActor(actor);
   await connectToDatabase();
   const current = await TutorApplication.findById(id)
     .select("status reviews")
@@ -195,14 +204,14 @@ export async function changeTutorStatus(
       $set: {
         status: input.to,
         statusUpdatedAt: now,
-        statusUpdatedBy: operator,
+        statusUpdatedBy: actor.operator,
       },
       $push: {
         statusHistory: {
           from,
           to: input.to,
           at: now,
-          by: operator,
+          by: actor.operator,
           note: input.note,
         },
       },
@@ -223,8 +232,9 @@ export async function setTutorReview(
     note: string;
     reviewedOn?: string;
   },
-  operator: string,
+  actor: AdminActor,
 ): Promise<ServiceResult> {
+  assertAdminActor(actor);
   if (input.reviewed && input.note.trim().length < MIN_REASON_LENGTH) {
     return fail(
       422,
@@ -252,7 +262,7 @@ export async function setTutorReview(
         [`reviews.${input.check}`]: {
           reviewed: input.reviewed,
           reviewedAt,
-          reviewedBy: input.reviewed ? operator : "",
+          reviewedBy: input.reviewed ? actor.operator : "",
           note: input.note,
         },
       },
@@ -271,8 +281,9 @@ export async function setTutorReview(
 export async function setTutorNote(
   id: string,
   note: string,
-  operator: string,
+  actor: AdminActor,
 ): Promise<ServiceResult> {
+  assertAdminActor(actor);
   await connectToDatabase();
   const result = await TutorApplication.updateOne(
     { _id: id },
@@ -280,7 +291,7 @@ export async function setTutorNote(
       $set: {
         internalNote: note,
         internalNoteUpdatedAt: new Date(),
-        internalNoteUpdatedBy: operator,
+        internalNoteUpdatedBy: actor.operator,
       },
     },
   );
@@ -291,8 +302,9 @@ export async function setTutorNote(
 
 export async function createConnection(
   input: { requestId: string; tutorId: string; note: string },
-  operator: string,
+  actor: AdminActor,
 ): Promise<ServiceResult<{ id: string }>> {
+  assertAdminActor(actor);
   await connectToDatabase();
   const [request, tutor] = await Promise.all([
     LearnerRequest.findById(input.requestId)
@@ -331,10 +343,16 @@ export async function createConnection(
       tutorCode: tutor.referenceCode,
       status: "REVIEWING",
       statusUpdatedAt: now,
-      statusUpdatedBy: operator,
-      createdBy: operator,
+      statusUpdatedBy: actor.operator,
+      createdBy: actor.operator,
       history: [
-        { from: "", to: "REVIEWING", at: now, by: operator, note: input.note },
+        {
+          from: "",
+          to: "REVIEWING",
+          at: now,
+          by: actor.operator,
+          note: input.note,
+        },
       ],
     });
     return ok({ id: String(created._id) });
@@ -349,8 +367,9 @@ export async function createConnection(
 export async function changeConnectionStatus(
   id: string,
   input: { from: ConnectionStatus; to: ConnectionStatus; note: string },
-  operator: string,
+  actor: AdminActor,
 ): Promise<ServiceResult<{ status: ConnectionStatus }>> {
+  assertAdminActor(actor);
   await connectToDatabase();
   const current = await Connection.findById(id)
     .select("status tutor introducedAt startedAt")
@@ -385,7 +404,7 @@ export async function changeConnectionStatus(
   const set: Record<string, unknown> = {
     status: input.to,
     statusUpdatedAt: now,
-    statusUpdatedBy: operator,
+    statusUpdatedBy: actor.operator,
   };
   if (input.to === "INTRODUCED" && !current.introducedAt)
     set.introducedAt = now;
@@ -400,7 +419,7 @@ export async function changeConnectionStatus(
           from,
           to: input.to,
           at: now,
-          by: operator,
+          by: actor.operator,
           note: input.note,
         },
       },

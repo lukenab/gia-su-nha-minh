@@ -1,3 +1,4 @@
+import "server-only";
 import mongoose, { Schema } from "mongoose";
 
 import { learnerStatuses } from "../../../shared/lib/workflow.ts";

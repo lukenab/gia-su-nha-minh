@@ -12,6 +12,6 @@ export async function PATCH(
   return adminMutation(request, {
     id,
     schema: internalNoteSchema,
-    run: (input, operator) => setTutorNote(id, input.note, operator),
+    run: (input, actor) => setTutorNote(id, input.note, actor),
   });
 }

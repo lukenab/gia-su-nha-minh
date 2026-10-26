@@ -1,3 +1,4 @@
+import "server-only";
 import { cookies } from "next/headers";
 
 import { ADMIN_COOKIE, SESSION_SECONDS, readAdminSession } from "./token.ts";

@@ -1,7 +1,9 @@
+import "server-only";
 import type { z } from "zod";
 
 import { NextResponse } from "next/server";
 
+import type { AdminActor } from "../../admin-auth/server/actor.ts";
 import type { ServiceResult } from "./service.ts";
 
 import { readJsonBody } from "../../../shared/server/api.ts";
@@ -22,7 +24,7 @@ export async function adminMutation<S extends z.ZodType>(
     successStatus?: number;
     run: (
       input: z.infer<S>,
-      operator: string,
+      actor: AdminActor,
     ) => Promise<ServiceResult<unknown>>;
   },
 ) {
@@ -53,7 +55,7 @@ export async function adminMutation<S extends z.ZodType>(
   }
 
   try {
-    const result = await options.run(parsed.data, auth.operator);
+    const result = await options.run(parsed.data, auth.actor);
     if (!result.ok) {
       return NextResponse.json(
         { error: result.error },

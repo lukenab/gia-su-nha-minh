@@ -56,13 +56,13 @@ export default async function TutorApplicationDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireAdminPage();
+  const actor = await requireAdminPage();
   const { id } = await params;
   let item: Awaited<ReturnType<typeof getTutor>>;
   let connections: Awaited<ReturnType<typeof connectionsForTutor>> = [];
   try {
-    item = await getTutor(id);
-    if (item) connections = await connectionsForTutor(id);
+    item = await getTutor(actor, id);
+    if (item) connections = await connectionsForTutor(actor, id);
   } catch {
     return (
       <>

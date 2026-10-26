@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { createAdminActor } from "../src/features/admin-auth/server/actor.ts";
 import { Connection } from "../src/features/admin/server/connection-model.ts";
 import {
   findTutorCandidates,
@@ -22,7 +23,8 @@ import { parseRequestListParams } from "../src/features/admin/validation.ts";
 import { LearnerRequest } from "../src/features/learner-requests/server/model.ts";
 import { TutorApplication } from "../src/features/tutor-applications/server/model.ts";
 
-const WHO = "Thanh Trà";
+const OPERATOR = "Thanh Trà";
+const WHO = createAdminActor(OPERATOR);
 let seq = 0;
 
 function learner(overrides: Record<string, unknown> = {}) {
@@ -143,7 +145,7 @@ test("learner status changes are recorded, ordered and conflict-safe", async () 
     assert.equal(saved?.status, "CONTACTED");
     assert.ok(saved?.contactedAt);
     assert.equal(saved?.statusHistory.length, 1);
-    assert.equal(saved?.statusHistory[0]?.by, WHO);
+    assert.equal(saved?.statusHistory[0]?.by, OPERATOR);
 
     const noReason = await changeLearnerStatus(
       id,
@@ -282,7 +284,7 @@ test("a tutor cannot be eligible until each check is recorded", async () => {
 
     const saved = await TutorApplication.findById(id).lean();
     assert.equal(saved?.reviews?.identity?.reviewed, true);
-    assert.equal(saved?.reviews?.identity?.reviewedBy, WHO);
+    assert.equal(saved?.reviews?.identity?.reviewedBy, OPERATOR);
     assert.ok(saved?.reviews?.identity?.reviewedAt);
   });
 });
@@ -322,7 +324,10 @@ test("connections: gated, never duplicated and tracked step by step", async () =
     // Two admins (or a double click) create the same pair at once.
     const results = await Promise.all([
       createConnection({ requestId, tutorId, note: "" }, WHO),
-      createConnection({ requestId, tutorId, note: "" }, "Hoàng Anh"),
+      createConnection(
+        { requestId, tutorId, note: "" },
+        createAdminActor("Hoàng Anh"),
+      ),
     ]);
     assert.equal(results.filter((result) => result.ok).length, 1);
     assert.ok(results.some((result) => !result.ok && result.status === 409));
@@ -401,25 +406,28 @@ test("lists are paged from the database and searchable", async () => {
     const params = (page: number, extra: Record<string, string> = {}) =>
       parseRequestListParams({ page: String(page), ...extra });
 
-    const first = await listRequests(params(1));
+    const first = await listRequests(WHO, params(1));
     assert.equal(first.total, 45);
     assert.equal(first.items.length, 20);
     assert.equal(first.pages, 3);
-    assert.equal((await listRequests(params(3))).items.length, 5);
+    assert.equal((await listRequests(WHO, params(3))).items.length, 5);
     // A page past the end falls back to the last real page.
-    assert.equal((await listRequests(params(99))).page, 3);
+    assert.equal((await listRequests(WHO, params(99))).page, 3);
 
-    const found = await listRequests(params(1, { q: "đặc biệt" }));
+    const found = await listRequests(WHO, params(1, { q: "đặc biệt" }));
     assert.equal(found.total, 1);
-    assert.equal((await listRequests(params(1, { q: "GSNM-T-" }))).total, 45);
-    assert.equal((await listRequests(params(1, { q: ".*" }))).total, 0);
     assert.equal(
-      (await listRequests(params(1, { status: "CONTACTED" }))).total,
+      (await listRequests(WHO, params(1, { q: "GSNM-T-" }))).total,
+      45,
+    );
+    assert.equal((await listRequests(WHO, params(1, { q: ".*" }))).total, 0);
+    assert.equal(
+      (await listRequests(WHO, params(1, { status: "CONTACTED" }))).total,
       0,
     );
     assert.equal(
       (
-        await listTutors({
+        await listTutors(WHO, {
           page: 1,
           q: "",
           status: undefined,
@@ -430,7 +438,7 @@ test("lists are paged from the database and searchable", async () => {
       0,
     );
     assert.equal(
-      (await listConnections({ page: 1, q: "", status: undefined })).total,
+      (await listConnections(WHO, { page: 1, q: "", status: undefined })).total,
       0,
     );
   });
@@ -467,7 +475,7 @@ test("the dashboard is computed from stored statuses and contact times", async (
     ]);
     await TutorApplication.create(tutor());
 
-    const dashboard = await getDashboard();
+    const dashboard = await getDashboard(WHO);
     assert.equal(dashboard.learners.NEW, 2);
     assert.equal(dashboard.learners.CONTACTED, 1);
     assert.equal(dashboard.learners.SEARCHING, 1);
@@ -507,7 +515,7 @@ test("candidate search returns only eligible tutors matching content and format"
     await make({}, false);
 
     const lean = request.toObject();
-    const result = await findTutorCandidates(lean as never, {
+    const result = await findTutorCandidates(WHO, lean as never, {
       page: 1,
       soft: { level: false, slots: false, fee: false },
       showAll: false,
@@ -518,7 +526,7 @@ test("candidate search returns only eligible tutors matching content and format"
     );
     assert.equal(result.eligibleTotal, 3);
 
-    const wider = await findTutorCandidates(lean as never, {
+    const wider = await findTutorCandidates(WHO, lean as never, {
       page: 1,
       soft: { level: false, slots: false, fee: false },
       showAll: true,

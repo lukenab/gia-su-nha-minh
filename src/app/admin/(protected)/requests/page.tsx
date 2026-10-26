@@ -32,11 +32,11 @@ export default async function RequestsPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  await requireAdminPage();
+  const actor = await requireAdminPage();
   const params = parseRequestListParams(await searchParams);
   let result: Awaited<ReturnType<typeof listRequests>> | null = null;
   try {
-    result = await listRequests(params);
+    result = await listRequests(actor, params);
   } catch {
     result = null;
   }
