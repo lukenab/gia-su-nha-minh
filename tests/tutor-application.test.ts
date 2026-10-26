@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { tutorApplicationSchema } from "../lib/tutor-application-validation.ts";
+import { tutorApplicationSchema } from "../src/features/tutor-applications/validation.ts";
 
 const valid = {
   fullName: "Trần Minh Thư",

@@ -5,9 +5,10 @@ import test from "node:test";
 process.env.ADMIN_SESSION_SECRET = "s".repeat(48);
 process.env.ADMIN_ALLOWED_EMAILS = "Tra@Example.com, anh@example.com;bad-entry";
 
-const token = await import("../lib/admin-token.ts");
-const google = await import("../lib/google-oauth.ts");
-const password = await import("../lib/password.ts");
+const token = await import("../src/features/admin-auth/server/token.ts");
+const google =
+  await import("../src/features/admin-auth/server/google-oauth.ts");
+const password = await import("../src/features/admin-auth/server/password.ts");
 
 const tra = {
   email: "tra@example.com",

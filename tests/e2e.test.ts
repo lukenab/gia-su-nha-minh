@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { LearnerRequest } from "../lib/learner-request-model.ts";
+import { LearnerRequest } from "../src/features/learner-requests/server/model.ts";
 import { startTestApp } from "./support/next-server.ts";
 
 test(

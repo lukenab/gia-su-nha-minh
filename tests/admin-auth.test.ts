@@ -10,9 +10,9 @@ import {
   recordGoogleLogin,
   requestPasswordReset,
   resetPassword,
-} from "../lib/admin-auth.ts";
-import { AdminUser } from "../lib/admin-user-model.ts";
-import { hashPassword } from "../lib/password.ts";
+} from "../src/features/admin-auth/server/auth.ts";
+import { hashPassword } from "../src/features/admin-auth/server/password.ts";
+import { AdminUser } from "../src/features/admin-auth/server/user-model.ts";
 
 process.env.ADMIN_SESSION_SECRET = "s".repeat(48);
 process.env.ADMIN_ALLOWED_EMAILS = "tra@example.com,anh@example.com";

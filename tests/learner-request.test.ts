@@ -4,7 +4,7 @@ import test from "node:test";
 import {
   describeAvailability,
   learnerRequestSchema,
-} from "../lib/learner-request-validation.ts";
+} from "../src/features/learner-requests/validation.ts";
 
 const valid = {
   fullName: "Nguyễn An Bình",

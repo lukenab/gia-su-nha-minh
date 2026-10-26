@@ -4,8 +4,8 @@ import { spawn, type ChildProcess } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { createServer } from "node:net";
 
-import { AdminUser } from "../../lib/admin-user-model.ts";
-import { hashPassword } from "../../lib/password.ts";
+import { hashPassword } from "../../src/features/admin-auth/server/password.ts";
+import { AdminUser } from "../../src/features/admin-auth/server/user-model.ts";
 
 async function availablePort() {
   const server = createServer();

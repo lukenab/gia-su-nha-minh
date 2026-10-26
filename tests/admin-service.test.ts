@@ -3,24 +3,24 @@ import mongoose from "mongoose";
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { Connection } from "../src/features/admin/server/connection-model.ts";
 import {
   findTutorCandidates,
   getDashboard,
   listConnections,
   listRequests,
   listTutors,
-} from "../lib/admin-queries.ts";
+} from "../src/features/admin/server/queries.ts";
 import {
   changeConnectionStatus,
   changeLearnerStatus,
   changeTutorStatus,
   createConnection,
   setTutorReview,
-} from "../lib/admin-service.ts";
-import { parseRequestListParams } from "../lib/admin-validation.ts";
-import { Connection } from "../lib/connection-model.ts";
-import { LearnerRequest } from "../lib/learner-request-model.ts";
-import { TutorApplication } from "../lib/tutor-application-model.ts";
+} from "../src/features/admin/server/service.ts";
+import { parseRequestListParams } from "../src/features/admin/validation.ts";
+import { LearnerRequest } from "../src/features/learner-requests/server/model.ts";
+import { TutorApplication } from "../src/features/tutor-applications/server/model.ts";
 
 const WHO = "Thanh Trà";
 let seq = 0;

@@ -11,8 +11,8 @@
     "test:e2e": "node --test tests/e2e.test.ts tests/admin-e2e.test.ts",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
-    "fmt": "oxfmt app components lib tests next.config.ts package.json",
-    "fmt:check": "oxfmt --check app components lib tests next.config.ts package.json"
+    "fmt": "oxfmt src tests next.config.ts package.json",
+    "fmt:check": "oxfmt --check src tests next.config.ts package.json"
   },
   "dependencies": {
     "mongoose": "^9.11.2",

@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { missingReviews } from "../lib/admin-service.ts";
+import {
+  buildTutorFilter,
+  compareTutor,
+  passesHardCriteria,
+} from "../src/features/admin/matching.ts";
+import { missingReviews } from "../src/features/admin/server/service.ts";
 import {
   PAGE_SIZE,
   createConnectionSchema,
@@ -12,12 +17,7 @@ import {
   parseRequestListParams,
   parseTutorListParams,
   tutorReviewSchema,
-} from "../lib/admin-validation.ts";
-import {
-  buildTutorFilter,
-  compareTutor,
-  passesHardCriteria,
-} from "../lib/matching.ts";
+} from "../src/features/admin/validation.ts";
 import {
   RESPONSE_SLA_MS,
   canTransition,
@@ -33,7 +33,7 @@ import {
   suggestRequestStatus,
   transitions,
   tutorStatuses,
-} from "../lib/workflow.ts";
+} from "../src/shared/lib/workflow.ts";
 
 /* ---------------------------- status flow ---------------------------- */
 

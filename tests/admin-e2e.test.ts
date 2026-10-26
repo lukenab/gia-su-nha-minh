@@ -2,8 +2,8 @@ import mongoose from "mongoose";
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { LearnerRequest } from "../lib/learner-request-model.ts";
-import { TutorApplication } from "../lib/tutor-application-model.ts";
+import { LearnerRequest } from "../src/features/learner-requests/server/model.ts";
+import { TutorApplication } from "../src/features/tutor-applications/server/model.ts";
 import { startTestApp } from "./support/next-server.ts";
 
 const json = { "Content-Type": "application/json" };

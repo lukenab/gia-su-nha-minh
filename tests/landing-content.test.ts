@@ -4,8 +4,9 @@ import { join } from "node:path";
 import test from "node:test";
 
 const root = join(import.meta.dirname, "..");
-const landingDir = join(root, "components/landing");
-const sources = readdirSync(landingDir)
+const landingDir = join(root, "src/features/landing");
+const sources = readdirSync(landingDir, { recursive: true, encoding: "utf8" })
+  .map((file) => file.replaceAll("\\", "/"))
   .filter((file) => /\.(ts|tsx)$/.test(file))
   .map((file) => ({
     file,
@@ -13,11 +14,11 @@ const sources = readdirSync(landingDir)
   }));
 
 test("CTAs point to the existing form routes", () => {
-  const site = readFileSync(join(landingDir, "site.ts"), "utf8");
+  const site = readFileSync(join(root, "src/shared/config/site.ts"), "utf8");
   assert.match(site, /LEARNER_REQUEST_HREF = "\/get-started"/);
   assert.match(site, /TUTOR_APPLICATION_HREF = "\/become-a-tutor"/);
-  assert.ok(existsSync(join(root, "app/get-started/page.tsx")));
-  assert.ok(existsSync(join(root, "app/become-a-tutor/page.tsx")));
+  assert.ok(existsSync(join(root, "src/app/get-started/page.tsx")));
+  assert.ok(existsSync(join(root, "src/app/become-a-tutor/page.tsx")));
 });
 
 test("hero uses the approved headline, shortcuts, and trust copy", () => {
@@ -44,8 +45,8 @@ test("hero uses the approved headline, shortcuts, and trust copy", () => {
 });
 
 test("legal pages linked from the landing page exist", () => {
-  assert.ok(existsSync(join(root, "app/privacy/page.tsx")));
-  assert.ok(existsSync(join(root, "app/terms/page.tsx")));
+  assert.ok(existsSync(join(root, "src/app/privacy/page.tsx")));
+  assert.ok(existsSync(join(root, "src/app/terms/page.tsx")));
 });
 
 test("landing copy avoids claims the product does not support", () => {
@@ -67,11 +68,14 @@ test("landing copy avoids claims the product does not support", () => {
 
 test("public landing does not expose internal tools or demo data", () => {
   // The shortcut renders nothing unless the visitor already has a valid admin session.
-  const shortcut = readFileSync(join(landingDir, "admin-shortcut.tsx"), "utf8");
+  const shortcut = readFileSync(
+    join(landingDir, "components/admin-shortcut.tsx"),
+    "utf8",
+  );
   assert.match(shortcut, /\/api\/admin\/session/);
   assert.match(shortcut, /if \(!visible\) return null/);
   for (const { file, text } of sources) {
-    if (file === "admin-shortcut.tsx") continue;
+    if (file === "components/admin-shortcut.tsx") continue;
     assert.doesNotMatch(text, /["'`]\/admin/, `${file} links to /admin`);
     assert.doesNotMatch(
       text,
