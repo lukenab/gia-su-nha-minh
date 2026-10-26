@@ -1,103 +1,183 @@
 import Link from "next/link";
 
-import { LearnerRequest } from "@/lib/learner-request-model";
-import { connectToDatabase } from "@/lib/mongodb";
-import { goalLabels, formatLabels } from "@/lib/options";
+import {
+  Card,
+  EmptyState,
+  ErrorNotice,
+  FilterBar,
+  PageHeader,
+  Pagination,
+  SlaBadge,
+  StatusBadge,
+  adminStyles as styles,
+} from "@/components/admin/ui";
+import { requireAdminPage } from "@/lib/admin-guard";
+import { listRequests } from "@/lib/admin-queries";
+import { parseRequestListParams } from "@/lib/admin-validation";
+import { formatDate } from "@/lib/format";
+import { formatLabels, goalLabels, labelOf } from "@/lib/options";
+import { learnerStatuses, responseSla, statusLabels } from "@/lib/workflow";
 
 export const dynamic = "force-dynamic";
 
-export default async function RequestsPage() {
-  let requests: Array<Record<string, unknown>> = [];
-  let unavailable = false;
+const toOptions = (labels: Record<string, string>) =>
+  Object.entries(labels).map(([value, label]) => ({ value, label }));
+
+export default async function RequestsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  await requireAdminPage();
+  const params = parseRequestListParams(await searchParams);
+  let result: Awaited<ReturnType<typeof listRequests>> | null = null;
   try {
-    await connectToDatabase();
-    requests = await LearnerRequest.find()
-      .sort({ createdAt: -1 })
-      .limit(100)
-      .lean();
+    result = await listRequests(params);
   } catch {
-    unavailable = true;
+    result = null;
   }
+  const filtered = Boolean(
+    params.q || params.status || params.goal || params.format || params.overdue,
+  );
 
   return (
     <>
-      <div className="admin-page-heading">
-        <div>
-          <span className="eyebrow">TIẾP NHẬN NGƯỜI HỌC</span>
-          <h1>Yêu cầu tìm gia sư</h1>
-          <p>
-            Danh sách tối đa 100 yêu cầu gần nhất. Chọn mã để xem thông tin chi
-            tiết.
+      <PageHeader
+        eyebrow="Tiếp nhận người học"
+        title="Yêu cầu học"
+        description="Tìm theo mã hoặc tên, lọc theo trạng thái, mục tiêu hoặc hình thức. Chọn mã để xử lý."
+      />
+      <Card>
+        <FilterBar
+          action="/admin/requests"
+          q={params.q}
+          searchLabel="Tìm theo mã hoặc tên"
+          clearHref="/admin/requests"
+          fields={[
+            {
+              name: "status",
+              label: "Trạng thái",
+              value: params.status,
+              options: learnerStatuses.map((value) => ({
+                value,
+                label: statusLabels.learner[value],
+              })),
+            },
+            {
+              name: "goal",
+              label: "Mục tiêu",
+              value: params.goal,
+              options: toOptions(goalLabels),
+            },
+            {
+              name: "format",
+              label: "Hình thức",
+              value: params.format,
+              options: toOptions(formatLabels),
+            },
+          ]}
+        />
+        {params.overdue && (
+          <p className={styles.mutedText} style={{ marginBottom: 12 }}>
+            Đang lọc: yêu cầu chưa liên hệ và đã quá 24 giờ.{" "}
+            <Link className={styles.link} href="/admin/requests">
+              Bỏ lọc quá hạn
+            </Link>
           </p>
-        </div>
-        <span className="count-chip">{requests.length} yêu cầu</span>
-      </div>
-      {unavailable && (
-        <div className="dashboard-alert" role="alert">
-          Chưa thể tải yêu cầu từ MongoDB. Vui lòng kiểm tra kết nối.
-        </div>
-      )}
-      <section className="data-panel">
-        <div className="data-panel-header">
-          <div>
-            <h2>Danh sách yêu cầu</h2>
-            <p>Chỉ tài khoản quản trị có thể xem thông tin này.</p>
-          </div>
-        </div>
-        {requests.length ? (
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Mã yêu cầu</th>
-                  <th>Người học</th>
-                  <th>Mục tiêu</th>
-                  <th>Hình thức</th>
-                  <th>Ngày gửi</th>
-                  <th>Trạng thái</th>
-                </tr>
-              </thead>
-              <tbody>
-                {requests.map((item) => (
-                  <tr key={String(item._id)}>
-                    <td>
-                      <Link
-                        className="table-link"
-                        href={`/admin/requests/${String(item._id)}`}
-                      >
-                        {String(item.referenceCode)}
-                      </Link>
-                    </td>
-                    <td>{String(item.fullName)}</td>
-                    <td>
-                      {goalLabels[item.goal as keyof typeof goalLabels] ??
-                        String(item.goal)}
-                    </td>
-                    <td>
-                      {formatLabels[item.format as keyof typeof formatLabels] ??
-                        String(item.format)}
-                    </td>
-                    <td>
-                      {new Date(item.createdAt as Date).toLocaleDateString(
-                        "vi-VN",
-                      )}
-                    </td>
-                    <td>
-                      <span className="status-pill">Mới nhận</span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="empty-state">
-            <span>◌</span>
-            <h3>Chưa có yêu cầu nào</h3>
-            <p>Các yêu cầu hợp lệ được lưu vào MongoDB sẽ xuất hiện tại đây.</p>
-          </div>
         )}
-      </section>
+        {!result ? (
+          <ErrorNotice>
+            Chưa thể tải yêu cầu từ MongoDB. Vui lòng kiểm tra kết nối rồi tải
+            lại trang.
+          </ErrorNotice>
+        ) : result.items.length ? (
+          <>
+            <div className={styles.tableWrap}>
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th>Mã yêu cầu</th>
+                    <th>Người học</th>
+                    <th>Mục tiêu</th>
+                    <th>Hình thức</th>
+                    <th>Ngày gửi</th>
+                    <th>Mốc 24 giờ</th>
+                    <th>Trạng thái</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {result.items.map((item) => (
+                    <tr key={String(item._id)}>
+                      <td data-label="Mã">
+                        <Link
+                          className={styles.tableLink}
+                          href={`/admin/requests/${String(item._id)}`}
+                        >
+                          {item.referenceCode}
+                        </Link>
+                      </td>
+                      <td data-label="Người học">{item.fullName}</td>
+                      <td data-label="Mục tiêu">
+                        {labelOf(goalLabels, item.goal)}
+                      </td>
+                      <td data-label="Hình thức">
+                        {labelOf(formatLabels, item.format)}
+                      </td>
+                      <td data-label="Ngày gửi">
+                        {formatDate(item.createdAt)}
+                      </td>
+                      <td data-label="Mốc 24 giờ">
+                        <SlaBadge
+                          sla={responseSla({
+                            status: item.status,
+                            createdAt: item.createdAt,
+                            contactedAt: item.contactedAt,
+                          })}
+                        />
+                      </td>
+                      <td data-label="Trạng thái">
+                        <StatusBadge kind="learner" status={item.status} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <Pagination
+              result={result}
+              path="/admin/requests"
+              noun="yêu cầu"
+              params={{
+                q: params.q,
+                status: params.overdue ? undefined : params.status,
+                goal: params.goal,
+                format: params.format,
+                overdue: params.overdue,
+              }}
+            />
+          </>
+        ) : (
+          <EmptyState
+            title={
+              filtered ? "Không có yêu cầu phù hợp" : "Chưa có yêu cầu nào"
+            }
+            action={
+              filtered ? (
+                <Link
+                  className={`${styles.button} ${styles.buttonQuiet}`}
+                  href="/admin/requests"
+                >
+                  Xóa bộ lọc
+                </Link>
+              ) : undefined
+            }
+          >
+            {filtered
+              ? "Thử đổi từ khóa hoặc bỏ bớt bộ lọc."
+              : "Khi người học gửi biểu mẫu, yêu cầu sẽ xuất hiện tại đây."}
+          </EmptyState>
+        )}
+      </Card>
     </>
   );
 }

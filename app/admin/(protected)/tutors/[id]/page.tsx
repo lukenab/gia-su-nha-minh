@@ -1,8 +1,31 @@
-import mongoose from "mongoose";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { connectToDatabase } from "@/lib/mongodb";
+import { NoteForm } from "@/components/admin/note-form";
+import { StatusForm } from "@/components/admin/status-form";
+import {
+  TutorReviewForm,
+  type ReviewView,
+} from "@/components/admin/tutor-review-form";
+import {
+  Card,
+  DefList,
+  EmptyState,
+  ErrorNotice,
+  HistoryList,
+  PageHeader,
+  StatusBadge,
+  adminStyles as styles,
+} from "@/components/admin/ui";
+import { requireAdminPage } from "@/lib/admin-guard";
+import { connectionsForTutor, getTutor } from "@/lib/admin-queries";
+import { missingReviews, reviewLabels } from "@/lib/admin-service";
+import {
+  formatDate,
+  formatDateTime,
+  formatVnd,
+  todayInVietnam,
+} from "@/lib/format";
 import {
   channelLabels,
   experienceLabels,
@@ -11,8 +34,8 @@ import {
   teachingAreaLabels,
   tutorLevelLabels,
 } from "@/lib/options";
-import { TutorApplication } from "@/lib/tutor-application-model";
 import { tutorFormatLabels } from "@/lib/tutor-application-validation";
+import { normalizeStatus, statusOptions } from "@/lib/workflow";
 
 export const dynamic = "force-dynamic";
 
@@ -21,105 +44,252 @@ const list = (labels: Record<string, string>, values?: string[]) =>
     ? values.map((value) => labelOf(labels, value)).join(", ")
     : "Không cung cấp";
 
+const reviewHints = {
+  identity: "Đối chiếu giấy tờ tùy thân hoặc xác nhận trực tiếp với gia sư.",
+  certificates: "Xem bản gốc hoặc nguồn xác thực của chứng chỉ gia sư đã khai.",
+  experience:
+    "Đối chiếu kinh nghiệm giảng dạy đã mô tả (người giới thiệu, bài dạy thử...).",
+} as const;
+
 export default async function TutorApplicationDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requireAdminPage();
   const { id } = await params;
-  if (!mongoose.isValidObjectId(id)) notFound();
-  await connectToDatabase();
-  const item = await TutorApplication.findById(id).lean();
+  let item: Awaited<ReturnType<typeof getTutor>>;
+  let connections: Awaited<ReturnType<typeof connectionsForTutor>> = [];
+  try {
+    item = await getTutor(id);
+    if (item) connections = await connectionsForTutor(id);
+  } catch {
+    return (
+      <>
+        <PageHeader
+          back={{ href: "/admin/tutors", label: "Tất cả hồ sơ" }}
+          title="Hồ sơ gia sư"
+        />
+        <ErrorNotice>
+          Chưa thể tải hồ sơ từ MongoDB. Vui lòng thử lại sau.
+        </ErrorNotice>
+      </>
+    );
+  }
   if (!item) notFound();
+
+  const status = normalizeStatus("tutor", item.status);
+  const missing = missingReviews(item.reviews);
+  const views: ReviewView[] = (
+    ["identity", "certificates", "experience"] as const
+  ).map((check) => {
+    const step = item.reviews?.[check];
+    return {
+      check,
+      title: reviewLabels[check],
+      hint: reviewHints[check],
+      reviewed: Boolean(step?.reviewed),
+      summary: step?.reviewed
+        ? `Đã xem xét ngày ${formatDate(step.reviewedAt)} bởi ${step.reviewedBy || "—"}`
+        : "",
+      note: step?.note ?? "",
+    };
+  });
 
   return (
     <>
-      <div className="admin-page-heading">
-        <div>
-          <Link className="back-link" href="/admin/tutors">
-            ← Tất cả hồ sơ
-          </Link>
-          <span className="eyebrow">HỒ SƠ GIA SƯ</span>
-          <h1>{item.referenceCode}</h1>
-          <p>Đã gửi ngày {new Date(item.createdAt).toLocaleString("vi-VN")}</p>
+      <PageHeader
+        back={{ href: "/admin/tutors", label: "Tất cả hồ sơ" }}
+        eyebrow="Hồ sơ gia sư"
+        title={item.referenceCode}
+        description={`Gửi lúc ${formatDateTime(item.createdAt)}`}
+        actions={<StatusBadge kind="tutor" status={status} large />}
+      />
+
+      <div className={styles.detailLayout}>
+        <div className={styles.stack}>
+          <Card
+            title="Chuyên môn (gia sư tự khai báo)"
+            description="Thông tin này chưa được xác minh cho đến khi đội ngũ ghi nhận từng bước xem xét."
+          >
+            <DefList
+              items={[
+                {
+                  label: "Nội dung giảng dạy",
+                  value: list(teachingAreaLabels, item.teachingAreas),
+                },
+                {
+                  label: "Trình độ người học",
+                  value: list(tutorLevelLabels, item.learnerLevels),
+                },
+                {
+                  label: "Kinh nghiệm",
+                  value: labelOf(experienceLabels, item.experience),
+                },
+                { label: "Mô tả kinh nghiệm", value: item.experienceNote },
+                {
+                  label: "Chứng chỉ khai báo",
+                  value: item.certificates || "Không cung cấp",
+                },
+                {
+                  label: "Hình thức",
+                  value: labelOf(tutorFormatLabels, item.format),
+                },
+                {
+                  label: "Khu vực dạy trực tiếp",
+                  value: item.area || "Không cung cấp",
+                },
+                {
+                  label: "Khung giờ",
+                  value: list(slotLabels, item.availabilitySlots),
+                },
+                {
+                  label: "Học phí mong muốn / buổi",
+                  value: formatVnd(item.expectedFee) ?? "Thỏa thuận",
+                },
+              ]}
+            />
+          </Card>
+
+          <Card title="Thông tin liên hệ">
+            <DefList
+              items={[
+                { label: "Họ và tên", value: item.fullName },
+                { label: "Email", value: item.email || "Không cung cấp" },
+                {
+                  label: "Số điện thoại",
+                  value: item.phone || "Không cung cấp",
+                },
+                {
+                  label: "Kênh ưu tiên",
+                  value: labelOf(channelLabels, item.preferredChannel),
+                },
+                {
+                  label: "Đồng ý sử dụng dữ liệu",
+                  value: formatDateTime(item.consentAt),
+                },
+              ]}
+            />
+            <p className={styles.privacy}>
+              Không chia sẻ thông tin liên hệ của gia sư ra ngoài đội ngũ khi
+              chưa có sự đồng ý phù hợp.
+            </p>
+          </Card>
+
+          <Card
+            title="Yêu cầu liên quan"
+            description="Các yêu cầu học đã được xem xét hoặc giới thiệu gia sư này."
+          >
+            {connections.length ? (
+              <div className={styles.tableWrap}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Yêu cầu</th>
+                      <th>Trạng thái</th>
+                      <th>Cập nhật</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {connections.map((connection) => (
+                      <tr key={String(connection._id)}>
+                        <td data-label="Yêu cầu">
+                          <Link
+                            className={styles.tableLink}
+                            href={`/admin/connections/${String(connection._id)}`}
+                          >
+                            {connection.requestCode}
+                          </Link>
+                          <span className={styles.cellSub}>
+                            {connection.otherName}
+                          </span>
+                        </td>
+                        <td data-label="Trạng thái">
+                          <StatusBadge
+                            kind="connection"
+                            status={connection.status}
+                          />
+                        </td>
+                        <td data-label="Cập nhật">
+                          {formatDateTime(connection.statusUpdatedAt)}
+                          <span className={styles.cellSub}>
+                            {connection.statusUpdatedBy}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <EmptyState title="Chưa có yêu cầu liên quan">
+                Gia sư chỉ xuất hiện khi hồ sơ đủ điều kiện và được chọn từ một
+                yêu cầu học.
+              </EmptyState>
+            )}
+          </Card>
         </div>
-        <span className="status-pill large">Chờ kiểm tra</span>
-      </div>
-      <div className="detail-grid">
-        <section className="detail-card">
-          <h2>Chuyên môn</h2>
-          <dl>
-            <div>
-              <dt>Nội dung giảng dạy</dt>
-              <dd>{list(teachingAreaLabels, item.teachingAreas)}</dd>
-            </div>
-            <div>
-              <dt>Trình độ người học</dt>
-              <dd>{list(tutorLevelLabels, item.learnerLevels)}</dd>
-            </div>
-            <div>
-              <dt>Kinh nghiệm</dt>
-              <dd>{labelOf(experienceLabels, item.experience)}</dd>
-            </div>
-            <div>
-              <dt>Mô tả kinh nghiệm</dt>
-              <dd>{item.experienceNote}</dd>
-            </div>
-            <div>
-              <dt>Chứng chỉ khai báo</dt>
-              <dd>{item.certificates || "Không cung cấp"}</dd>
-            </div>
-            <div>
-              <dt>Hình thức</dt>
-              <dd>{labelOf(tutorFormatLabels, item.format)}</dd>
-            </div>
-            <div>
-              <dt>Khu vực dạy trực tiếp</dt>
-              <dd>{item.area || "Không cung cấp"}</dd>
-            </div>
-            <div>
-              <dt>Khung giờ</dt>
-              <dd>{list(slotLabels, item.availabilitySlots)}</dd>
-            </div>
-            <div>
-              <dt>Học phí mong muốn / buổi</dt>
-              <dd>
-                {item.expectedFee == null
-                  ? "Thỏa thuận"
-                  : `${Number(item.expectedFee).toLocaleString("vi-VN")} VND`}
-              </dd>
-            </div>
-          </dl>
-        </section>
-        <section className="detail-card">
-          <h2>Thông tin liên hệ</h2>
-          <dl>
-            <div>
-              <dt>Họ và tên</dt>
-              <dd>{item.fullName}</dd>
-            </div>
-            <div>
-              <dt>Email</dt>
-              <dd>{item.email || "Không cung cấp"}</dd>
-            </div>
-            <div>
-              <dt>Số điện thoại</dt>
-              <dd>{item.phone || "Không cung cấp"}</dd>
-            </div>
-            <div>
-              <dt>Kênh liên hệ ưu tiên</dt>
-              <dd>{labelOf(channelLabels, item.preferredChannel)}</dd>
-            </div>
-            <div>
-              <dt>Đồng ý sử dụng dữ liệu</dt>
-              <dd>{new Date(item.consentAt).toLocaleString("vi-VN")}</dd>
-            </div>
-          </dl>
-          <p className="detail-note">
-            Kiểm tra danh tính, chứng chỉ và kinh nghiệm trước khi giới thiệu
-            người học. Không chia sẻ thông tin liên hệ ra ngoài đội ngũ.
-          </p>
-        </section>
+
+        <div className={styles.stack}>
+          <Card
+            title="Xem xét hồ sơ"
+            description="Ghi nhận riêng từng bước. Gửi biểu mẫu không đồng nghĩa với đã xác minh."
+          >
+            <TutorReviewForm
+              endpoint={`/api/admin/tutors/${id}/review`}
+              views={views}
+              today={todayInVietnam()}
+              editable={status === "REVIEWING"}
+              lockedReason={
+                status === "NEW"
+                  ? "Chuyển hồ sơ sang “Đang xem xét” để bắt đầu ghi nhận."
+                  : "Chuyển hồ sơ về “Đang xem xét” nếu cần chỉnh sửa các ghi nhận."
+              }
+            />
+          </Card>
+          <Card title="Trạng thái hồ sơ">
+            {status === "REVIEWING" && missing.length > 0 && (
+              <p
+                className={`${styles.notice} ${styles.noticeWarn}`}
+                style={{ marginBottom: 14 }}
+              >
+                Cần ghi nhận:{" "}
+                {missing
+                  .map((check) => reviewLabels[check].toLowerCase())
+                  .join(", ")}{" "}
+                trước khi đánh dấu đủ điều kiện.
+              </p>
+            )}
+            <StatusForm
+              key={`${status}-${missing.length}`}
+              endpoint={`/api/admin/tutors/${id}/status`}
+              current={status}
+              options={statusOptions("tutor", status).filter(
+                (option) => option.value !== "ELIGIBLE" || missing.length === 0,
+              )}
+              noteHelp="Ghi chú hoặc lý do sẽ được lưu cùng lịch sử trạng thái."
+            />
+          </Card>
+          <Card title="Ghi chú nội bộ">
+            <NoteForm
+              key={`${item.internalNoteUpdatedAt ?? "none"}`}
+              endpoint={`/api/admin/tutors/${id}/note`}
+              initial={item.internalNote ?? ""}
+              meta={
+                item.internalNoteUpdatedAt
+                  ? `Cập nhật ${formatDateTime(item.internalNoteUpdatedAt)} bởi ${item.internalNoteUpdatedBy}.`
+                  : undefined
+              }
+            />
+          </Card>
+          <Card title="Lịch sử trạng thái">
+            <HistoryList
+              kind="tutor"
+              entries={item.statusHistory}
+              emptyText="Chưa có thay đổi trạng thái nào."
+            />
+          </Card>
+        </div>
       </div>
     </>
   );
