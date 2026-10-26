@@ -4,21 +4,31 @@
  * EMAIL_FROM="Gia Sư Nhà Mình <no-reply@giasunhaminh.vn>".
  */
 export function emailIsConfigured() {
-  return Boolean(process.env.RESEND_API_KEY?.trim() && process.env.EMAIL_FROM?.trim());
+  return Boolean(
+    process.env.RESEND_API_KEY?.trim() && process.env.EMAIL_FROM?.trim(),
+  );
 }
 
 function escapeHtml(value: string) {
   return value.replace(/[&<>"']/g, (char) => `&#${char.charCodeAt(0)};`);
 }
 
-export async function sendPasswordResetEmail(to: string, link: string, minutes: number) {
+export async function sendPasswordResetEmail(
+  to: string,
+  link: string,
+  minutes: number,
+) {
   if (!emailIsConfigured()) {
     if (process.env.NODE_ENV === "development") {
       // Local development only: the link is printed instead of emailed.
-      console.info(`[admin] Liên kết đặt mật khẩu (chỉ hiện khi chạy local): ${link}`);
+      console.info(
+        `[admin] Liên kết đặt mật khẩu (chỉ hiện khi chạy local): ${link}`,
+      );
       return true;
     }
-    console.error("[admin] Email chưa được cấu hình (RESEND_API_KEY, EMAIL_FROM).");
+    console.error(
+      "[admin] Email chưa được cấu hình (RESEND_API_KEY, EMAIL_FROM).",
+    );
     return false;
   }
 
@@ -55,7 +65,8 @@ export async function sendPasswordResetEmail(to: string, link: string, minutes: 
       }),
       signal: AbortSignal.timeout(10_000),
     });
-    if (!response.ok) console.error(`[admin] Gửi email thất bại (HTTP ${response.status}).`);
+    if (!response.ok)
+      console.error(`[admin] Gửi email thất bại (HTTP ${response.status}).`);
     return response.ok;
   } catch {
     console.error("[admin] Không kết nối được dịch vụ gửi email.");

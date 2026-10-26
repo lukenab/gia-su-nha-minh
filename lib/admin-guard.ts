@@ -2,10 +2,9 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
 
-import { getAdminSession } from "./admin-session";
 import { ADMIN_PATH_HEADER } from "./admin-path";
+import { getAdminSession } from "./admin-session";
 import { safeNextPath } from "./admin-token";
-
 
 /**
  * Every admin read and write checks the session on the server. Layouts alone

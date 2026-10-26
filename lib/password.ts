@@ -11,7 +11,13 @@ const KEY_LENGTH = 64;
 export const MIN_PASSWORD_LENGTH = 10;
 export const MAX_PASSWORD_LENGTH = 128;
 
-function derive(password: string, salt: Buffer, n: number, r: number, p: number) {
+function derive(
+  password: string,
+  salt: Buffer,
+  n: number,
+  r: number,
+  p: number,
+) {
   return new Promise<Buffer>((resolve, reject) => {
     scrypt(
       password.normalize("NFKC"),
@@ -29,7 +35,10 @@ export async function hashPassword(password: string) {
   return `scrypt$${N}$${R}$${P}$${salt.toString("base64")}$${key.toString("base64")}`;
 }
 
-export async function verifyPassword(password: string, stored: string | null | undefined) {
+export async function verifyPassword(
+  password: string,
+  stored: string | null | undefined,
+) {
   const parts = (stored ?? "").split("$");
   if (parts.length !== 6 || parts[0] !== "scrypt") {
     // Spend the same time as a real check so unknown accounts are not obvious.
@@ -54,7 +63,10 @@ export function passwordProblem(password: string, email?: string) {
     return `Mật khẩu cần ít nhất ${MIN_PASSWORD_LENGTH} ký tự.`;
   if (password.length > MAX_PASSWORD_LENGTH)
     return `Mật khẩu tối đa ${MAX_PASSWORD_LENGTH} ký tự.`;
-  if (email && password.toLowerCase().includes(email.split("@")[0]!.toLowerCase()))
+  if (
+    email &&
+    password.toLowerCase().includes(email.split("@")[0]!.toLowerCase())
+  )
     return "Mật khẩu không nên chứa tên email của bạn.";
   if (/^(.)\1+$/.test(password)) return "Mật khẩu quá dễ đoán.";
   return null;

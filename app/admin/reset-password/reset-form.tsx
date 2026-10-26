@@ -6,7 +6,13 @@ import { AuthAlert } from "@/components/admin/auth-layout";
 import styles from "@/components/admin/auth.module.css";
 import { PasswordInput } from "@/components/admin/password-input";
 
-export function ResetPasswordForm({ token, needsName }: { token: string; needsName: boolean }) {
+export function ResetPasswordForm({
+  token,
+  needsName,
+}: {
+  token: string;
+  needsName: boolean;
+}) {
   const id = useId();
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
@@ -91,7 +97,11 @@ export function ResetPasswordForm({ token, needsName }: { token: string; needsNa
           invalid={Boolean(confirm) && confirm !== password}
         />
       </div>
-      <button type="submit" className={`${styles.button} ${styles.primary}`} disabled={busy}>
+      <button
+        type="submit"
+        className={`${styles.button} ${styles.primary}`}
+        disabled={busy}
+      >
         {busy ? "Đang lưu..." : "Lưu mật khẩu"}
       </button>
     </form>

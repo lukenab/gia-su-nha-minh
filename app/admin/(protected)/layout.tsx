@@ -23,7 +23,9 @@ export default async function AdminLayout({
       <AdminShell
         operator={session.operator}
         email={session.method === "local" ? "Đăng nhập local" : session.email}
-      >{children}</AdminShell>
+      >
+        {children}
+      </AdminShell>
     </div>
   );
 }

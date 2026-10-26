@@ -120,7 +120,11 @@ export function createAdminSession(identity: AdminIdentity) {
 }
 
 export function localIdentity(): AdminIdentity {
-  return { operator: "Quản trị viên (local)", email: LOCAL_EMAIL, method: "local" };
+  return {
+    operator: "Quản trị viên (local)",
+    email: LOCAL_EMAIL,
+    method: "local",
+  };
 }
 
 /**

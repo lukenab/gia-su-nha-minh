@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+
 import Link from "next/link";
 
 import { AuthAlert, AuthLayout } from "@/components/admin/auth-layout";
@@ -37,7 +38,10 @@ export default async function ResetPasswordPage({
             ? "Chưa thể kiểm tra liên kết lúc này. Vui lòng thử lại sau."
             : "Liên kết đặt mật khẩu đã hết hạn hoặc đã được sử dụng. Hãy yêu cầu liên kết mới."}
         </AuthAlert>
-        <Link className={`${styles.button} ${styles.primary}`} href="/admin/forgot-password">
+        <Link
+          className={`${styles.button} ${styles.primary}`}
+          href="/admin/forgot-password"
+        >
           Yêu cầu liên kết mới
         </Link>
       </AuthLayout>

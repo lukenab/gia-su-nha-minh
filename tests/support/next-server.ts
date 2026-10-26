@@ -1,8 +1,8 @@
 import { MongoMemoryServer } from "mongodb-memory-server";
+import mongoose from "mongoose";
 import { spawn, type ChildProcess } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { createServer } from "node:net";
-import mongoose from "mongoose";
 
 import { AdminUser } from "../../lib/admin-user-model.ts";
 import { hashPassword } from "../../lib/password.ts";

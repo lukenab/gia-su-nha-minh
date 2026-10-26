@@ -28,7 +28,8 @@ export type AuthResult<T> =
 
 const INVALID = "Email hoặc mật khẩu không đúng.";
 
-const hashToken = (token: string) => createHash("sha256").update(token).digest("hex");
+const hashToken = (token: string) =>
+  createHash("sha256").update(token).digest("hex");
 
 type UserDoc = {
   _id: unknown;
@@ -46,7 +47,11 @@ export async function loginWithPassword(
 ): Promise<AuthResult<AdminIdentity>> {
   const email = normalizeEmail(rawEmail);
   if (!email || typeof password !== "string" || !password) {
-    return { ok: false, status: 400, error: "Vui lòng nhập email và mật khẩu." };
+    return {
+      ok: false,
+      status: 400,
+      error: "Vui lòng nhập email và mật khẩu.",
+    };
   }
   await connectToDatabase();
   const user = (await AdminUser.findOne({ email }).lean()) as UserDoc | null;
@@ -57,7 +62,9 @@ export async function loginWithPassword(
     return { ok: false, status: 401, error: INVALID };
   }
   if (user.lockedUntil && user.lockedUntil.getTime() > Date.now()) {
-    const minutes = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60_000);
+    const minutes = Math.ceil(
+      (user.lockedUntil.getTime() - Date.now()) / 60_000,
+    );
     return {
       ok: false,
       status: 429,
@@ -95,7 +102,11 @@ export async function loginWithPassword(
   );
   return {
     ok: true,
-    data: { email, operator: displayNameFor(user.name, email), method: "password" },
+    data: {
+      email,
+      operator: displayNameFor(user.name, email),
+      method: "password",
+    },
   };
 }
 
@@ -116,12 +127,17 @@ export async function requestPasswordReset(rawEmail: unknown, origin: string) {
   const updated = await AdminUser.findOneAndUpdate(
     {
       email,
-      $or: [{ resetRequestedAt: null }, { resetRequestedAt: { $lt: cooldownStart } }],
+      $or: [
+        { resetRequestedAt: null },
+        { resetRequestedAt: { $lt: cooldownStart } },
+      ],
     },
     {
       $set: {
         resetTokenHash: hashToken(token),
-        resetTokenExpiresAt: new Date(now.getTime() + RESET_TOKEN_MINUTES * 60_000),
+        resetTokenExpiresAt: new Date(
+          now.getTime() + RESET_TOKEN_MINUTES * 60_000,
+        ),
         resetRequestedAt: now,
       },
       $setOnInsert: { email },
@@ -144,7 +160,11 @@ export async function resetPassword(input: {
   name: unknown;
 }): Promise<AuthResult<{ email: string }>> {
   if (typeof input.token !== "string" || input.token.length < 20) {
-    return { ok: false, status: 400, error: "Liên kết không hợp lệ hoặc đã hết hạn." };
+    return {
+      ok: false,
+      status: 400,
+      error: "Liên kết không hợp lệ hoặc đã hết hạn.",
+    };
   }
   if (typeof input.password !== "string") {
     return { ok: false, status: 400, error: "Vui lòng nhập mật khẩu mới." };
@@ -156,14 +176,22 @@ export async function resetPassword(input: {
     resetTokenExpiresAt: { $gt: new Date() },
   }).lean()) as UserDoc | null;
   if (!user || !isAllowedEmail(user.email)) {
-    return { ok: false, status: 400, error: "Liên kết không hợp lệ hoặc đã hết hạn." };
+    return {
+      ok: false,
+      status: 400,
+      error: "Liên kết không hợp lệ hoặc đã hết hạn.",
+    };
   }
 
   const problem = passwordProblem(input.password, user.email);
   if (problem) return { ok: false, status: 422, error: problem };
   const name = normalizeOperatorName(input.name);
   if (!user.name && !name) {
-    return { ok: false, status: 422, error: "Vui lòng nhập tên hiển thị (2–60 ký tự)." };
+    return {
+      ok: false,
+      status: 422,
+      error: "Vui lòng nhập tên hiển thị (2–60 ký tự).",
+    };
   }
 
   const passwordHash = await hashPassword(input.password);
@@ -183,7 +211,11 @@ export async function resetPassword(input: {
     },
   ).lean();
   if (!updated) {
-    return { ok: false, status: 400, error: "Liên kết không hợp lệ hoặc đã hết hạn." };
+    return {
+      ok: false,
+      status: 400,
+      error: "Liên kết không hợp lệ hoặc đã hết hạn.",
+    };
   }
   return { ok: true, data: { email: user.email } };
 }
@@ -214,6 +246,7 @@ export async function recordGoogleLogin(email: string, googleName: string) {
     { upsert: true, new: true },
   ).lean()) as UserDoc;
   // Keep a name the person chose; otherwise use the Google profile name.
-  if (!user.name && name) await AdminUser.updateOne({ _id: user._id }, { $set: { name } });
+  if (!user.name && name)
+    await AdminUser.updateOne({ _id: user._id }, { $set: { name } });
   return displayNameFor(user.name || name, email);
 }

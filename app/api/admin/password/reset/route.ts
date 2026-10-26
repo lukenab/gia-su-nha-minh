@@ -8,7 +8,11 @@ export const runtime = "nodejs";
 export async function POST(request: Request) {
   const parsed = await readJsonBody(request);
   if ("response" in parsed) return parsed.response;
-  const body = (parsed.body ?? {}) as { token?: unknown; password?: unknown; name?: unknown };
+  const body = (parsed.body ?? {}) as {
+    token?: unknown;
+    password?: unknown;
+    name?: unknown;
+  };
   try {
     const result = await resetPassword({
       token: body.token,
@@ -16,7 +20,10 @@ export async function POST(request: Request) {
       name: body.name,
     });
     if (!result.ok) {
-      return NextResponse.json({ error: result.error }, { status: result.status });
+      return NextResponse.json(
+        { error: result.error },
+        { status: result.status },
+      );
     }
     return NextResponse.json({ ok: true });
   } catch (error) {

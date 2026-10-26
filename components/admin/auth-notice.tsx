@@ -20,7 +20,8 @@ export function AuthNotice({
 
   useEffect(() => {
     const url = new URL(window.location.href);
-    if (!url.searchParams.has("error") && !url.searchParams.has("status")) return;
+    if (!url.searchParams.has("error") && !url.searchParams.has("status"))
+      return;
     url.searchParams.delete("error");
     url.searchParams.delete("status");
     window.history.replaceState(null, "", url.pathname + url.search + url.hash);
@@ -32,7 +33,15 @@ export function AuthNotice({
       className={`${styles.notice} ${tone === "error" ? styles.noticeError : styles.noticeOk}`}
       role={tone === "error" ? "alert" : "status"}
     >
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
         {tone === "error" ? (
           <>
             <circle cx="12" cy="12" r="9" />
@@ -46,8 +55,19 @@ export function AuthNotice({
         )}
       </svg>
       <p>{children}</p>
-      <button type="button" onClick={() => setOpen(false)} aria-label="Đóng thông báo">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+      <button
+        type="button"
+        onClick={() => setOpen(false)}
+        aria-label="Đóng thông báo"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          aria-hidden="true"
+        >
           <path d="M6 6l12 12M18 6 6 18" />
         </svg>
       </button>

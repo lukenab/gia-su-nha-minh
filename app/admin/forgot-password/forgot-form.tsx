@@ -88,7 +88,11 @@ export function ForgotPasswordForm() {
             disabled={busy}
           />
         </div>
-        <button type="submit" className={`${styles.button} ${styles.primary}`} disabled={busy}>
+        <button
+          type="submit"
+          className={`${styles.button} ${styles.primary}`}
+          disabled={busy}
+        >
           {busy ? "Đang gửi..." : "Gửi liên kết"}
         </button>
       </form>

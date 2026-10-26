@@ -11,7 +11,6 @@ test(
   async () => {
     const app = await startTestApp();
     try {
-
       const unauthenticated = await fetch(`${app.base}/admin`, {
         redirect: "manual",
       });

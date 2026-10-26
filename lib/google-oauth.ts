@@ -4,7 +4,8 @@
  */
 import { createHash, randomBytes } from "node:crypto";
 
-export const GOOGLE_AUTHORIZE_URL = "https://accounts.google.com/o/oauth2/v2/auth";
+export const GOOGLE_AUTHORIZE_URL =
+  "https://accounts.google.com/o/oauth2/v2/auth";
 export const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const ISSUERS = ["https://accounts.google.com", "accounts.google.com"];
 
@@ -48,11 +49,15 @@ export function buildAuthorizeUrl(input: {
 }
 
 /** Reads a JWT payload without checking the signature (see below). */
-export function decodeJwtPayload(token: string): Record<string, unknown> | null {
+export function decodeJwtPayload(
+  token: string,
+): Record<string, unknown> | null {
   const parts = token.split(".");
   if (parts.length !== 3) return null;
   try {
-    const value = JSON.parse(Buffer.from(parts[1] ?? "", "base64url").toString("utf8"));
+    const value = JSON.parse(
+      Buffer.from(parts[1] ?? "", "base64url").toString("utf8"),
+    );
     return value && typeof value === "object" ? value : null;
   } catch {
     return null;

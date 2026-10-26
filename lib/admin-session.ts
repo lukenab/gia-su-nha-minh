@@ -1,6 +1,10 @@
 import { cookies } from "next/headers";
 
-import { ADMIN_COOKIE, SESSION_SECONDS, readAdminSession } from "./admin-token.ts";
+import {
+  ADMIN_COOKIE,
+  SESSION_SECONDS,
+  readAdminSession,
+} from "./admin-token.ts";
 
 export {
   ADMIN_COOKIE,

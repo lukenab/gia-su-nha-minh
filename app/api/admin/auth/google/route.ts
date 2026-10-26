@@ -17,7 +17,9 @@ export const runtime = "nodejs";
 export async function GET(request: Request) {
   const origin = appOrigin(request);
   if (!googleIsConfigured()) {
-    return NextResponse.redirect(`${origin}/admin/login?error=google_unavailable`);
+    return NextResponse.redirect(
+      `${origin}/admin/login?error=google_unavailable`,
+    );
   }
   const oauth = createOAuthRequest();
   const response = NextResponse.redirect(

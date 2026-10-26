@@ -25,10 +25,17 @@ export async function POST(request: Request) {
   try {
     const result = await loginWithPassword(body.email, body.password);
     if (!result.ok) {
-      return NextResponse.json({ error: result.error }, { status: result.status });
+      return NextResponse.json(
+        { error: result.error },
+        { status: result.status },
+      );
     }
     const response = NextResponse.json({ ok: true });
-    response.cookies.set(ADMIN_COOKIE, createAdminSession(result.data), adminCookieOptions);
+    response.cookies.set(
+      ADMIN_COOKIE,
+      createAdminSession(result.data),
+      adminCookieOptions,
+    );
     return response;
   } catch (error) {
     console.error("[admin-auth]", error);

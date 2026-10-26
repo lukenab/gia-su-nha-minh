@@ -42,7 +42,7 @@ async function captureLink(run: () => Promise<void>) {
   } finally {
     console.info = original;
   }
-  return link ? new URL(link).searchParams.get("token") ?? "" : "";
+  return link ? (new URL(link).searchParams.get("token") ?? "") : "";
 }
 
 test("password sign-in: allow-list, generic errors and lockout", async () => {
@@ -58,25 +58,44 @@ test("password sign-in: allow-list, generic errors and lockout", async () => {
       passwordHash: await hashPassword("cầu Ninh Kiều lúc 7 giờ"),
     });
 
-    const ok = await loginWithPassword("TRA@example.com", "cầu Ninh Kiều lúc 7 giờ");
+    const ok = await loginWithPassword(
+      "TRA@example.com",
+      "cầu Ninh Kiều lúc 7 giờ",
+    );
     assert.deepEqual(ok, {
       ok: true,
-      data: { email: "tra@example.com", operator: "Thanh Trà", method: "password" },
+      data: {
+        email: "tra@example.com",
+        operator: "Thanh Trà",
+        method: "password",
+      },
     });
 
     // Same message for a wrong password, an unknown email and a removed member.
     const wrong = await loginWithPassword("tra@example.com", "sai");
-    const unknown = await loginWithPassword("nobody@example.com", "cầu Ninh Kiều lúc 7 giờ");
-    const removed = await loginWithPassword("removed@example.com", "cầu Ninh Kiều lúc 7 giờ");
+    const unknown = await loginWithPassword(
+      "nobody@example.com",
+      "cầu Ninh Kiều lúc 7 giờ",
+    );
+    const removed = await loginWithPassword(
+      "removed@example.com",
+      "cầu Ninh Kiều lúc 7 giờ",
+    );
     for (const result of [wrong, unknown, removed]) {
       assert.equal(result.ok, false);
-      assert.equal(!result.ok && result.error, "Email hoặc mật khẩu không đúng.");
+      assert.equal(
+        !result.ok && result.error,
+        "Email hoặc mật khẩu không đúng.",
+      );
     }
 
     for (let attempt = 1; attempt < MAX_FAILED_LOGINS; attempt++) {
       await loginWithPassword("tra@example.com", "sai");
     }
-    const locked = await loginWithPassword("tra@example.com", "cầu Ninh Kiều lúc 7 giờ");
+    const locked = await loginWithPassword(
+      "tra@example.com",
+      "cầu Ninh Kiều lúc 7 giờ",
+    );
     assert.deepEqual([locked.ok, !locked.ok && locked.status], [false, 429]);
   });
 });
@@ -104,22 +123,42 @@ test("first password and reset links are single-use and allow-listed", async () 
     );
     assert.equal(again, "");
 
-    assert.deepEqual(await inspectResetToken(token), { needsName: true, isFirstPassword: true });
-    const noName = await resetPassword({ token, password: "cầu Ninh Kiều lúc 7 giờ", name: "" });
+    assert.deepEqual(await inspectResetToken(token), {
+      needsName: true,
+      isFirstPassword: true,
+    });
+    const noName = await resetPassword({
+      token,
+      password: "cầu Ninh Kiều lúc 7 giờ",
+      name: "",
+    });
     assert.equal(noName.ok, false);
-    const weak = await resetPassword({ token, password: "short", name: "Hoàng Anh" });
+    const weak = await resetPassword({
+      token,
+      password: "short",
+      name: "Hoàng Anh",
+    });
     assert.equal(weak.ok, false);
 
     const [first, second] = await Promise.all([
-      resetPassword({ token, password: "cầu Ninh Kiều lúc 7 giờ", name: "Hoàng Anh" }),
-      resetPassword({ token, password: "một mật khẩu khác hẳn", name: "Hoàng Anh" }),
+      resetPassword({
+        token,
+        password: "cầu Ninh Kiều lúc 7 giờ",
+        name: "Hoàng Anh",
+      }),
+      resetPassword({
+        token,
+        password: "một mật khẩu khác hẳn",
+        name: "Hoàng Anh",
+      }),
     ]);
     assert.equal([first, second].filter((result) => result.ok).length, 1);
     assert.equal(await inspectResetToken(token), null);
 
-    const login = await loginWithPassword("anh@example.com", first.ok
-      ? "cầu Ninh Kiều lúc 7 giờ"
-      : "một mật khẩu khác hẳn");
+    const login = await loginWithPassword(
+      "anh@example.com",
+      first.ok ? "cầu Ninh Kiều lúc 7 giờ" : "một mật khẩu khác hẳn",
+    );
     assert.ok(login.ok);
     assert.equal(login.ok && login.data.operator, "Hoàng Anh");
   });
@@ -127,9 +166,18 @@ test("first password and reset links are single-use and allow-listed", async () 
 
 test("Google sign-ins keep a chosen name and record the method", async () => {
   await withDatabase(async () => {
-    assert.equal(await recordGoogleLogin("tra@example.com", "Trà Nguyễn"), "Trà Nguyễn");
-    await AdminUser.updateOne({ email: "tra@example.com" }, { name: "Thanh Trà" });
-    assert.equal(await recordGoogleLogin("tra@example.com", "Trà Nguyễn"), "Thanh Trà");
+    assert.equal(
+      await recordGoogleLogin("tra@example.com", "Trà Nguyễn"),
+      "Trà Nguyễn",
+    );
+    await AdminUser.updateOne(
+      { email: "tra@example.com" },
+      { name: "Thanh Trà" },
+    );
+    assert.equal(
+      await recordGoogleLogin("tra@example.com", "Trà Nguyễn"),
+      "Thanh Trà",
+    );
     const saved = await AdminUser.findOne({ email: "tra@example.com" }).lean();
     assert.equal(saved?.lastLoginMethod, "google");
     assert.equal(saved?.passwordHash, null);

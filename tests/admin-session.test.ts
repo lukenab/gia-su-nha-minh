@@ -9,10 +9,17 @@ const token = await import("../lib/admin-token.ts");
 const google = await import("../lib/google-oauth.ts");
 const password = await import("../lib/password.ts");
 
-const tra = { email: "tra@example.com", operator: "Thanh Trà", method: "password" } as const;
+const tra = {
+  email: "tra@example.com",
+  operator: "Thanh Trà",
+  method: "password",
+} as const;
 
 test("the allow-list is parsed case-insensitively and ignores junk", () => {
-  assert.deepEqual([...token.allowedEmails()], ["tra@example.com", "anh@example.com"]);
+  assert.deepEqual(
+    [...token.allowedEmails()],
+    ["tra@example.com", "anh@example.com"],
+  );
   assert.ok(token.isAllowedEmail("TRA@example.com"));
   assert.ok(!token.isAllowedEmail("someone@example.com"));
   assert.equal(token.normalizeEmail("  A@B.co "), "a@b.co");
@@ -29,9 +36,18 @@ test("tampering, expiry and old cookie formats are rejected", () => {
   const forged = Buffer.from(
     JSON.stringify({ e: "anh@example.com", n: "Anh", m: "password" }),
   ).toString("base64url");
-  assert.equal(token.readAdminSession(`${expiry}.${forged}.${signature}`), null);
-  assert.equal(token.readAdminSession(`${Number(expiry) + 1}.${body}.${signature}`), null);
-  assert.equal(token.readAdminSession(`${expiry}.${body}.${"0".repeat(64)}`), null);
+  assert.equal(
+    token.readAdminSession(`${expiry}.${forged}.${signature}`),
+    null,
+  );
+  assert.equal(
+    token.readAdminSession(`${Number(expiry) + 1}.${body}.${signature}`),
+    null,
+  );
+  assert.equal(
+    token.readAdminSession(`${expiry}.${body}.${"0".repeat(64)}`),
+    null,
+  );
   assert.equal(token.readAdminSession(undefined), null);
 
   const key = process.env.ADMIN_SESSION_SECRET!;
@@ -84,7 +100,10 @@ test("display names are cleaned and fall back to the email", () => {
 });
 
 test("only admin paths are accepted after sign-in", () => {
-  assert.equal(token.safeNextPath("/admin/requests?status=NEW"), "/admin/requests?status=NEW");
+  assert.equal(
+    token.safeNextPath("/admin/requests?status=NEW"),
+    "/admin/requests?status=NEW",
+  );
   assert.equal(token.safeNextPath("https://evil.example"), "/admin");
   assert.equal(token.safeNextPath("//evil.example"), "/admin");
   assert.equal(token.safeNextPath("/admin/login"), "/admin");
@@ -117,7 +136,7 @@ test("Google sign-in uses PKCE and validates the ID token claims", () => {
   assert.equal(url.searchParams.get("scope"), "openid email profile");
   assert.equal(url.searchParams.get("state"), request.state);
 
-  const now = Date.UTC(2026, 9, 25) ;
+  const now = Date.UTC(2026, 9, 25);
   const claims = {
     iss: "https://accounts.google.com",
     aud: "client.apps.googleusercontent.com",
@@ -127,7 +146,11 @@ test("Google sign-in uses PKCE and validates the ID token claims", () => {
     email_verified: true,
     name: "Thanh Trà",
   };
-  const expected = { clientId: "client.apps.googleusercontent.com", nonce: request.nonce, now };
+  const expected = {
+    clientId: "client.apps.googleusercontent.com",
+    nonce: request.nonce,
+    now,
+  };
   assert.deepEqual(google.validateIdTokenClaims(claims, expected), {
     ok: true,
     email: "tra@example.com",
@@ -139,10 +162,16 @@ test("Google sign-in uses PKCE and validates the ID token claims", () => {
     { exp: now / 1000 - 3600 },
     { nonce: "replayed" },
   ]) {
-    assert.equal(google.validateIdTokenClaims({ ...claims, ...broken }, expected).ok, false);
+    assert.equal(
+      google.validateIdTokenClaims({ ...claims, ...broken }, expected).ok,
+      false,
+    );
   }
   assert.deepEqual(
-    google.validateIdTokenClaims({ ...claims, email_verified: false }, expected),
+    google.validateIdTokenClaims(
+      { ...claims, email_verified: false },
+      expected,
+    ),
     { ok: false, reason: "unverified_email" },
   );
 

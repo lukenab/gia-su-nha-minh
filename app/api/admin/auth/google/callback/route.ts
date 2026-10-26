@@ -23,13 +23,19 @@ import {
 export const runtime = "nodejs";
 
 const sameText = (left: string, right: string) =>
-  left.length === right.length && timingSafeEqual(Buffer.from(left), Buffer.from(right));
+  left.length === right.length &&
+  timingSafeEqual(Buffer.from(left), Buffer.from(right));
 
 export async function GET(request: Request) {
   const origin = appOrigin(request);
   const fail = (code: string) => {
-    const response = NextResponse.redirect(`${origin}/admin/login?error=${code}`);
-    response.cookies.set(OAUTH_COOKIE, "", { path: "/api/admin/auth", maxAge: 0 });
+    const response = NextResponse.redirect(
+      `${origin}/admin/login?error=${code}`,
+    );
+    response.cookies.set(OAUTH_COOKIE, "", {
+      path: "/api/admin/auth",
+      maxAge: 0,
+    });
     return response;
   };
   if (!googleIsConfigured()) return fail("google_unavailable");
@@ -40,7 +46,8 @@ export async function GET(request: Request) {
   const state = url.searchParams.get("state") ?? "";
   const stored = (await cookies()).get(OAUTH_COOKIE)?.value ?? "";
   const [expectedState = "", nonce = "", verifier = ""] = stored.split(".");
-  if (!code || !expectedState || !sameText(state, expectedState)) return fail("google_failed");
+  if (!code || !expectedState || !sameText(state, expectedState))
+    return fail("google_failed");
 
   try {
     const clientId = process.env.GOOGLE_CLIENT_ID!.trim();
@@ -52,7 +59,10 @@ export async function GET(request: Request) {
       redirectUri: `${origin}${googleCallbackPath}`,
     });
     if (!idToken) return fail("google_failed");
-    const result = validateIdTokenClaims(decodeJwtPayload(idToken), { clientId, nonce });
+    const result = validateIdTokenClaims(decodeJwtPayload(idToken), {
+      clientId,
+      nonce,
+    });
     if (!result.ok) return fail("google_failed");
     if (!isAllowedEmail(result.email)) return fail("not_allowed");
 
@@ -64,8 +74,14 @@ export async function GET(request: Request) {
       createAdminSession({ email: result.email, operator, method: "google" }),
       adminCookieOptions,
     );
-    response.cookies.set(OAUTH_COOKIE, "", { path: "/api/admin/auth", maxAge: 0 });
-    response.cookies.set(NEXT_COOKIE, "", { path: "/api/admin/auth", maxAge: 0 });
+    response.cookies.set(OAUTH_COOKIE, "", {
+      path: "/api/admin/auth",
+      maxAge: 0,
+    });
+    response.cookies.set(NEXT_COOKIE, "", {
+      path: "/api/admin/auth",
+      maxAge: 0,
+    });
     return response;
   } catch {
     return fail("google_failed");
