@@ -254,14 +254,17 @@ export function LearnerRequestForm({ initialGoal }: { initialGoal?: string }) {
       onNext={next}
       submitting={submitting}
       submitLabel="Gửi yêu cầu"
+      submitNote="Không cần tạo tài khoản để gửi yêu cầu."
       formError={formError}
     >
       {step === 0 && (
         <>
           <ChoiceGroup
             id="lr-goal"
+            className={styles.learnerGoalGroup}
             legend="Bạn muốn học tiếng Anh để làm gì?"
             required
+            columns={2}
             options={(Object.keys(goalLabels) as (keyof typeof goalLabels)[])
               .filter((key) => key !== "other")
               .map((key) => ({
@@ -275,6 +278,7 @@ export function LearnerRequestForm({ initialGoal }: { initialGoal?: string }) {
           />
           <ChoiceGroup
             id="lr-currentLevel"
+            className={styles.learnerLevelGroup}
             legend="Trình độ hiện tại của bạn"
             required
             variant="chips"

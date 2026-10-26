@@ -16,6 +16,7 @@ export function toOptions<T extends Record<string, string>>(
 
 type GroupBase = {
   id: string;
+  className?: string;
   legend: string;
   hint?: string;
   required?: boolean;
@@ -45,6 +46,7 @@ type MultiProps = GroupBase & {
 export function ChoiceGroup(props: SingleProps | MultiProps) {
   const {
     id,
+    className,
     legend,
     hint,
     required,
@@ -75,7 +77,7 @@ export function ChoiceGroup(props: SingleProps | MultiProps) {
   return (
     <fieldset
       id={id}
-      className={styles.group}
+      className={[styles.group, className].filter(Boolean).join(" ")}
       aria-describedby={
         [hintId, errorId].filter(Boolean).join(" ") || undefined
       }

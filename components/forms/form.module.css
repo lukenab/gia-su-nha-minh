@@ -58,6 +58,12 @@
   letter-spacing: -0.05em;
 }
 
+.aside[data-has-eyebrow="false"] h1 {
+  margin-top: 0;
+  line-height: 1.12;
+  letter-spacing: -0.035em;
+}
+
 .aside h1 em {
   font-style: normal;
   color: var(--primary);
@@ -388,6 +394,11 @@
   gap: 8px;
 }
 
+.learnerLevelGroup .chips {
+  max-width: 555px;
+  justify-content: center;
+}
+
 .chip {
   align-items: center;
   min-height: 44px;
@@ -532,6 +543,12 @@ textarea.input {
   color: #a72636;
   font-size: 14.5px;
   font-weight: 600;
+}
+
+.submitNote {
+  margin: 24px 0 -14px;
+  color: #66718b;
+  font-size: 13.5px;
 }
 
 /* Navigation */
@@ -682,7 +699,7 @@ textarea.input {
 
 /* Responsive */
 
-@media (max-width: 960px) {
+@media (max-width: 1120px) {
   .layout {
     grid-template-columns: 1fr;
     gap: 30px;
@@ -738,6 +755,14 @@ textarea.input {
   .cards,
   .cards[data-columns="4"] {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .learnerGoalGroup .cards {
+    grid-template-columns: 1fr;
+  }
+
+  .learnerLevelGroup .chips {
+    justify-content: flex-start;
   }
 
   .row {
