@@ -1,5 +1,18 @@
 import mongoose, { Schema } from "mongoose";
 
+import { learnerStatuses } from "./workflow.ts";
+
+const historyEntry = new Schema(
+  {
+    from: { type: String, required: true },
+    to: { type: String, required: true },
+    at: { type: Date, required: true },
+    by: { type: String, required: true },
+    note: { type: String, default: "" },
+  },
+  { _id: false },
+);
+
 const learnerRequestSchema = new Schema(
   {
     referenceCode: { type: String, required: true, unique: true },
@@ -19,7 +32,21 @@ const learnerRequestSchema = new Schema(
     location: { type: String, default: "" },
     notes: { type: String, default: "" },
     consentAt: { type: Date, required: true },
-    status: { type: String, enum: ["NEW"], default: "NEW" },
+    // Records created before the workflow only carry NEW, which stays valid.
+    status: {
+      type: String,
+      enum: learnerStatuses,
+      default: "NEW",
+      index: true,
+    },
+    statusUpdatedAt: { type: Date, default: null },
+    statusUpdatedBy: { type: String, default: "" },
+    // Set only when the team marks the request as contacted (not on intake).
+    contactedAt: { type: Date, default: null },
+    statusHistory: { type: [historyEntry], default: [] },
+    internalNote: { type: String, default: "" },
+    internalNoteUpdatedAt: { type: Date, default: null },
+    internalNoteUpdatedBy: { type: String, default: "" },
   },
   { timestamps: true, collection: "learner_requests" },
 );

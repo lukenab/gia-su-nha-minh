@@ -1,5 +1,29 @@
 import mongoose, { Schema } from "mongoose";
 
+import { tutorStatuses } from "./workflow.ts";
+
+const historyEntry = new Schema(
+  {
+    from: { type: String, required: true },
+    to: { type: String, required: true },
+    at: { type: Date, required: true },
+    by: { type: String, required: true },
+    note: { type: String, default: "" },
+  },
+  { _id: false },
+);
+
+// One independent review step. Never set automatically from the form.
+const reviewStep = new Schema(
+  {
+    reviewed: { type: Boolean, default: false },
+    reviewedAt: { type: Date, default: null },
+    reviewedBy: { type: String, default: "" },
+    note: { type: String, default: "" },
+  },
+  { _id: false },
+);
+
 const tutorApplicationSchema = new Schema(
   {
     referenceCode: { type: String, required: true, unique: true },
@@ -18,7 +42,18 @@ const tutorApplicationSchema = new Schema(
     expectedFee: { type: Number, default: null },
     consentAt: { type: Date, required: true },
     // Identity, certificates and experience are checked by the team afterwards.
-    status: { type: String, enum: ["NEW"], default: "NEW" },
+    status: { type: String, enum: tutorStatuses, default: "NEW", index: true },
+    statusUpdatedAt: { type: Date, default: null },
+    statusUpdatedBy: { type: String, default: "" },
+    statusHistory: { type: [historyEntry], default: [] },
+    reviews: {
+      identity: { type: reviewStep, default: () => ({}) },
+      certificates: { type: reviewStep, default: () => ({}) },
+      experience: { type: reviewStep, default: () => ({}) },
+    },
+    internalNote: { type: String, default: "" },
+    internalNoteUpdatedAt: { type: Date, default: null },
+    internalNoteUpdatedBy: { type: String, default: "" },
   },
   { timestamps: true, collection: "tutor_applications" },
 );
