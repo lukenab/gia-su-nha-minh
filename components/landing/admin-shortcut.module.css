@@ -1,0 +1,23 @@
+.shortcut {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 40;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #1f2433;
+  color: #fff;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 6px 18px rgba(20, 24, 40, 0.22);
+}
+
+.shortcut:hover {
+  background: #343b52;
+}
+
+.shortcut:focus-visible {
+  outline: 3px solid #8aa4ff;
+  outline-offset: 2px;
+}
