@@ -6,7 +6,7 @@ import logoMark from "@/features/landing/brand/logo-mark.png";
 
 import styles from "./landing.module.css";
 
-/** Official horizontal logo (from the giasunhaminh brand assets). */
+/** Original public-facing brand identity. Admin branding is maintained separately. */
 export function BrandLogo({
   variant = "header",
   label = "Gia Sư Nhà Mình, về trang chủ",
