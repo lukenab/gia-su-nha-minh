@@ -11,10 +11,10 @@ export default function AdminError({
   return (
     <div className={styles.card} role="alert">
       <div className={styles.empty}>
-        <h3>Không thể hiển thị trang này</h3>
+        <h3>This page could not be shown</h3>
         <p>
-          Đã có lỗi khi tải dữ liệu. Thông tin của bạn không bị mất. Hãy thử
-          lại, hoặc quay lại sau nếu lỗi vẫn tiếp tục.
+          Something went wrong while loading the data. Nothing you saved was
+          lost. Try again, or come back later if the error continues.
         </p>
         <div className={styles.emptyActions}>
           <button
@@ -22,7 +22,7 @@ export default function AdminError({
             className={`${styles.button} ${styles.buttonPrimary}`}
             onClick={reset}
           >
-            Thử lại
+            Try again
           </button>
         </div>
       </div>

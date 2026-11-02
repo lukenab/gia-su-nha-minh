@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 
 import { requireAdminSession } from "@/features/admin-auth/server/guard";
 import { AdminShell } from "@/features/admin/components/admin-shell";
-import { bodyFont, displayFont } from "@/features/landing/fonts";
+import { adminFontVariables } from "@/features/admin/fonts";
 
 export const metadata: Metadata = {
-  title: "Quản trị | Gia Sư Nhà Mình",
+  title: "Nexus Workspace",
   robots: { index: false, follow: false },
 };
 
@@ -19,10 +19,10 @@ export default async function AdminLayout({
   const session = await requireAdminSession();
 
   return (
-    <div className={`${displayFont.variable} ${bodyFont.variable}`}>
+    <div className={adminFontVariables}>
       <AdminShell
         operator={session.operator}
-        email={session.method === "local" ? "Đăng nhập local" : session.email}
+        email={session.method === "local" ? "Local sign-in" : session.email}
       >
         {children}
       </AdminShell>

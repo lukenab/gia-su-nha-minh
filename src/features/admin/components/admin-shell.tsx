@@ -1,76 +1,105 @@
 "use client";
 
-import Image from "next/image";
-import Link, { useLinkStatus } from "next/link";
+import {
+  Blend,
+  ExternalLink,
+  FileUser,
+  IdCard,
+  LayoutGrid,
+  Menu,
+  Moon,
+  Settings,
+  Sun,
+  UserRound,
+  X,
+  type LucideIcon,
+} from "lucide-react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Suspense, useEffect, useRef, useState, type ReactNode } from "react";
 
-import logo from "@/features/landing/brand/logo-horizontal.png";
+import { BrandLockup } from "@/shared/brand/brand-lockup";
 
 import styles from "./admin.module.css";
-import {
-  IconClose,
-  IconDashboard,
-  IconInbox,
-  IconLink,
-  IconMenu,
-  IconTutor,
-} from "./icons";
+import { DropdownMenu } from "./dropdown-menu";
+import { HeaderSearch } from "./header-search";
+import { NotificationMenu } from "./notification-menu";
+import { useAdminSummary, type NavCounts } from "./use-admin-summary";
+import { useAdminTheme } from "./use-admin-theme";
 
-const GROUPS = [
+type NavItem = {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  exact?: boolean;
+  badge?: "requests" | "tutors";
+};
+
+const GROUPS: { heading: string; items: NavItem[] }[] = [
   {
-    heading: "Tiếp nhận",
+    heading: "Intake",
     items: [
-      { href: "/admin", label: "Tổng quan", icon: IconDashboard, exact: true },
-      { href: "/admin/requests", label: "Yêu cầu học", icon: IconInbox },
-      { href: "/admin/tutors", label: "Hồ sơ gia sư", icon: IconTutor },
+      {
+        href: "/admin",
+        label: "Overview",
+        icon: LayoutGrid,
+        exact: true,
+      },
+      {
+        href: "/admin/requests",
+        label: "Learner requests",
+        icon: FileUser,
+        badge: "requests",
+      },
+      {
+        href: "/admin/tutors",
+        label: "Tutor profiles",
+        icon: IdCard,
+        badge: "tutors",
+      },
     ],
   },
   {
-    heading: "Kết nối",
-    items: [{ href: "/admin/connections", label: "Kết nối", icon: IconLink }],
+    heading: "Matching",
+    items: [{ href: "/admin/connections", label: "Connections", icon: Blend }],
   },
 ];
 
-const SECTION_LABELS: Record<string, string> = {
-  requests: "Yêu cầu học",
-  tutors: "Hồ sơ gia sư",
-  connections: "Kết nối",
-};
-
-function breadcrumbs(pathname: string) {
-  const parts = pathname.split("/").filter(Boolean).slice(1);
-  const crumbs: { label: string; href?: string }[] = [
-    { label: "Quản trị", href: "/admin" },
-  ];
-  if (!parts.length) return [{ label: "Tổng quan" }];
-  const section = parts[0] ?? "";
-  const base = `/admin/${section}`;
-  crumbs.push({
-    label: SECTION_LABELS[section] ?? "Trang",
-    href: parts.length > 1 ? base : undefined,
-  });
-  if (parts.length > 1) {
-    crumbs.push({
-      label: parts[2] === "match" ? "Chi tiết" : "Chi tiết",
-      href: parts[2] ? `${base}/${parts[1]}` : undefined,
-    });
-  }
-  if (parts[2] === "match") crumbs.push({ label: "Chọn gia sư" });
-  return crumbs;
+/** Count badge: requests not yet contacted (red once one is past 24 hours) and new tutor profiles. */
+function NavBadge({
+  kind,
+  counts,
+}: {
+  kind: "requests" | "tutors";
+  counts: NavCounts | null;
+}) {
+  const count = counts?.[kind] ?? 0;
+  if (!count) return null;
+  const urgent = kind === "requests" && (counts?.overdue ?? 0) > 0;
+  const label =
+    kind === "requests"
+      ? `${count} not contacted${urgent ? `, ${counts?.overdue} past 24 hours` : ""}`
+      : `${count} new`;
+  return (
+    <span
+      className={`${styles.navBadge} ${urgent ? styles.navBadgeUrgent : ""}`}
+    >
+      <span aria-hidden="true">{count > 99 ? "99+" : count}</span>
+      <span className={styles.srOnly}>{label}</span>
+    </span>
+  );
 }
 
-function NavigationPending() {
-  const { pending } = useLinkStatus();
-  return pending ? (
-    <span className={styles.navPending} aria-hidden="true" />
-  ) : null;
-}
-
-function Navigation({ onNavigate }: { onNavigate?: () => void }) {
+function Navigation({
+  onNavigate,
+  counts,
+}: {
+  onNavigate?: () => void;
+  counts: NavCounts | null;
+}) {
   const pathname = usePathname();
   return (
-    <nav className={styles.nav} aria-label="Điều hướng quản trị">
+    <nav className={styles.nav} aria-label="Admin navigation">
       {GROUPS.map((group) => (
         <div className={styles.navGroup} key={group.heading}>
           <p className={styles.navHeading}>{group.heading}</p>
@@ -89,9 +118,11 @@ function Navigation({ onNavigate }: { onNavigate?: () => void }) {
                     aria-current={active ? "page" : undefined}
                     onClick={onNavigate}
                   >
-                    <Icon />
-                    {item.label}
-                    <NavigationPending />
+                    <Icon aria-hidden="true" strokeWidth={1.75} />
+                    <span className={styles.navLabel}>{item.label}</span>
+                    {item.badge && (
+                      <NavBadge kind={item.badge} counts={counts} />
+                    )}
                   </Link>
                 </li>
               );
@@ -103,22 +134,28 @@ function Navigation({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
-function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
+function Sidebar({
+  onNavigate,
+  counts,
+}: {
+  onNavigate?: () => void;
+  counts: NavCounts | null;
+}) {
   return (
     <div className={styles.sidebarInner}>
       <div className={styles.brand}>
         <Link
           href="/admin"
-          aria-label="Gia Sư Nhà Mình, tổng quan quản trị"
+          aria-label="Nexus Workspace, admin overview"
           onClick={onNavigate}
         >
-          <Image src={logo} alt="" priority sizes="180px" />
+          <BrandLockup />
         </Link>
       </div>
-      <Navigation onNavigate={onNavigate} />
+      <Navigation onNavigate={onNavigate} counts={counts} />
       <div className={styles.sidebarFoot}>
         <a href="/" target="_blank" rel="noreferrer">
-          Mở trang công khai ↗
+          Open public site <ExternalLink size={13} aria-hidden="true" />
         </a>
       </div>
     </div>
@@ -145,63 +182,47 @@ function ProfileMenu({
   loggingOut: boolean;
   onLogout: () => void;
 }) {
-  const profileRef = useRef<HTMLDivElement>(null);
-  const profileButtonRef = useRef<HTMLButtonElement>(null);
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    if (!open) return;
-    const closeOnOutsideClick = (event: PointerEvent) => {
-      if (!profileRef.current?.contains(event.target as Node)) setOpen(false);
-    };
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setOpen(false);
-        profileButtonRef.current?.focus();
-      }
-    };
-    document.addEventListener("pointerdown", closeOnOutsideClick);
-    document.addEventListener("keydown", closeOnEscape);
-    return () => {
-      document.removeEventListener("pointerdown", closeOnOutsideClick);
-      document.removeEventListener("keydown", closeOnEscape);
-    };
-  }, [open]);
-
+  const initials = initialsOf(operator);
   return (
-    <div className={styles.profile} ref={profileRef}>
-      <button
-        ref={profileButtonRef}
-        type="button"
-        className={styles.profileTrigger}
-        aria-label={`Tài khoản ${operator}`}
-        aria-expanded={open}
-        aria-controls={open ? "admin-profile-dropdown" : undefined}
-        onClick={() => setOpen((value) => !value)}
-      >
+    <DropdownMenu
+      label="Account"
+      triggerLabel={`Account options for ${operator}`}
+      triggerClassName={styles.profileTrigger}
+      trigger={
         <span className={styles.avatar} aria-hidden="true">
-          {initialsOf(operator)}
+          {initials}
         </span>
-        <span className={styles.profileTriggerName}>{operator}</span>
-        <span className={styles.profileChevron} aria-hidden="true" />
-      </button>
-      {open && (
-        <div id="admin-profile-dropdown" className={styles.profileDropdown}>
-          <p className={styles.profileLabel}>Tài khoản quản trị</p>
-          <strong className={styles.profileName}>{operator}</strong>
-          <span className={styles.profileEmail}>{email}</span>
-          <div className={styles.profileDivider} />
-          <button
-            type="button"
-            className={styles.profileLogout}
-            onClick={onLogout}
-            disabled={loggingOut}
-          >
-            {loggingOut ? "Đang đăng xuất..." : "Đăng xuất"}
-          </button>
+      }
+      header={
+        <div className={styles.profileSummary}>
+          <span className={styles.avatar} aria-hidden="true">
+            {initials}
+          </span>
+          <span className={styles.profileSummaryCopy}>
+            <strong>{operator}</strong>
+            <span>{email}</span>
+          </span>
         </div>
-      )}
-    </div>
+      }
+      groups={[
+        [
+          { label: "Profile", icon: UserRound, href: "/admin/profile" },
+          {
+            label: "Account settings",
+            icon: Settings,
+            href: "/admin/settings",
+          },
+        ],
+        [
+          {
+            label: loggingOut ? "Logging out..." : "Log out",
+            tone: "danger",
+            onSelect: loggingOut ? undefined : onLogout,
+          },
+        ],
+      ]}
+      className={styles.profileDropdown}
+    />
   );
 }
 
@@ -215,6 +236,8 @@ export function AdminShell({
   children: ReactNode;
 }) {
   const pathname = usePathname();
+  const { theme, toggleTheme } = useAdminTheme();
+  const summary = useAdminSummary();
   const drawerRef = useRef<HTMLDialogElement>(null);
   const [loggingOut, setLoggingOut] = useState(false);
   const [logoutError, setLogoutError] = useState("");
@@ -249,26 +272,24 @@ export function AdminShell({
       if (!response.ok) throw new Error("logout failed");
       window.location.assign("/admin/login?status=signed_out");
     } catch {
-      setLogoutError("Chưa thể đăng xuất. Vui lòng thử lại.");
+      setLogoutError("Could not log out. Please try again.");
       setLoggingOut(false);
     }
   }
 
-  const crumbs = breadcrumbs(pathname);
-
   return (
-    <div className={styles.root}>
+    <div className={styles.root} data-theme={theme} lang="en">
       <a className={styles.skip} href="#admin-main">
-        Bỏ qua điều hướng
+        Skip to content
       </a>
-      <aside className={styles.sidebar} aria-label="Thanh bên quản trị">
-        <Sidebar />
+      <aside className={styles.sidebar} aria-label="Admin sidebar">
+        <Sidebar counts={summary.counts} />
       </aside>
 
       <dialog
         ref={drawerRef}
         className={styles.drawer}
-        aria-label="Menu điều hướng"
+        aria-label="Navigation"
         onClose={() => document.body.style.removeProperty("overflow")}
         onClick={(event) => {
           if (event.target === event.currentTarget) closeDrawer();
@@ -278,11 +299,11 @@ export function AdminShell({
           type="button"
           className={`${styles.iconButton} ${styles.drawerClose}`}
           onClick={closeDrawer}
-          aria-label="Đóng menu"
+          aria-label="Close navigation"
         >
-          <IconClose />
+          <X size={19} aria-hidden="true" />
         </button>
-        <Sidebar onNavigate={closeDrawer} />
+        <Sidebar onNavigate={closeDrawer} counts={summary.counts} />
       </dialog>
 
       <div className={styles.body}>
@@ -291,29 +312,40 @@ export function AdminShell({
             <button
               type="button"
               className={`${styles.iconButton} ${styles.menuButton}`}
-              aria-label="Mở menu"
+              aria-label="Open navigation"
               onClick={() => {
                 drawerRef.current?.showModal();
                 document.body.style.overflow = "hidden";
               }}
             >
-              <IconMenu />
+              <Menu size={19} aria-hidden="true" />
             </button>
-            <nav aria-label="Vị trí hiện tại">
-              <ol className={styles.crumbs}>
-                {crumbs.map((crumb, index) => (
-                  <li key={`${crumb.label}-${index}`}>
-                    {crumb.href ? (
-                      <Link href={crumb.href}>{crumb.label}</Link>
-                    ) : (
-                      <span aria-current="page">{crumb.label}</span>
-                    )}
-                  </li>
-                ))}
-              </ol>
-            </nav>
+            <Link
+              href="/admin"
+              className={styles.headerBrand}
+              aria-label="Nexus Workspace, admin overview"
+            >
+              <BrandLockup />
+            </Link>
+            <Suspense fallback={null}>
+              <HeaderSearch />
+            </Suspense>
           </div>
           <div className={styles.headerRight}>
+            <button
+              type="button"
+              className={`${styles.iconButton} ${styles.headerControl} ${styles.themeControl}`}
+              data-theme={theme}
+              onClick={toggleTheme}
+              aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+            >
+              <span className={styles.themeGlyph} aria-hidden="true">
+                <Sun size={15} className={styles.sun} />
+                <Moon size={15} className={styles.moon} />
+              </span>
+            </button>
+            <NotificationMenu summary={summary} />
+            <div className={styles.headerSeparator} aria-hidden="true" />
             <ProfileMenu
               key={pathname}
               operator={operator}

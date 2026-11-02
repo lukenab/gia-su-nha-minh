@@ -2,8 +2,8 @@ import styles from "@/features/admin/components/admin.module.css";
 
 export default function AdminLoading() {
   return (
-    <div role="status" aria-live="polite" aria-label="Đang tải dữ liệu">
-      <p className={styles.loadingLabel}>Đang tải dữ liệu...</p>
+    <div role="status" aria-live="polite" aria-label="Loading data">
+      <p className={styles.loadingLabel}>Loading data...</p>
       <div
         className={styles.skeleton}
         style={{ height: 36, width: "min(360px, 60%)", marginBottom: 14 }}

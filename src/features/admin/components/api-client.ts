@@ -32,7 +32,7 @@ export async function sendAdminJson(
         error:
           typeof data.error === "string"
             ? data.error
-            : "Chưa thể lưu thay đổi. Vui lòng thử lại.",
+            : "Could not save the changes. Please try again.",
       };
     }
     return { ok: true, data };
@@ -40,7 +40,7 @@ export async function sendAdminJson(
     return {
       ok: false,
       status: 0,
-      error: "Không thể kết nối tới máy chủ. Kiểm tra mạng rồi thử lại.",
+      error: "Could not reach the server. Check your connection and try again.",
     };
   }
 }

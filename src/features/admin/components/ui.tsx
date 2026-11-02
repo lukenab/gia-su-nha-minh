@@ -1,12 +1,14 @@
 import type { ReactNode } from "react";
 
+import { FileSearch, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 
-import type { HistoryEntry, Paged } from "@/features/admin/types";
+import type { Paged } from "@/features/admin/types";
 
-import { formatDateTime } from "@/shared/lib/format";
 import {
   describeSla,
+  formatDuration,
+  responseSla,
   normalizeStatus,
   statusLabel,
   type ResponseSla,
@@ -14,7 +16,6 @@ import {
 } from "@/shared/lib/workflow";
 
 import styles from "./admin.module.css";
-import { IconAlert, IconEmpty } from "./icons";
 
 const tones: Record<WorkflowKind, Record<string, string>> = {
   learner: {
@@ -33,6 +34,7 @@ const tones: Record<WorkflowKind, Record<string, string>> = {
   },
   connection: {
     REVIEWING: "toneInfo",
+    CONFIRMED: "toneGood",
     INTRODUCED: "toneProgress",
     STARTED: "toneGood",
     DECLINED: "toneMuted",
@@ -58,18 +60,80 @@ export function StatusBadge({
   );
 }
 
+/** The 24-hour mark: a red pill only while a request is overdue. */
 export function SlaBadge({ sla }: { sla: ResponseSla }) {
   const tone =
-    sla.kind === "overdue" || sla.kind === "late"
+    sla.kind === "overdue"
       ? "toneDanger"
       : sla.kind === "waiting"
         ? "toneWarn"
         : sla.kind === "met"
           ? "toneGood"
-          : "toneMuted";
+          : sla.kind === "late"
+            ? "toneWarn"
+            : "toneMuted";
   return (
     <span className={`${styles.badge} ${styles[tone]}`}>
       {describeSla(sla)}
+    </span>
+  );
+}
+
+/**
+ * A request's status in one cell. The 24-hour mark only matters while the
+ * request is still New, so it is shown then and nowhere else.
+ */
+export function RequestStatus({
+  status,
+  createdAt,
+  contactedAt,
+}: {
+  status: unknown;
+  createdAt: Date | string;
+  contactedAt?: Date | string | null;
+}) {
+  const value = normalizeStatus("learner", status);
+  if (value !== "NEW") return <StatusBadge kind="learner" status={value} />;
+  const sla = responseSla({ status: value, createdAt, contactedAt });
+  return (
+    <span className={styles.statusCell}>
+      <StatusBadge kind="learner" status={value} />
+      {sla.kind === "overdue" ? (
+        <span className={`${styles.badge} ${styles.toneDanger}`}>
+          Overdue {formatDuration(sla.ms)}
+        </span>
+      ) : sla.kind === "waiting" ? (
+        <span className={styles.slaText}>{formatDuration(sla.ms)} left</span>
+      ) : null}
+    </span>
+  );
+}
+
+/** A tutor's status with what matters next: availability or review progress. */
+export function TutorStatus({
+  status,
+  accepting,
+  reviewed,
+}: {
+  status: unknown;
+  accepting?: boolean | null;
+  reviewed: number;
+}) {
+  const value = normalizeStatus("tutor", status);
+  const detail =
+    value === "ELIGIBLE"
+      ? accepting === true
+        ? "Taking learners"
+        : accepting === false
+          ? "Paused"
+          : "Availability not confirmed"
+      : value === "REVIEWING"
+        ? `${reviewed}/3 checked`
+        : null;
+  return (
+    <span className={styles.statusCell}>
+      <StatusBadge kind="tutor" status={value} />
+      {detail && <span className={styles.slaText}>{detail}</span>}
     </span>
   );
 }
@@ -142,7 +206,7 @@ export function EmptyState({
 }) {
   return (
     <div className={styles.empty}>
-      <IconEmpty />
+      <FileSearch aria-hidden="true" />
       <h3>{title}</h3>
       {children && <p>{children}</p>}
       {action && <div className={styles.emptyActions}>{action}</div>}
@@ -154,7 +218,7 @@ export function ErrorNotice({ children }: { children: ReactNode }) {
   return (
     <div className={`${styles.notice} ${styles.noticeDanger}`} role="alert">
       <span style={{ display: "inline-flex", gap: 10, alignItems: "center" }}>
-        <IconAlert width={20} height={20} />
+        <TriangleAlert size={20} aria-hidden="true" />
         {children}
       </span>
     </div>
@@ -214,9 +278,9 @@ export function Pagination<T>({
   const prev = result.page > 1;
   const next = result.page < result.pages;
   return (
-    <nav className={styles.pager} aria-label="Phân trang">
+    <nav className={styles.pager} aria-label="Pagination">
       <p>
-        Hiển thị {result.first}–{result.last} trên {result.total} {noun}
+        Showing {result.first}–{result.last} of {result.total} {noun}
       </p>
       <div className={styles.pagerButtons}>
         {prev ? (
@@ -225,7 +289,7 @@ export function Pagination<T>({
             href={hrefWith(path, params, { page: result.page - 1 })}
             rel="prev"
           >
-            ← Trước
+            ← Previous
           </Link>
         ) : (
           <span
@@ -233,11 +297,11 @@ export function Pagination<T>({
             aria-disabled="true"
             style={{ opacity: 0.5 }}
           >
-            ← Trước
+            ← Previous
           </span>
         )}
         <span className={styles.pagerLabel}>
-          Trang {result.page}/{result.pages}
+          Page {result.page}/{result.pages}
         </span>
         {next ? (
           <Link
@@ -245,7 +309,7 @@ export function Pagination<T>({
             href={hrefWith(path, params, { page: result.page + 1 })}
             rel="next"
           >
-            Sau →
+            Next →
           </Link>
         ) : (
           <span
@@ -253,117 +317,11 @@ export function Pagination<T>({
             aria-disabled="true"
             style={{ opacity: 0.5 }}
           >
-            Sau →
+            Next →
           </span>
         )}
       </div>
     </nav>
-  );
-}
-
-export function FilterBar({
-  action,
-  q,
-  searchLabel,
-  fields,
-  clearHref,
-  hidden,
-}: {
-  action: string;
-  q: string;
-  searchLabel: string;
-  fields: {
-    name: string;
-    label: string;
-    value?: string;
-    options: { value: string; label: string }[];
-  }[];
-  clearHref: string;
-  hidden?: Record<string, string>;
-}) {
-  return (
-    <form className={styles.filters} method="get" action={action} role="search">
-      {hidden &&
-        Object.entries(hidden).map(([name, value]) => (
-          <input key={name} type="hidden" name={name} value={value} />
-        ))}
-      <div className={`${styles.field} ${styles.search}`}>
-        <label htmlFor="filter-q">{searchLabel}</label>
-        <input
-          id="filter-q"
-          className={styles.input}
-          type="search"
-          name="q"
-          defaultValue={q}
-          maxLength={60}
-          placeholder="Ví dụ GSNM-2026 hoặc tên"
-        />
-      </div>
-      {fields.map((field) => (
-        <div className={styles.field} key={field.name}>
-          <label htmlFor={`filter-${field.name}`}>{field.label}</label>
-          <select
-            id={`filter-${field.name}`}
-            className={styles.select}
-            name={field.name}
-            defaultValue={field.value ?? ""}
-          >
-            <option value="">Tất cả</option>
-            {field.options.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      ))}
-      <div className={styles.formActions}>
-        <button
-          type="submit"
-          className={`${styles.button} ${styles.buttonPrimary}`}
-        >
-          Lọc
-        </button>
-        <Link
-          className={`${styles.button} ${styles.buttonQuiet}`}
-          href={clearHref}
-        >
-          Xóa lọc
-        </Link>
-      </div>
-    </form>
-  );
-}
-
-export function HistoryList({
-  kind,
-  entries,
-  emptyText,
-}: {
-  kind: WorkflowKind;
-  entries: HistoryEntry[] | undefined;
-  emptyText: string;
-}) {
-  const sorted = [...(entries ?? [])].sort(
-    (a, b) => new Date(b.at).getTime() - new Date(a.at).getTime(),
-  );
-  if (!sorted.length) return <p className={styles.mutedText}>{emptyText}</p>;
-  return (
-    <ol className={styles.timeline}>
-      {sorted.map((entry, index) => (
-        <li key={`${String(entry.at)}-${index}`}>
-          <strong>
-            {entry.from
-              ? `${statusLabel(kind, entry.from)} → ${statusLabel(kind, entry.to)}`
-              : statusLabel(kind, entry.to)}
-          </strong>
-          <span>
-            {formatDateTime(entry.at)} · {entry.by}
-          </span>
-          {entry.note && <p>{entry.note}</p>}
-        </li>
-      ))}
-    </ol>
   );
 }
 
