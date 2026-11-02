@@ -23,8 +23,10 @@ export function ResetPasswordForm({
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy) return;
-    if (password.length < 10) return setError("Mật khẩu cần ít nhất 10 ký tự.");
-    if (password !== confirm) return setError("Hai mật khẩu chưa trùng khớp.");
+    if (password.length < 10)
+      return setError("The password needs at least 10 characters.");
+    if (password !== confirm)
+      return setError("The two passwords do not match.");
     setBusy(true);
     setError("");
     try {
@@ -38,9 +40,11 @@ export function ResetPasswordForm({
         return;
       }
       const data = await response.json().catch(() => ({}));
-      setError(data.error ?? "Chưa thể đặt mật khẩu. Vui lòng thử lại.");
+      setError(data.error ?? "Could not set the password. Please try again.");
     } catch {
-      setError("Không thể kết nối tới máy chủ. Kiểm tra mạng rồi thử lại.");
+      setError(
+        "Could not reach the server. Check your connection and try again.",
+      );
     }
     setBusy(false);
   }
@@ -51,7 +55,7 @@ export function ResetPasswordForm({
       {needsName && (
         <div className={styles.field}>
           <label className={styles.label} htmlFor={`${id}-name`}>
-            Tên hiển thị
+            Display name
           </label>
           <input
             id={`${id}-name`}
@@ -67,13 +71,13 @@ export function ResetPasswordForm({
             aria-describedby={`${id}-name-hint`}
           />
           <p id={`${id}-name-hint`} className={styles.hint}>
-            Hiển thị trong lịch sử xử lý, ví dụ “Thanh Trà”.
+            Shown in the handling history, for example “Thanh Trà”.
           </p>
         </div>
       )}
       <div className={styles.field}>
         <label className={styles.label} htmlFor={`${id}-password`}>
-          Mật khẩu mới
+          New password
         </label>
         <PasswordInput
           id={`${id}-password`}
@@ -86,7 +90,7 @@ export function ResetPasswordForm({
       </div>
       <div className={styles.field}>
         <label className={styles.label} htmlFor={`${id}-confirm`}>
-          Nhập lại mật khẩu
+          Confirm password
         </label>
         <PasswordInput
           id={`${id}-confirm`}
@@ -102,7 +106,7 @@ export function ResetPasswordForm({
         className={`${styles.button} ${styles.primary}`}
         disabled={busy}
       >
-        {busy ? "Đang lưu..." : "Lưu mật khẩu"}
+        {busy ? "Saving..." : "Save password"}
       </button>
     </form>
   );

@@ -11,7 +11,7 @@ import { ResetPasswordForm } from "@/features/admin-auth/components/reset-form";
 import { inspectResetToken } from "@/features/admin-auth/server/auth";
 
 export const metadata: Metadata = {
-  title: "Đặt mật khẩu | Gia Sư Nhà Mình",
+  title: "Set password | Nexus Workspace",
   robots: { index: false, follow: false },
   referrer: "no-referrer",
 };
@@ -34,17 +34,17 @@ export default async function ResetPasswordPage({
 
   if (!state || state === "error") {
     return (
-      <AuthLayout title="Liên kết không còn hiệu lực">
+      <AuthLayout title="This link is no longer valid">
         <AuthAlert tone={state === "error" ? "error" : "info"}>
           {state === "error"
-            ? "Chưa thể kiểm tra liên kết lúc này. Vui lòng thử lại sau."
-            : "Liên kết đặt mật khẩu đã hết hạn hoặc đã được sử dụng. Hãy yêu cầu liên kết mới."}
+            ? "Could not check the link right now. Please try again later."
+            : "This password link has expired or was already used. Request a new link."}
         </AuthAlert>
         <Link
           className={`${styles.button} ${styles.primary}`}
           href="/admin/forgot-password"
         >
-          Yêu cầu liên kết mới
+          Request a new link
         </Link>
       </AuthLayout>
     );
@@ -52,8 +52,10 @@ export default async function ResetPasswordPage({
 
   return (
     <AuthLayout
-      title={state.isFirstPassword ? "Thiết lập mật khẩu" : "Đặt mật khẩu mới"}
-      description="Mật khẩu cần ít nhất 10 ký tự. Nên dùng một cụm từ dễ nhớ với bạn nhưng khó đoán với người khác."
+      title={
+        state.isFirstPassword ? "Set up your password" : "Set a new password"
+      }
+      description="Use at least 10 characters. A phrase that is easy for you to remember but hard for others to guess works well."
     >
       <ResetPasswordForm token={token} needsName={state.needsName} />
     </AuthLayout>

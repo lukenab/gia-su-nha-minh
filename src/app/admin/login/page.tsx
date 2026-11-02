@@ -8,8 +8,6 @@ import {
   AuthLayout,
 } from "@/features/admin-auth/components/auth-layout";
 import { AuthNotice } from "@/features/admin-auth/components/auth-notice";
-import styles from "@/features/admin-auth/components/auth.module.css";
-import { GoogleIcon } from "@/features/admin-auth/components/google-icon";
 import { PasswordLoginForm } from "@/features/admin-auth/components/login-form";
 import {
   adminIsConfigured,
@@ -18,7 +16,7 @@ import {
 import { safeNextPath } from "@/features/admin-auth/server/token";
 
 export const metadata: Metadata = {
-  title: "Đăng nhập | Gia Sư Nhà Mình",
+  title: "Sign in | Nexus Workspace",
   robots: { index: false, follow: false },
 };
 
@@ -26,15 +24,15 @@ export const dynamic = "force-dynamic";
 
 const errors: Record<string, string> = {
   not_allowed:
-    "Tài khoản Google này chưa được cấp quyền truy cập. Nếu bạn là thành viên đội ngũ, hãy liên hệ trưởng nhóm.",
-  google_cancelled: "Bạn đã hủy đăng nhập bằng Google.",
-  google_failed: "Không thể đăng nhập bằng Google. Vui lòng thử lại.",
+    "This Google account does not have access. If you are on the team, contact the team lead.",
+  google_cancelled: "You cancelled signing in with Google.",
+  google_failed: "Could not sign in with Google. Please try again.",
   google_unavailable:
-    "Đăng nhập bằng Google hiện chưa khả dụng. Vui lòng dùng email và mật khẩu.",
+    "Signing in with Google is not available. Use your email and password.",
 };
 const notices: Record<string, string> = {
-  password_set: "Mật khẩu đã được cập nhật. Bạn có thể đăng nhập.",
-  signed_out: "Bạn đã đăng xuất.",
+  password_set: "Your password was updated. You can sign in now.",
+  signed_out: "You have signed out.",
 };
 
 export default async function AdminLoginPage({
@@ -52,41 +50,21 @@ export default async function AdminLoginPage({
 
   return (
     <AuthLayout
-      title="Đăng nhập"
-      description="Truy cập không gian quản trị Gia Sư Nhà Mình."
-      footer={
-        <>
-          Thành viên mới đã được cấp quyền?{" "}
-          <Link className={styles.textLink} href="/admin/sign-up">
-            Đăng ký
-          </Link>
-        </>
-      }
+      title="Welcome back"
+      description="Sign in to your Nexus Workspace."
+      footer={<Link href="/">Back to home page</Link>}
     >
       {error && <AuthNotice tone="error">{error}</AuthNotice>}
       {notice && <AuthNotice tone="ok">{notice}</AuthNotice>}
 
       {!adminIsConfigured() ? (
         <AuthAlert tone="info">
-          Hệ thống đăng nhập chưa được cấu hình. Cần đặt ADMIN_SESSION_SECRET và
-          ADMIN_ALLOWED_EMAILS trước khi sử dụng.
+          Sign-in is not configured. Set ADMIN_SESSION_SECRET and
+          ADMIN_ALLOWED_EMAILS before using it.
         </AuthAlert>
       ) : (
         <>
           <PasswordLoginForm next={next} />
-          <div className={styles.divider}>Hoặc tiếp tục với</div>
-          <form action="/api/admin/auth/google" method="get">
-            {next !== "/admin" && (
-              <input type="hidden" name="next" value={next} />
-            )}
-            <button
-              type="submit"
-              className={`${styles.button} ${styles.outline}`}
-            >
-              <GoogleIcon />
-              Google
-            </button>
-          </form>
         </>
       )}
     </AuthLayout>

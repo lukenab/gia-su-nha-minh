@@ -33,7 +33,7 @@ export function ForgotPasswordForm() {
       setError(
         cause instanceof Error && cause.message
           ? cause.message
-          : "Chưa thể gửi yêu cầu. Vui lòng thử lại.",
+          : "Could not send the request. Please try again.",
       );
     }
     setBusy(false);
@@ -43,23 +43,23 @@ export function ForgotPasswordForm() {
     return (
       <>
         <AuthAlert tone="ok">
-          Nếu {email} có quyền truy cập, một email kèm liên kết đặt mật khẩu đã
-          được gửi. Liên kết có hiệu lực trong 30 phút.
+          If {email} has access, an email with a password link has been sent.
+          The link is valid for 30 minutes.
         </AuthAlert>
         <p className={styles.cardFooter}>
-          Không nhận được email? Kiểm tra thư rác hoặc{" "}
+          No email? Check your spam folder or{" "}
           <button
             type="button"
             className={styles.textLink}
             onClick={() => setSent(false)}
           >
-            gửi lại
+            send it again
           </button>
           .
         </p>
         <p className={styles.cardFooter}>
           <Link className={styles.textLink} href="/admin/login">
-            ← Quay lại đăng nhập
+            ← Back to sign in
           </Link>
         </p>
       </>
@@ -82,7 +82,7 @@ export function ForgotPasswordForm() {
             autoComplete="username"
             required
             autoFocus
-            placeholder="ten@email.com"
+            placeholder="Enter your email address"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             disabled={busy}
@@ -93,12 +93,12 @@ export function ForgotPasswordForm() {
           className={`${styles.button} ${styles.primary}`}
           disabled={busy}
         >
-          {busy ? "Đang gửi..." : "Gửi liên kết"}
+          {busy ? "Sending..." : "Send reset link"}
         </button>
       </form>
       <p className={styles.cardFooter}>
         <Link className={styles.textLink} href="/admin/login">
-          ← Quay lại đăng nhập
+          ← Back to sign in
         </Link>
       </p>
     </>

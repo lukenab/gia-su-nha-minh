@@ -18,9 +18,9 @@ async function post(url: string, body: unknown) {
     return response.ok
       ? null
       : ((data.error as string | undefined) ??
-          "Không thể đăng nhập. Vui lòng thử lại.");
+          "Could not sign in. Please try again.");
   } catch {
-    return "Không thể kết nối tới máy chủ. Kiểm tra mạng rồi thử lại.";
+    return "Could not reach the server. Check your connection and try again.";
   }
 }
 
@@ -64,7 +64,7 @@ export function PasswordLoginForm({ next = "/admin" }: { next?: string }) {
           required
           autoFocus
           value={email}
-          placeholder="ten@email.com"
+          placeholder="Enter your email address"
           onChange={(event) => setEmail(event.target.value)}
           disabled={busy}
           aria-invalid={error ? true : undefined}
@@ -73,10 +73,10 @@ export function PasswordLoginForm({ next = "/admin" }: { next?: string }) {
       <div className={styles.field}>
         <div className={styles.labelRow}>
           <label className={styles.label} htmlFor={`${id}-password`}>
-            Mật khẩu
+            Password
           </label>
           <Link className={styles.textLink} href="/admin/forgot-password">
-            Quên mật khẩu?
+            Forgot password?
           </Link>
         </div>
         <PasswordInput
@@ -84,7 +84,7 @@ export function PasswordLoginForm({ next = "/admin" }: { next?: string }) {
           value={password}
           onChange={setPassword}
           autoComplete="current-password"
-          placeholder="Nhập mật khẩu"
+          placeholder="Enter your password"
           disabled={busy}
           invalid={Boolean(error)}
         />
@@ -94,7 +94,7 @@ export function PasswordLoginForm({ next = "/admin" }: { next?: string }) {
         className={`${styles.button} ${styles.primary}`}
         disabled={busy}
       >
-        {busy ? "Đang đăng nhập..." : "Đăng nhập"}
+        {busy ? "Signing in..." : "Sign in"}
       </button>
     </form>
   );

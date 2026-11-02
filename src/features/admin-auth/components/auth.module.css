@@ -1,21 +1,23 @@
 /* Sign-in, forgot-password and reset-password pages: one centred card. */
 
 .page {
-  --ink: #132145;
-  --muted: #6b7489;
-  --line: #e4e8f1;
-  --field: #f8faff;
-  --primary: #4361ee;
-  --primary-strong: #3451d1;
-  --primary-soft: #eef2ff;
-  --button: #4361ee;
-  --button-hover: #3451d1;
+  --ink: #1a2332;
+  --muted: #667085;
+  --line: #e5e8ee;
+  --field: #f4f5f7;
+  --primary: #2563eb;
+  --primary-strong: #1d4ed8;
+  --primary-soft: #edf3ff;
+  --button: #2563eb;
+  --button-hover: #1d4ed8;
   --good: #146c4f;
   --good-soft: #e4f5ee;
   --danger: #b0203f;
   --danger-soft: #fdebef;
-  --display: var(--landing-font-display), "Segoe UI", Arial, sans-serif;
-  --body: var(--landing-font-body), "Segoe UI", Arial, sans-serif;
+  --body:
+    var(--admin-font-latin), var(--admin-font-latin-ext),
+    var(--admin-font-vietnamese), "Segoe UI", Arial, sans-serif;
+  --display: var(--body);
 
   display: flex;
   flex-direction: column;
@@ -24,11 +26,12 @@
   gap: 20px;
   min-height: 100vh;
   min-height: 100dvh;
-  padding: 32px 16px;
-  background: #f4f6fb;
+  padding: 32px 20px;
+  color-scheme: light;
+  background: #fff;
   color: var(--ink);
   font-family: var(--body);
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
 }
@@ -58,11 +61,11 @@
   border: 1px solid var(--line);
   border-radius: 16px;
   background: #fff;
-  box-shadow: 0 12px 36px rgba(19, 33, 69, 0.06);
+  box-shadow: 0 10px 32px rgb(0 0 0 / 4%);
 }
 @media (min-width: 480px) {
   .card {
-    padding: 36px 36px 32px;
+    padding: 36px;
   }
 }
 .illustration {
@@ -74,10 +77,10 @@
   border-radius: 20px;
   background: var(--primary-soft);
 }
-.illustration img {
+.illustration svg {
   display: block;
-  width: 56px;
-  height: auto;
+  width: 48px;
+  height: 48px;
 }
 .heading {
   margin-bottom: 30px;
@@ -93,9 +96,9 @@
 .heading p {
   margin-top: 8px;
   color: var(--muted);
-  font-size: 14px;
+  font-size: 13px;
 }
-.cardFooter {
+.page .cardFooter {
   margin-top: 24px;
   color: var(--muted);
   font-size: 14px;
@@ -118,11 +121,11 @@
 
 .form {
   display: grid;
-  gap: 16px;
+  gap: 20px;
 }
 .field {
   display: grid;
-  gap: 6px;
+  gap: 7px;
 }
 .labelRow {
   display: flex;
@@ -131,8 +134,8 @@
   gap: 12px;
 }
 .label {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 550;
 }
 .hint {
   color: var(--muted);
@@ -141,7 +144,7 @@
 .input {
   width: 100%;
   min-height: 46px;
-  padding: 10px 14px;
+  padding: 12px 14px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--field);
@@ -156,12 +159,12 @@
   color: #9aa2b4;
 }
 .input:hover {
-  background: #eef1f7;
+  background: var(--field);
 }
 .input:focus {
   border-color: var(--primary);
   background: #fff;
-  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
   outline: none;
 }
 .input[aria-invalid="true"] {
@@ -194,8 +197,8 @@
 }
 .reveal svg {
   display: block;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
 }
 .caps {
   color: #8a5200;
@@ -225,7 +228,7 @@
   margin: 0;
   padding: 0 18px;
   border: 1px solid transparent;
-  border-radius: 10px;
+  border-radius: 8px;
   font: inherit;
   font-weight: 600;
   cursor: pointer;
@@ -238,7 +241,7 @@
   cursor: not-allowed;
 }
 .primary {
-  margin-top: 4px;
+  margin-top: 0;
   background: var(--button);
   color: #fff !important;
 }
@@ -370,5 +373,19 @@
   }
   .input {
     font-size: 16px;
+  }
+}
+
+.cardFooter {
+  font-size: 12px;
+}
+.textLink {
+  font-size: 12px;
+  font-weight: 550;
+}
+@media (prefers-reduced-motion: reduce) {
+  .input,
+  .button {
+    transition: none;
   }
 }

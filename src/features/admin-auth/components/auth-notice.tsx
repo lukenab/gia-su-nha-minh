@@ -1,5 +1,6 @@
 "use client";
 
+import { CircleAlert, CircleCheck, X } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 
 import styles from "./auth.module.css";
@@ -33,43 +34,18 @@ export function AuthNotice({
       className={`${styles.notice} ${tone === "error" ? styles.noticeError : styles.noticeOk}`}
       role={tone === "error" ? "alert" : "status"}
     >
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        {tone === "error" ? (
-          <>
-            <circle cx="12" cy="12" r="9" />
-            <path d="M12 8v5M12 16.5v.01" />
-          </>
-        ) : (
-          <>
-            <circle cx="12" cy="12" r="9" />
-            <path d="m8.5 12.5 2.5 2.5 4.5-5" />
-          </>
-        )}
-      </svg>
+      {tone === "error" ? (
+        <CircleAlert aria-hidden="true" />
+      ) : (
+        <CircleCheck aria-hidden="true" />
+      )}
       <p>{children}</p>
       <button
         type="button"
         onClick={() => setOpen(false)}
-        aria-label="Đóng thông báo"
+        aria-label="Dismiss message"
       >
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          aria-hidden="true"
-        >
-          <path d="M6 6l12 12M18 6 6 18" />
-        </svg>
+        <X aria-hidden="true" />
       </button>
     </div>
   );

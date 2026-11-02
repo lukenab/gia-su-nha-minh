@@ -1,14 +1,11 @@
 import type { ReactNode } from "react";
 
-import Image from "next/image";
 import Link from "next/link";
 
-import logoMark from "@/features/landing/brand/logo-mark.png";
-import { bodyFont, displayFont } from "@/features/landing/fonts";
+import { adminFontVariables } from "@/features/admin/fonts";
+import { BrandLockup } from "@/shared/brand/brand-lockup";
 
 import styles from "./auth.module.css";
-
-const YEAR = new Date().getFullYear();
 
 /** Centred card used by the sign-in, forgot-password and reset pages. */
 export function AuthLayout({
@@ -24,27 +21,23 @@ export function AuthLayout({
   children: ReactNode;
 }) {
   return (
-    <div className={`${displayFont.variable} ${bodyFont.variable}`}>
+    <div className={adminFontVariables} lang="en">
       <main className={styles.page}>
-        <div className={styles.card}>
+        <section className={styles.card} aria-labelledby="auth-title">
           <Link
             className={styles.illustration}
             href="/"
-            aria-label="Gia Sư Nhà Mình, trang chủ"
+            aria-label="Nexus Workspace, home page"
           >
-            <Image src={logoMark} alt="" priority sizes="56px" />
+            <BrandLockup symbolOnly />
           </Link>
           <div className={styles.heading}>
-            <h1>{title}</h1>
+            <h1 id="auth-title">{title}</h1>
             {description && <p>{description}</p>}
           </div>
           {children}
           {footer && <div className={styles.cardFooter}>{footer}</div>}
-        </div>
-        <footer className={styles.pageFooter}>
-          <span>© {YEAR} Gia Sư Nhà Mình</span>
-          <Link href="/">Về trang chủ</Link>
-        </footer>
+        </section>
       </main>
     </div>
   );
