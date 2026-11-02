@@ -19,7 +19,11 @@ export async function connectToDatabase() {
   const uri = process.env.MONGODB_URI;
   if (!uri) throw new Error("MONGODB_URI is not configured");
 
-  if (cache.connection) return cache.connection;
+  if (mongoose.connection.readyState === 1) return mongoose;
+  if (mongoose.connection.readyState === 0) {
+    cache.connection = null;
+    cache.promise = null;
+  }
   if (!cache.promise) {
     cache.promise = mongoose.connect(uri, { serverSelectionTimeoutMS: 5_000 });
   }
