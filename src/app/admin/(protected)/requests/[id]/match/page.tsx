@@ -1,26 +1,28 @@
+import {
+  CircleCheck,
+  CircleHelp,
+  CircleMinus,
+  ExternalLink,
+} from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
 import { requireAdminPage } from "@/features/admin-auth/server/guard";
-import { ConnectForm } from "@/features/admin/components/connect-form";
 import {
-  Card,
-  DefList,
-  EmptyState,
-  ErrorNotice,
-  PageHeader,
-  Pagination,
-  StatusBadge,
-  adminStyles as styles,
-} from "@/features/admin/components/ui";
-import { compareTutor } from "@/features/admin/matching";
+  ConnectForm,
+  MatchFilters,
+} from "@/features/admin/components/connect-form";
 import {
-  findTutorCandidates,
-  getRequest,
-} from "@/features/admin/server/queries";
-import { CONNECTABLE_REQUEST_STATUSES } from "@/features/admin/server/service";
-import { parseMatchParams } from "@/features/admin/validation";
-import { formatVnd } from "@/shared/lib/format";
+  DetailHeader,
+  detailStyles as detail,
+} from "@/features/admin/components/detail-view";
+import { ListPager } from "@/features/admin/components/list-controls";
+import {
+  ListEmpty,
+  listStyles as list,
+} from "@/features/admin/components/list-view";
+import { ErrorNotice, StatusBadge } from "@/features/admin/components/ui";
 import {
   experienceLabels,
   formatLabels,
@@ -29,15 +31,27 @@ import {
   levelLabels,
   slotLabels,
   teachingAreaLabels,
-} from "@/shared/lib/options";
+} from "@/features/admin/labels";
+import { compareTutor } from "@/features/admin/matching";
+import {
+  findTutorCandidates,
+  getRequest,
+} from "@/features/admin/server/queries";
+import { CONNECTABLE_REQUEST_STATUSES } from "@/features/admin/server/service";
+import { parseMatchParams } from "@/features/admin/validation";
+import { formatVnd } from "@/shared/lib/format";
 import { normalizeStatus, statusLabel } from "@/shared/lib/workflow";
 
 export const dynamic = "force-dynamic";
 
-const stateLabel = {
-  match: "Khớp",
-  mismatch: "Lệch",
-  unknown: "Chưa rõ",
+const CHECK = {
+  match: { label: "Matches", icon: CircleCheck, className: detail.fitMatch },
+  mismatch: {
+    label: "Differs",
+    icon: CircleMinus,
+    className: detail.fitMismatch,
+  },
+  unknown: { label: "Unclear", icon: CircleHelp, className: detail.fitUnknown },
 } as const;
 
 export default async function MatchPage({
@@ -58,149 +72,72 @@ export default async function MatchPage({
     if (request) result = await findTutorCandidates(actor, request, options);
   } catch {
     return (
-      <>
-        <PageHeader
-          back={{ href: `/admin/requests/${id}`, label: "Chi tiết yêu cầu" }}
-          title="Chọn gia sư"
-        />
-        <ErrorNotice>
-          Chưa thể tải dữ liệu từ MongoDB. Vui lòng thử lại sau.
-        </ErrorNotice>
-      </>
+      <ErrorNotice>
+        Could not load data from MongoDB. Please try again later.
+      </ErrorNotice>
     );
   }
   if (!request || !result) notFound();
 
   const status = normalizeStatus("learner", request.status);
   const canConnect = CONNECTABLE_REQUEST_STATUSES.includes(status);
-  const slots = request.availabilitySlots?.length
-    ? request.availabilitySlots
-        .map((slot) => labelOf(slotLabels, slot))
-        .join(", ")
-    : request.availability;
-  const keep = {
-    level: options.soft.level,
-    slots: options.soft.slots,
-    fee: options.soft.fee,
-    all: options.showAll,
-  };
+  const needs = [
+    labelOf(goalLabels, request.goal),
+    labelOf(levelLabels, request.currentLevel),
+    labelOf(formatLabels, request.format),
+    request.availabilitySlots?.length
+      ? request.availabilitySlots
+          .map((slot) => labelOf(slotLabels, slot))
+          .join(", ")
+      : request.availability,
+    request.budgetMax != null
+      ? `Up to ${formatVnd(request.budgetMax)} / lesson`
+      : "No budget given",
+    request.location,
+  ].filter(Boolean);
 
   return (
     <>
-      <PageHeader
-        back={{ href: `/admin/requests/${id}`, label: request.referenceCode }}
-        eyebrow="Kết nối thủ công"
-        title="Chọn gia sư"
-        description="Bộ lọc chỉ giúp thu hẹp danh sách hồ sơ đã đủ điều kiện. Quyết định chọn ai do đội ngũ cân nhắc; hệ thống không tự chấm điểm hay tự chọn gia sư."
-        actions={<StatusBadge kind="learner" status={status} large />}
+      <DetailHeader
+        back={{ href: `/admin/requests/${id}`, label: request.fullName }}
+        title="Choose a tutor"
+        code={request.referenceCode}
+        meta={<StatusBadge kind="learner" status={status} />}
       />
 
+      <section className={detail.needs} aria-label="Learner needs">
+        <span className={detail.needsLabel}>Learner needs</span>
+        <ul>
+          {needs.map((need) => (
+            <li key={need}>{need}</li>
+          ))}
+        </ul>
+      </section>
+
       {!canConnect && (
-        <div
-          className={`${styles.notice} ${styles.noticeWarn}`}
-          style={{ marginBottom: 20 }}
-        >
-          <span>
-            Yêu cầu đang ở trạng thái “{statusLabel("learner", status)}” nên
-            chưa thể tạo kết nối mới.
-          </span>
-          <Link className={styles.link} href={`/admin/requests/${id}`}>
-            Về trang yêu cầu
-          </Link>
-        </div>
+        <p className={detail.suggestion}>
+          The request is “{statusLabel("learner", status)}”, so no tutor can be
+          proposed yet.{" "}
+          <Link href={`/admin/requests/${id}`}>Back to the request</Link>
+        </p>
       )}
 
-      <Card title="Tiêu chí của người học">
-        <DefList
-          items={[
-            { label: "Mục tiêu", value: labelOf(goalLabels, request.goal) },
-            {
-              label: "Trình độ",
-              value: labelOf(levelLabels, request.currentLevel),
-            },
-            {
-              label: "Hình thức",
-              value: labelOf(formatLabels, request.format),
-            },
-            { label: "Lịch học", value: slots },
-            { label: "Khu vực", value: request.location || "Không cung cấp" },
-            {
-              label: "Ngân sách tối đa / buổi",
-              value: formatVnd(request.budgetMax) ?? "Chưa xác định",
-            },
-          ]}
-        />
-      </Card>
-
-      <Card
-        title="Bộ lọc gia sư"
-        description="Luôn áp dụng: hồ sơ đã đủ điều kiện, nội dung dạy và hình thức. Bật thêm các tiêu chí còn lại nếu cần."
-      >
-        <form
-          method="get"
-          action={`/admin/requests/${id}/match`}
-          className={styles.formGrid}
-        >
-          <div className={styles.toggleRow}>
-            <label className={styles.toggle}>
-              <input
-                type="checkbox"
-                name="level"
-                value="1"
-                defaultChecked={options.soft.level}
-              />
-              Chỉ gia sư nhận đúng trình độ
-            </label>
-            <label className={styles.toggle}>
-              <input
-                type="checkbox"
-                name="slots"
-                value="1"
-                defaultChecked={options.soft.slots}
-              />
-              Chỉ gia sư có khung giờ trùng
-            </label>
-            <label className={styles.toggle}>
-              <input
-                type="checkbox"
-                name="fee"
-                value="1"
-                defaultChecked={options.soft.fee}
-              />
-              Chỉ gia sư trong ngân sách hoặc thỏa thuận
-            </label>
-            <label className={styles.toggle}>
-              <input
-                type="checkbox"
-                name="all"
-                value="1"
-                defaultChecked={options.showAll}
-              />
-              Hiện cả hồ sơ không khớp nội dung và hình thức
-            </label>
-          </div>
-          <div className={styles.formActions}>
-            <button
-              type="submit"
-              className={`${styles.button} ${styles.buttonPrimary}`}
-            >
-              Áp dụng bộ lọc
-            </button>
-          </div>
-        </form>
-      </Card>
-
-      <div style={{ marginTop: 20 }}>
+      <section className={list.frame}>
+        <div className={detail.matchBar}>
+          <Suspense fallback={null}>
+            <MatchFilters />
+          </Suspense>
+          <p className={detail.matchCount} aria-live="polite">
+            {result.total} of {result.eligibleTotal} approved tutors taking
+            learners
+          </p>
+        </div>
+        <p className={detail.matchNote}>
+          Always applied: approved, taking learners, right content and format.
+          The filters only narrow the list; the team decides who to propose.
+        </p>
         {result.items.length ? (
-          <>
-            <p
-              className={styles.mutedText}
-              style={{ marginBottom: 12 }}
-              aria-live="polite"
-            >
-              {result.total} hồ sơ phù hợp bộ lọc, trên tổng{" "}
-              {result.eligibleTotal} hồ sơ đã đủ điều kiện.
-            </p>
+          <ul className={detail.candidates}>
             {result.items.map((tutor) => {
               const checks = compareTutor(
                 {
@@ -214,82 +151,90 @@ export default async function MatchPage({
               );
               const existing = result.existing.get(String(tutor._id));
               return (
-                <article className={styles.candidate} key={String(tutor._id)}>
-                  <div className={styles.candidateHead}>
-                    <div>
-                      <h3>{tutor.fullName}</h3>
-                      <p className={styles.candidateMeta}>
-                        {tutor.referenceCode} ·{" "}
-                        {labelOf(experienceLabels, tutor.experience)} ·{" "}
-                        {tutor.teachingAreas
-                          .map((area) => labelOf(teachingAreaLabels, area))
-                          .join(", ")}
-                      </p>
-                    </div>
+                <li key={String(tutor._id)} className={detail.candidate}>
+                  <div className={detail.candidateMain}>
                     <Link
-                      className={styles.link}
+                      className={detail.candidateName}
                       href={`/admin/tutors/${String(tutor._id)}`}
                       target="_blank"
                     >
-                      Xem hồ sơ đầy đủ ↗
+                      {tutor.fullName}
+                      <ExternalLink size={13} aria-hidden="true" />
+                      <span className={detail.srOnly}>
+                        (opens in a new tab)
+                      </span>
                     </Link>
+                    <p className={detail.candidateMeta}>
+                      {tutor.referenceCode} ·{" "}
+                      {labelOf(experienceLabels, tutor.experience)} ·{" "}
+                      {tutor.teachingAreas
+                        .map((area) => labelOf(teachingAreaLabels, area))
+                        .join(", ")}
+                    </p>
+                    <ul className={detail.fits} aria-label="Criteria">
+                      {checks.map((check) => {
+                        const state = CHECK[check.state];
+                        const Icon = state.icon;
+                        return (
+                          <li
+                            key={check.key}
+                            className={state.className}
+                            title={check.detail}
+                          >
+                            <Icon size={14} aria-hidden="true" />
+                            {check.label}
+                            <span className={detail.srOnly}>
+                              : {state.label}. {check.detail}
+                            </span>
+                          </li>
+                        );
+                      })}
+                    </ul>
                   </div>
-                  <ul className={styles.checks}>
-                    {checks.map((check) => (
-                      <li
-                        key={check.key}
-                        className={`${styles.check} ${check.state === "match" ? styles.checkMatch : check.state === "mismatch" ? styles.checkMismatch : ""}`}
-                      >
-                        <strong>
-                          {check.label}
-                          <span>{stateLabel[check.state]}</span>
-                        </strong>
-                        <small>{check.detail}</small>
-                      </li>
-                    ))}
-                  </ul>
-                  {existing ? (
-                    <div className={styles.connectRow}>
-                      <p className={styles.mutedText}>
-                        Đã ghi nhận kết nối với yêu cầu này (
-                        {statusLabel("connection", existing.status)}).
-                      </p>
+                  <div className={detail.candidateAction}>
+                    {existing ? (
                       <Link
-                        className={`${styles.button} ${styles.buttonQuiet}`}
+                        className={detail.action}
                         href={`/admin/connections/${String(existing._id)}`}
                       >
-                        Mở kết nối
+                        {statusLabel("connection", existing.status)} · Open
                       </Link>
-                    </div>
-                  ) : canConnect ? (
-                    <ConnectForm requestId={id} tutorId={String(tutor._id)} />
-                  ) : null}
-                </article>
+                    ) : canConnect ? (
+                      <ConnectForm
+                        requestId={id}
+                        tutorId={String(tutor._id)}
+                        tutorName={tutor.fullName}
+                      />
+                    ) : null}
+                  </div>
+                </li>
               );
             })}
-            <Pagination
-              result={result}
-              path={`/admin/requests/${id}/match`}
-              noun="hồ sơ"
-              params={keep}
-            />
-          </>
+          </ul>
         ) : (
-          <Card>
-            <EmptyState
-              title={
-                result.eligibleTotal
-                  ? "Không có hồ sơ nào phù hợp bộ lọc"
-                  : "Chưa có hồ sơ gia sư nào đủ điều kiện"
-              }
-            >
-              {result.eligibleTotal
-                ? "Thử bỏ bớt tiêu chí tùy chọn hoặc hiện cả hồ sơ không khớp."
-                : "Hãy xem xét hồ sơ gia sư và đánh dấu “Đủ điều kiện giới thiệu” trước khi kết nối."}
-            </EmptyState>
-          </Card>
+          <ListEmpty
+            title={
+              result.eligibleTotal
+                ? "No tutors match these filters"
+                : "No approved tutors taking learners yet"
+            }
+          >
+            {result.eligibleTotal
+              ? "Turn off some optional criteria, or include mismatches."
+              : "Review tutor profiles and approve them before proposing one."}
+          </ListEmpty>
         )}
-      </div>
+        <ListPager
+          first={result.first}
+          last={result.last}
+          total={result.total}
+          page={result.page}
+          pages={result.pages}
+          size={10}
+          sizes={[10]}
+          noun={["tutor", "tutors"]}
+        />
+      </section>
     </>
   );
 }

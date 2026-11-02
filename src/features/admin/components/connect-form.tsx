@@ -1,21 +1,28 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useId, useRef, useState, type FormEvent } from "react";
+import { Check } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRef, useState, useTransition, type FormEvent } from "react";
 
-import styles from "./admin.module.css";
 import { sendAdminJson } from "./api-client";
+import { Dialog } from "./detail-controls";
+import styles from "./detail.module.css";
 
-/** Records that the team is reviewing this tutor for this request. */
+/**
+ * Records that the team is reviewing this tutor for this request. Nothing
+ * is sent to either person; a dialog asks for an optional first note.
+ */
 export function ConnectForm({
   requestId,
   tutorId,
+  tutorName,
 }: {
   requestId: string;
   tutorId: string;
+  tutorName: string;
 }) {
   const router = useRouter();
-  const id = useId();
+  const [open, setOpen] = useState(false);
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -45,36 +52,104 @@ export function ConnectForm({
   }
 
   return (
-    <form onSubmit={submit}>
-      <div className={styles.connectRow}>
-        <div className={styles.field}>
-          <label htmlFor={`${id}-note`}>Ghi chú ban đầu (không bắt buộc)</label>
-          <input
-            id={`${id}-note`}
-            className={styles.input}
-            value={note}
-            maxLength={500}
-            onChange={(event) => setNote(event.target.value)}
-            disabled={busy}
-          />
-        </div>
-        <button
-          type="submit"
-          className={`${styles.button} ${styles.buttonPrimary}`}
-          disabled={busy}
-        >
-          {busy ? "Đang tạo..." : "Ghi nhận kết nối"}
-        </button>
-      </div>
-      {error && (
-        <p
-          className={`${styles.message} ${styles.messageError}`}
-          role="alert"
-          style={{ marginTop: 10 }}
-        >
-          {error}
-        </p>
-      )}
-    </form>
+    <>
+      <button
+        type="button"
+        className={`${styles.action} ${styles.actionPrimary}`}
+        onClick={() => setOpen(true)}
+      >
+        Propose
+      </button>
+      <Dialog
+        open={open}
+        onClose={() => setOpen(false)}
+        title={`Propose ${tutorName}`}
+        description="Records that the team is considering this tutor for the request. Nobody is contacted and the request status does not change."
+      >
+        <form className={styles.dialogForm} onSubmit={submit}>
+          <label className={styles.dialogField}>
+            First note (optional)
+            <textarea
+              rows={3}
+              maxLength={500}
+              value={note}
+              onChange={(event) => setNote(event.target.value)}
+              disabled={busy}
+              autoFocus
+            />
+          </label>
+          {error && (
+            <p role="alert" className={styles.dialogError}>
+              {error}
+            </p>
+          )}
+          <div className={styles.dialogActions}>
+            <button
+              type="button"
+              className={styles.action}
+              onClick={() => setOpen(false)}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className={`${styles.action} ${styles.actionPrimary}`}
+              disabled={busy}
+            >
+              {busy ? "Saving..." : "Propose tutor"}
+            </button>
+          </div>
+        </form>
+      </Dialog>
+    </>
+  );
+}
+
+const FILTERS = [
+  { name: "level", label: "Teaches this level" },
+  { name: "slots", label: "Overlapping time slots" },
+  { name: "fee", label: "Within budget" },
+  { name: "all", label: "Include content or format mismatches" },
+] as const;
+
+/** Optional criteria as toggle chips; each change applies at once. */
+export function MatchFilters() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const params = useSearchParams();
+  const [pending, startTransition] = useTransition();
+
+  function toggle(name: string, on: boolean) {
+    const next = new URLSearchParams(params.toString());
+    if (on) next.set(name, "1");
+    else next.delete(name);
+    next.delete("page");
+    const query = next.toString();
+    startTransition(() =>
+      router.push(query ? `${pathname}?${query}` : pathname, { scroll: false }),
+    );
+  }
+
+  return (
+    <fieldset className={styles.chips} data-pending={pending || undefined}>
+      <legend className={styles.srOnly}>Optional criteria</legend>
+      {FILTERS.map((filter) => {
+        const on = params.get(filter.name) === "1";
+        return (
+          <label
+            key={filter.name}
+            className={`${styles.chip} ${on ? styles.chipOn : ""}`}
+          >
+            <input
+              type="checkbox"
+              checked={on}
+              onChange={(event) => toggle(filter.name, event.target.checked)}
+            />
+            {on && <Check size={13} aria-hidden="true" />}
+            {filter.label}
+          </label>
+        );
+      })}
+    </fieldset>
   );
 }
