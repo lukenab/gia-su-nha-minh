@@ -1,13 +1,14 @@
 import { tutorFormatLabels } from "@/features/tutor-applications/validation";
 import { ChoiceGroup, TextField, toOptions } from "@/shared/forms/fields";
+import styles from "@/shared/forms/form.module.css";
 import {
   experienceLabels,
-  slotLabels,
   teachingAreaLabels,
   tutorLevelLabels,
 } from "@/shared/lib/options";
 
-import { feeOptions, type StepProps } from "../../form-model.ts";
+import { type StepProps } from "../../form-model.ts";
+import local from "../tutor-form.module.css";
 
 export function TeachingStep({ s, errors, set }: StepProps) {
   return (
@@ -77,41 +78,131 @@ export function TeachingStep({ s, errors, set }: StepProps) {
           maxLength={120}
         />
       )}
-      <ChoiceGroup
+      <fieldset
         id="ta-availabilitySlots"
-        legend="Khung giờ có thể giảng dạy"
-        required
-        multiple
-        variant="chips"
-        options={toOptions(slotLabels)}
-        value={s.availabilitySlots}
-        onChange={(value) => set("availabilitySlots", value)}
-        error={errors.availabilitySlots}
-      />
-      <ChoiceGroup
-        id="ta-feeChoice"
-        legend="Học phí dự kiến cho một buổi 60 phút"
-        hint="Gia sư không phải trả bất kỳ khoản phí nào cho Gia Sư Nhà Mình."
-        required
-        variant="chips"
-        options={feeOptions}
-        value={s.feeChoice}
-        onChange={(value) => set("feeChoice", value)}
-        error={errors.feeChoice}
-      />
-      {s.feeChoice === "custom" && (
-        <TextField
-          id="ta-feeCustom"
-          label="Mức học phí dự kiến"
-          required
-          inputMode="numeric"
-          placeholder="Ví dụ: 180000"
-          suffix="đ / buổi"
-          value={s.feeCustom}
-          onChange={(value) => set("feeCustom", value)}
-          error={errors.feeCustom}
-        />
-      )}
+        className={local.schedule}
+        tabIndex={-1}
+        aria-describedby={`ta-schedule-hint${errors.availabilitySlots ? " ta-schedule-error" : ""}`}
+        aria-invalid={errors.availabilitySlots ? true : undefined}
+      >
+        <legend className={styles.label}>
+          Thời gian có thể giảng dạy{" "}
+          <span className={styles.required} aria-hidden="true">
+            *
+          </span>
+        </legend>
+        <p id="ta-schedule-hint" className={styles.hint}>
+          Chọn các khung giờ thường phù hợp. Lịch cụ thể sẽ được xác nhận khi
+          trao đổi.
+        </p>
+        <table className={local.scheduleTable}>
+          <thead>
+            <tr>
+              <td />
+              <th scope="col">Sáng</th>
+              <th scope="col">Chiều</th>
+              <th scope="col">Tối</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              { key: "weekday", label: "Thứ Hai–Thứ Sáu" },
+              { key: "weekend", label: "Thứ Bảy–Chủ Nhật" },
+            ].map((row) => (
+              <tr key={row.key}>
+                <th scope="row">{row.label}</th>
+                {[
+                  { key: "morning", label: "Sáng" },
+                  { key: "afternoon", label: "Chiều" },
+                  { key: "evening", label: "Tối" },
+                ].map((period) => {
+                  const value = `${row.key}_${period.key}`;
+                  const checked = s.availabilitySlots.includes(value);
+                  return (
+                    <td key={value}>
+                      <label
+                        className={local.scheduleCell}
+                        data-checked={checked}
+                      >
+                        <input
+                          type="checkbox"
+                          aria-label={`${period.label}, ${row.label}`}
+                          checked={checked}
+                          onChange={() =>
+                            set(
+                              "availabilitySlots",
+                              checked
+                                ? s.availabilitySlots.filter(
+                                    (slot) => slot !== value,
+                                  )
+                                : [...s.availabilitySlots, value],
+                            )
+                          }
+                        />
+                      </label>
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {errors.availabilitySlots && (
+          <p id="ta-schedule-error" className={styles.error} role="alert">
+            {errors.availabilitySlots}
+          </p>
+        )}
+      </fieldset>
+      <fieldset id="ta-feeChoice" className={local.schedule} tabIndex={-1}>
+        <legend className={styles.label}>
+          Học phí dự kiến{" "}
+          <span className={styles.required} aria-hidden="true">
+            *
+          </span>
+        </legend>
+        <p id="ta-fee-hint" className={styles.hint}>
+          Đơn vị: VND / buổi 60 phút. Gia sư không phải trả phí kết nối.
+        </p>
+        {s.feeChoice !== "negotiable" && (
+          <input
+            id="ta-feeCustom"
+            className={styles.input}
+            aria-label="Học phí dự kiến (VND / buổi 60 phút)"
+            aria-required="true"
+            aria-describedby={`ta-fee-hint${errors.feeCustom || errors.feeChoice ? " ta-fee-error" : ""}`}
+            aria-invalid={
+              errors.feeCustom || errors.feeChoice ? true : undefined
+            }
+            inputMode="numeric"
+            placeholder="Nhập số tiền"
+            maxLength={7}
+            value={
+              s.feeChoice === "custom" || !s.feeChoice
+                ? s.feeCustom
+                : s.feeChoice
+            }
+            onChange={(event) => {
+              set("feeChoice", "custom");
+              set("feeCustom", event.target.value.replace(/\D/g, ""));
+            }}
+          />
+        )}
+        <label className={local.checkbox}>
+          <input
+            type="checkbox"
+            checked={s.feeChoice === "negotiable"}
+            onChange={(event) =>
+              set("feeChoice", event.target.checked ? "negotiable" : "custom")
+            }
+          />
+          Thỏa thuận học phí sau
+        </label>
+        {(errors.feeCustom || errors.feeChoice) && (
+          <p id="ta-fee-error" className={styles.error} role="alert">
+            {errors.feeCustom || errors.feeChoice}
+          </p>
+        )}
+      </fieldset>
     </>
   );
 }

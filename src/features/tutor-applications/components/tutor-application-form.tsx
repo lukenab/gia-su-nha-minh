@@ -87,6 +87,7 @@ export function TutorApplicationForm() {
 
   return (
     <Wizard
+      compact
       steps={steps}
       current={step}
       onBack={() => {

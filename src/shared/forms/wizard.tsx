@@ -15,6 +15,7 @@ export type WizardStep = {
 };
 
 type WizardProps = {
+  compact?: boolean;
   steps: WizardStep[];
   current: number;
   onBack: () => void;
@@ -32,6 +33,7 @@ type WizardProps = {
  * users land at the start of the step.
  */
 export function Wizard({
+  compact = false,
   steps,
   current,
   onBack,
@@ -57,7 +59,9 @@ export function Wizard({
 
   return (
     <form
-      className={styles.panel}
+      className={[styles.panel, compact && styles.compact]
+        .filter(Boolean)
+        .join(" ")}
       noValidate
       onSubmit={(event) => {
         event.preventDefault();
