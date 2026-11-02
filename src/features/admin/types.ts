@@ -20,6 +20,8 @@ export type RequestDoc = {
   email?: string;
   phone?: string;
   preferredChannel?: string;
+  assignedTo?: string;
+  assignmentHistory?: HistoryEntry[];
   goal: string;
   currentLevel: string;
   concerns?: string[];
@@ -49,11 +51,25 @@ export type TutorDoc = {
   email?: string;
   phone?: string;
   preferredChannel: string;
+  otherTeachingArea?: string;
+  acceptingStudents?: boolean;
   teachingAreas: string[];
   learnerLevels: string[];
   experience: string;
   experienceNote: string;
   certificates?: string;
+  certificateList?: {
+    type: string;
+    name?: string;
+    score?: string;
+    year?: number | null;
+  }[];
+  education?: string;
+  school?: string;
+  major?: string;
+  phoneHasZalo?: boolean;
+  headline?: string;
+  hasPhoto?: boolean;
   format: string;
   area?: string;
   availabilitySlots: string[];
@@ -83,6 +99,16 @@ export type ConnectionDoc = {
   status?: string;
   statusUpdatedAt: Date | string;
   statusUpdatedBy: string;
+  operationsRevision?: number;
+  learnerConfirmedAt?: Date | string | null;
+  tutorConfirmedAt?: Date | string | null;
+  confirmedAt?: Date | string | null;
+  feeAmount?: number;
+  paymentStatus?: string;
+  paidAt?: Date | string | null;
+  paymentMethod?: string;
+  paymentReference?: string;
+  operationsHistory?: HistoryEntry[];
   introducedAt?: Date | string | null;
   startedAt?: Date | string | null;
   createdBy: string;
@@ -98,4 +124,16 @@ export type Paged<T> = {
   /** 1-based index of the first/last row on this page (0 when empty). */
   first: number;
   last: number;
+};
+
+/** One item in the header notification menu (plain values only). */
+export type AdminNotification = {
+  id: string;
+  title: string;
+  message: string;
+  /** Reference code(s) the item is about. */
+  context: string;
+  href: string;
+  /** ISO time the item happened; also orders and marks items as read. */
+  at: string;
 };

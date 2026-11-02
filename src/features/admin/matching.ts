@@ -3,7 +3,7 @@
  * qualified tutors and show how a profile compares with a request. They do
  * not score, rank or pick anyone: the team decides.
  */
-import { labelOf, slotLabels } from "../../shared/lib/options.ts";
+import { labelOf, slotLabels } from "./labels.ts";
 
 export type MatchRequest = {
   goal: string;
@@ -87,7 +87,7 @@ export type MatchCheck = {
   detail: string;
 };
 
-const money = (value: number) => `${value.toLocaleString("vi-VN")} VND`;
+const money = (value: number) => `${value.toLocaleString("en-US")} VND`;
 
 export function compareTutor(
   request: MatchRequest,
@@ -100,19 +100,19 @@ export function compareTutor(
     areas
       ? {
           key: "content",
-          label: "Nội dung dạy",
+          label: "Teaching content",
           hard: true,
           state: areas.some((area) => tutor.teachingAreas?.includes(area))
             ? "match"
             : "mismatch",
-          detail: "Gia sư đăng ký dạy nội dung người học cần.",
+          detail: "The tutor teaches the content the learner needs.",
         }
       : {
           key: "content",
-          label: "Nội dung dạy",
+          label: "Teaching content",
           hard: true,
           state: "unknown",
-          detail: "Người học chưa nêu mục tiêu cụ thể, cần trao đổi thêm.",
+          detail: "The learner has no specific goal yet. Discuss it with them.",
         },
   );
 
@@ -121,17 +121,18 @@ export function compareTutor(
     formats
       ? {
           key: "format",
-          label: "Hình thức học",
+          label: "Lesson format",
           hard: true,
           state: formats.includes(tutor.format) ? "match" : "mismatch",
-          detail: "Hình thức gia sư nhận dạy so với hình thức người học chọn.",
+          detail:
+            "The tutor's format compared with the format the learner chose.",
         }
       : {
           key: "format",
-          label: "Hình thức học",
+          label: "Lesson format",
           hard: true,
           state: "unknown",
-          detail: "Người học chưa xác định hình thức hoặc nhận cả hai.",
+          detail: "The learner has not decided, or accepts either format.",
         },
   );
 
@@ -139,19 +140,19 @@ export function compareTutor(
     request.currentLevel === "unsure"
       ? {
           key: "level",
-          label: "Trình độ hỗ trợ",
+          label: "Supported level",
           hard: false,
           state: "unknown",
-          detail: "Người học chưa xác định trình độ.",
+          detail: "The learner is not sure of their level.",
         }
       : {
           key: "level",
-          label: "Trình độ hỗ trợ",
+          label: "Supported level",
           hard: false,
           state: tutor.learnerLevels?.includes(request.currentLevel)
             ? "match"
             : "mismatch",
-          detail: "Gia sư có nhận dạy trình độ hiện tại của người học.",
+          detail: "The tutor teaches the learner's current level.",
         },
   );
 
@@ -161,42 +162,42 @@ export function compareTutor(
     );
     checks.push({
       key: "slots",
-      label: "Lịch học",
+      label: "Schedule",
       hard: false,
       state: shared.length ? "match" : "mismatch",
       detail: shared.length
-        ? `Trùng: ${shared.map((slot) => labelOf(slotLabels, slot)).join(", ")}`
-        : "Chưa có khung giờ trùng nhau.",
+        ? `Overlap: ${shared.map((slot) => labelOf(slotLabels, slot)).join(", ")}`
+        : "No overlapping time slots yet.",
     });
   } else {
     checks.push({
       key: "slots",
-      label: "Lịch học",
+      label: "Schedule",
       hard: false,
       state: "unknown",
       detail:
-        "Yêu cầu cũ chỉ có mô tả lịch dạng văn bản, cần đối chiếu thủ công.",
+        "Older requests only describe the schedule as text. Compare it manually.",
     });
   }
 
   if (request.budgetMax == null || tutor.expectedFee == null) {
     checks.push({
       key: "fee",
-      label: "Học phí",
+      label: "Fee",
       hard: false,
       state: "unknown",
       detail:
         request.budgetMax == null
-          ? "Người học chưa nêu ngân sách."
-          : "Gia sư để học phí thỏa thuận.",
+          ? "The learner has not given a budget."
+          : "The tutor's fee is negotiable.",
     });
   } else {
     checks.push({
       key: "fee",
-      label: "Học phí",
+      label: "Fee",
       hard: false,
       state: tutor.expectedFee <= request.budgetMax ? "match" : "mismatch",
-      detail: `Gia sư ${money(tutor.expectedFee)} / buổi, ngân sách ${money(request.budgetMax)}.`,
+      detail: `Tutor ${money(tutor.expectedFee)} / lesson, budget ${money(request.budgetMax)}.`,
     });
   }
 
