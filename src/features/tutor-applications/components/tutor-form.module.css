@@ -1,0 +1,250 @@
+/* Tutor application: Zalo checkbox, certificate rows, photo and review page.
+   Colours come from the public site tokens used by form.module.css. */
+
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14.5px;
+  color: #3f4a66;
+  cursor: pointer;
+}
+.checkbox input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary);
+}
+
+/* Divider between contact details and education on the first step. */
+.subhead {
+  margin: 8px 0 -6px;
+  padding-top: 22px;
+  border-top: 1px solid #e3e9f6;
+  color: var(--primary-strong);
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ------------------------------ certificates ------------------------------ */
+
+.certificates {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+/* Fields share one line on wide screens and wrap on phones. */
+.certificateRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 14px;
+  border: 1.5px solid #e3e9f6;
+  border-radius: 14px;
+  background: #f8faff;
+}
+.certificateRow > div {
+  flex: 1 1 160px;
+}
+.smallLabel {
+  margin-bottom: 6px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.add,
+.remove,
+.edit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 12px;
+  font: 600 14px/1 var(--body);
+  cursor: pointer;
+}
+.add {
+  width: fit-content;
+  border: 1.5px dashed #b9c6ea;
+  background: #fff;
+  color: var(--primary-strong);
+}
+.add:hover {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+.remove {
+  border: 0;
+  background: transparent;
+  color: #c62f40;
+}
+.remove:hover {
+  background: #fdebef;
+}
+.add:focus-visible,
+.remove:focus-visible,
+.edit:focus-visible {
+  outline: 3px solid #7b9aff;
+  outline-offset: 2px;
+}
+
+/* ------------------------------ photo ------------------------------ */
+
+.photo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px;
+}
+.photoPreview {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 120px;
+  height: 120px;
+  overflow: hidden;
+  border: 1.5px dashed #c9d4ef;
+  border-radius: 16px;
+  background: #f6f8fd;
+  color: #8a94a8;
+  font-size: 13px;
+}
+.photoPreview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.photoBody {
+  display: grid;
+  flex: 1 1 260px;
+  gap: 12px;
+}
+.photoTips {
+  margin: 0;
+  padding-left: 18px;
+  color: #66718b;
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+.photoActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+/* Visually hidden but focusable, so the label works as the button. */
+.fileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+.fileInput:focus-visible + .add,
+.photoActions:has(.fileInput:focus-visible) .add {
+  outline: 3px solid #7b9aff;
+  outline-offset: 2px;
+}
+.counter {
+  margin: 6px 0 0;
+  color: #66718b;
+  font-size: 13px;
+  text-align: right;
+}
+
+/* ------------------------------ review ------------------------------ */
+
+.reviewTop {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.reviewPhoto {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.reviewTop div {
+  display: grid;
+  gap: 2px;
+}
+.reviewTop strong {
+  font-size: 17px;
+  color: var(--ink);
+}
+.reviewTop span {
+  color: #66718b;
+  font-size: 14px;
+}
+.review {
+  padding: 16px 18px;
+  border: 1.5px solid #e3e9f6;
+  border-radius: 14px;
+}
+.reviewHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.reviewHead h3 {
+  margin: 0;
+  font-size: 15.5px;
+  color: var(--ink);
+}
+.edit {
+  min-height: 36px;
+  border: 1.5px solid #dde4f3;
+  background: #fff;
+  color: var(--primary-strong);
+}
+.review dl {
+  display: grid;
+  margin: 0;
+}
+.review dl > div {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr);
+  gap: 4px 14px;
+  padding: 8px 0;
+  border-top: 1px solid #eef1f8;
+  font-size: 14.5px;
+}
+.review dt {
+  color: #66718b;
+}
+.review dd {
+  margin: 0;
+  color: var(--ink);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 639px) {
+  .review dl > div {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .certificateRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.consents {
+  display: grid;
+  gap: 10px;
+}
+
+/* Accuracy and verification statement above the submit button. */
+.declaration {
+  margin: 0;
+  color: #66718b;
+  font-size: 13.5px;
+  line-height: 1.6;
+}

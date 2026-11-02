@@ -1,6 +1,11 @@
 import { tutorFormatLabels } from "@/features/tutor-applications/validation";
 import { ChoiceGroup, TextField, toOptions } from "@/shared/forms/fields";
-import { teachingAreaLabels, tutorLevelLabels } from "@/shared/lib/options";
+import {
+  experienceLabels,
+  slotLabels,
+  teachingAreaLabels,
+  tutorLevelLabels,
+} from "@/shared/lib/options";
 
 import { feeOptions, type StepProps } from "../../form-model.ts";
 
@@ -9,8 +14,8 @@ export function TeachingStep({ s, errors, set }: StepProps) {
     <>
       <ChoiceGroup
         id="ta-teachingAreas"
-        legend="Nội dung bạn có kinh nghiệm giảng dạy"
-        hint="Có thể chọn nhiều."
+        legend="Nội dung có thể giảng dạy"
+        hint="Có thể chọn nhiều nội dung."
         required
         multiple
         options={toOptions(teachingAreaLabels)}
@@ -18,10 +23,21 @@ export function TeachingStep({ s, errors, set }: StepProps) {
         onChange={(value) => set("teachingAreas", value)}
         error={errors.teachingAreas}
       />
+      {s.teachingAreas.includes("other") && (
+        <TextField
+          id="ta-otherTeachingArea"
+          label="Nội dung khác"
+          required
+          value={s.otherTeachingArea}
+          onChange={(v) => set("otherTeachingArea", v)}
+          error={errors.otherTeachingArea}
+          maxLength={300}
+        />
+      )}
       <ChoiceGroup
         id="ta-learnerLevels"
-        legend="Trình độ người học bạn tự tin hỗ trợ"
-        hint="Có thể chọn nhiều."
+        legend="Trình độ học viên có thể nhận"
+        hint="Có thể chọn nhiều trình độ."
         required
         multiple
         variant="chips"
@@ -31,17 +47,51 @@ export function TeachingStep({ s, errors, set }: StepProps) {
         error={errors.learnerLevels}
       />
       <ChoiceGroup
+        id="ta-experience"
+        legend="Thời gian giảng dạy tiếng Anh"
+        required
+        variant="chips"
+        options={toOptions(experienceLabels)}
+        value={s.experience}
+        onChange={(value) => set("experience", value)}
+        error={errors.experience}
+      />
+      <ChoiceGroup
         id="ta-format"
-        legend="Hình thức dạy"
+        legend="Hình thức giảng dạy"
         required
         options={toOptions(tutorFormatLabels)}
         value={s.format}
         onChange={(value) => set("format", value)}
         error={errors.format}
       />
+      {s.format && s.format !== "online" && (
+        <TextField
+          id="ta-area"
+          label="Khu vực có thể dạy trực tiếp"
+          required
+          error={errors.area}
+          placeholder="Ví dụ: Ninh Kiều, Cái Răng"
+          value={s.area}
+          onChange={(value) => set("area", value)}
+          maxLength={120}
+        />
+      )}
+      <ChoiceGroup
+        id="ta-availabilitySlots"
+        legend="Khung giờ có thể giảng dạy"
+        required
+        multiple
+        variant="chips"
+        options={toOptions(slotLabels)}
+        value={s.availabilitySlots}
+        onChange={(value) => set("availabilitySlots", value)}
+        error={errors.availabilitySlots}
+      />
       <ChoiceGroup
         id="ta-feeChoice"
-        legend="Học phí mong muốn cho một buổi 60 phút"
+        legend="Học phí dự kiến cho một buổi 60 phút"
+        hint="Gia sư không phải trả bất kỳ khoản phí nào cho Gia Sư Nhà Mình."
         required
         variant="chips"
         options={feeOptions}
@@ -52,7 +102,7 @@ export function TeachingStep({ s, errors, set }: StepProps) {
       {s.feeChoice === "custom" && (
         <TextField
           id="ta-feeCustom"
-          label="Mức học phí của bạn"
+          label="Mức học phí dự kiến"
           required
           inputMode="numeric"
           placeholder="Ví dụ: 180000"
