@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: "Trở thành gia sư tiếng Anh | Gia Sư Nhà Mình",
   description:
-    "Đăng ký làm gia sư tiếng Anh tại Cần Thơ cùng Gia Sư Nhà Mình và nhận người học phù hợp với thế mạnh của bạn.",
+    "Đăng ký làm gia sư tiếng Anh tại Cần Thơ cùng Gia Sư Nhà Mình và nhận người học phù hợp với thế mạnh chuyên môn.",
   alternates: { canonical: "/become-a-tutor" },
 };
 
@@ -21,8 +21,8 @@ export default function BecomeATutorPage() {
         <FormAside
           eyebrow="Dành cho gia sư"
           title="Dạy đúng"
-          highlight="thế mạnh của bạn."
-          text="Chia sẻ chuyên môn, kinh nghiệm và lịch dạy. Gia Sư Nhà Mình giới thiệu người học có nhu cầu phù hợp với bạn."
+          highlight="thế mạnh chuyên môn."
+          text="Anh/Chị chia sẻ học vấn, kinh nghiệm và lịch dạy. Gia Sư Nhà Mình giới thiệu người học có nhu cầu phù hợp với thế mạnh của Anh/Chị."
           points={[
             {
               title: "Người học đúng nhu cầu",
@@ -34,7 +34,7 @@ export default function BecomeATutorPage() {
             },
             {
               title: "Phản hồi trong 24 giờ",
-              text: "Chúng tôi liên hệ để trao đổi và hướng dẫn các bước tiếp theo.",
+              text: "Đội ngũ liên hệ để trao đổi và hướng dẫn Anh/Chị các bước tiếp theo.",
             },
           ]}
         />
