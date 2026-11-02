@@ -1,239 +1,299 @@
+import {
+  ArrowDownRight,
+  ArrowUpRight,
+  Minus,
+  TriangleAlert,
+} from "lucide-react";
 import Link from "next/link";
 
 import { requireAdminPage } from "@/features/admin-auth/server/guard";
 import {
-  EmptyState,
-  ErrorNotice,
-  PageHeader,
-  SlaBadge,
-  adminStyles as styles,
-  Card,
-} from "@/features/admin/components/ui";
-import { getDashboard } from "@/features/admin/server/queries";
-import { formatDateTime } from "@/shared/lib/format";
-import { formatLabels, goalLabels, labelOf } from "@/shared/lib/options";
+  AttentionQueue,
+  type QueueTab,
+} from "@/features/admin/components/attention-queue";
 import {
-  learnerStatuses,
+  DemandChart,
+  FunnelChart,
+  ReplyChart,
+} from "@/features/admin/components/overview-charts";
+import styles from "@/features/admin/components/overview.module.css";
+import { ErrorNotice, PageHeader } from "@/features/admin/components/ui";
+import { goalLabels, labelOf } from "@/features/admin/labels";
+import { RANGES, parseRange, type RangeKey } from "@/features/admin/overview";
+import { getOverview, type Overview } from "@/features/admin/server/overview";
+import { formatDate, formatVnd } from "@/shared/lib/format";
+import {
+  describeSla,
+  formatDuration,
   responseSla,
-  statusLabels,
-  tutorStatuses,
-  connectionStatuses,
+  statusLabel,
 } from "@/shared/lib/workflow";
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminHomePage() {
+const RANGE_LABELS: Record<RangeKey, string> = {
+  "7d": "7 days",
+  "30d": "30 days",
+  "90d": "90 days",
+};
+
+function RangePicker({ value }: { value: RangeKey }) {
+  return (
+    <nav className={styles.range} aria-label="Time range">
+      {(Object.keys(RANGES) as RangeKey[]).map((key) => (
+        <Link
+          key={key}
+          href={key === "30d" ? "/admin" : `/admin?range=${key}`}
+          aria-current={key === value ? "true" : undefined}
+          scroll={false}
+        >
+          {RANGE_LABELS[key]}
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
+/** Change against the previous period; every KPI here is better when higher. */
+function Delta({
+  change,
+  text,
+  period,
+}: {
+  change: number | null;
+  text: string;
+  period: string;
+}) {
+  if (change === null)
+    return <span className={styles.deltaMuted}>No earlier data</span>;
+  const Icon = change > 0 ? ArrowUpRight : change < 0 ? ArrowDownRight : Minus;
+  const tone =
+    change > 0
+      ? styles.deltaUp
+      : change < 0
+        ? styles.deltaDown
+        : styles.deltaMuted;
+  return (
+    <span className={tone}>
+      <Icon size={14} aria-hidden="true" />
+      {change === 0 ? "No change" : text}
+      <span className={styles.deltaPeriod}> vs previous {period}</span>
+    </span>
+  );
+}
+
+function Kpis({ data }: { data: Overview }) {
+  const { kpis } = data;
+  const period = RANGE_LABELS[data.range];
+  const rate = kpis.replies.current.rate;
+  const previousRate = kpis.replies.previous.rate;
+  const ratePoints =
+    rate !== null && previousRate !== null
+      ? Math.round((rate - previousRate) * 100)
+      : null;
+  const confirmedChange = kpis.confirmed.current - kpis.confirmed.previous;
+  const revenueChange = kpis.revenue.current - kpis.revenue.previous;
+
+  return (
+    <section className={styles.kpis} aria-label="Key figures">
+      <Link href="/admin/requests?status=NEW" className={styles.kpi}>
+        <span className={styles.kpiLabel}>Waiting for contact</span>
+        <strong className={styles.kpiValue}>{kpis.waiting}</strong>
+        {kpis.overdue ? (
+          <span className={styles.deltaDown}>
+            <TriangleAlert size={14} aria-hidden="true" />
+            {kpis.overdue} past 24 hours
+          </span>
+        ) : (
+          <span className={styles.deltaMuted}>None past 24 hours</span>
+        )}
+      </Link>
+      <div className={styles.kpi}>
+        <span className={styles.kpiLabel}>Replies within 24 hours</span>
+        <strong className={styles.kpiValue}>
+          {rate === null ? "—" : `${Math.round(rate * 100)}%`}
+        </strong>
+        {rate === null ? (
+          <span className={styles.deltaMuted}>No contacts in this period</span>
+        ) : (
+          <Delta
+            change={ratePoints}
+            text={`${ratePoints! > 0 ? "+" : ""}${ratePoints} pts`}
+            period={period}
+          />
+        )}
+      </div>
+      <Link href="/admin/connections?confirmed=1" className={styles.kpi}>
+        <span className={styles.kpiLabel}>Connections confirmed</span>
+        <strong className={styles.kpiValue}>{kpis.confirmed.current}</strong>
+        <Delta
+          change={confirmedChange}
+          text={`${confirmedChange > 0 ? "+" : ""}${confirmedChange}`}
+          period={period}
+        />
+      </Link>
+      <Link href="/admin/connections?payment=PAID" className={styles.kpi}>
+        <span className={styles.kpiLabel}>Revenue received</span>
+        <strong className={styles.kpiValue}>
+          {formatVnd(kpis.revenue.current)}
+        </strong>
+        <Delta
+          change={revenueChange}
+          text={`${revenueChange > 0 ? "+" : "−"}${formatVnd(Math.abs(revenueChange))}`}
+          period={period}
+        />
+      </Link>
+    </section>
+  );
+}
+
+function queueTabs(data: Overview): QueueTab[] {
+  const { contact, review, fees } = data.queues;
+  return [
+    {
+      key: "contact",
+      label: "Contact learners",
+      total: contact.total,
+      viewAll: "/admin/requests?status=NEW",
+      empty: "Every learner request has been contacted.",
+      rows: contact.items.map((item) => {
+        const sla = responseSla({ status: "NEW", createdAt: item.at });
+        return {
+          id: item.id,
+          href: item.href,
+          code: item.code,
+          name: item.name,
+          meta: `${labelOf(goalLabels, item.detail)} · received ${formatDate(item.at)}`,
+          badge: {
+            text: describeSla(sla),
+            tone: sla.kind === "overdue" ? "danger" : "warn",
+          },
+        };
+      }),
+    },
+    {
+      key: "review",
+      label: "Review tutors",
+      total: review.total,
+      viewAll: "/admin/tutors?status=REVIEWING",
+      empty: "No tutor profiles are waiting for review.",
+      rows: review.items.map((item) => ({
+        id: item.id,
+        href: item.href,
+        code: item.code,
+        name: item.name,
+        meta: `Submitted ${formatDate(item.at)}`,
+        badge: { text: statusLabel("tutor", item.detail), tone: "muted" },
+      })),
+    },
+    {
+      key: "fees",
+      label: "Collect fees",
+      total: fees.total,
+      viewAll: "/admin/connections?payment=UNPAID",
+      empty: "No confirmed connection is waiting for its fee.",
+      rows: fees.items.map((item) => ({
+        id: item.id,
+        href: item.href,
+        code: item.code,
+        name: item.name,
+        meta: `Both sides agreed ${formatDate(item.at)}`,
+        badge: {
+          text: `${formatDuration(Date.now() - new Date(item.at).getTime())} ago`,
+          tone: "muted",
+        },
+      })),
+    },
+  ];
+}
+
+function Panel({
+  title,
+  description,
+  children,
+  className = "",
+}: {
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <section className={`${styles.panel} ${className}`}>
+      <header className={styles.panelHead}>
+        <h2>{title}</h2>
+        {description && <p>{description}</p>}
+      </header>
+      {children}
+    </section>
+  );
+}
+
+export default async function AdminHomePage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const actor = await requireAdminPage();
-  let data: Awaited<ReturnType<typeof getDashboard>> | null = null;
+  const range = parseRange((await searchParams).range);
+  let data: Overview | null = null;
   try {
-    data = await getDashboard(actor);
+    data = await getOverview(actor, range);
   } catch {
     data = null;
   }
 
-  if (!data) {
-    return (
-      <>
-        <PageHeader eyebrow="Tổng quan" title="Tổng quan vận hành" />
-        <ErrorNotice>
-          Chưa thể kết nối MongoDB. Kiểm tra cấu hình và trạng thái cơ sở dữ
-          liệu rồi tải lại trang.
-        </ErrorNotice>
-      </>
-    );
-  }
-
-  const inProgress =
-    data.learners.CONTACTED +
-    data.learners.SEARCHING +
-    data.learners.INTRODUCED;
-  const { total, onTime } = data.contacted;
-
   return (
     <>
       <PageHeader
-        eyebrow="Tổng quan"
-        title="Tổng quan vận hành"
-        description="Số liệu tính trực tiếp từ trạng thái đã lưu. Yêu cầu chỉ được tính là đã liên hệ khi đội ngũ ghi nhận."
-        actions={
-          <Link
-            className={`${styles.button} ${styles.buttonPrimary}`}
-            href="/admin/requests?status=NEW"
-          >
-            Xử lý yêu cầu mới
-          </Link>
-        }
+        eyebrow="Intake"
+        title="Overview"
+        description="What needs the team today, and how matching is going."
+        actions={<RangePicker value={range} />}
       />
-
-      <div className={styles.statGrid}>
-        <Link
-          href="/admin/requests?status=NEW"
-          className={`${styles.stat} ${data.learners.NEW ? styles.statAlert : ""}`}
-        >
-          <span>Chưa liên hệ</span>
-          <strong>{data.learners.NEW}</strong>
-          <small>Yêu cầu mới nhận, cần phản hồi trong 24 giờ</small>
-        </Link>
-        <Link
-          href="/admin/requests?overdue=1"
-          className={`${styles.stat} ${data.overdue ? styles.statDanger : ""}`}
-        >
-          <span>Quá hạn 24 giờ</span>
-          <strong>{data.overdue}</strong>
-          <small>Chưa liên hệ sau hơn 24 giờ</small>
-        </Link>
-        <Link href="/admin/requests" className={styles.stat}>
-          <span>Đang xử lý</span>
-          <strong>{inProgress}</strong>
-          <small>Đã liên hệ, đang tìm hoặc đã giới thiệu gia sư</small>
-        </Link>
-        <Link href="/admin/requests?status=STARTED" className={styles.stat}>
-          <span>Đã bắt đầu học</span>
-          <strong>{data.learners.STARTED}</strong>
-          <small>Trên tổng {data.totals.learners} yêu cầu</small>
-        </Link>
-      </div>
-
-      <div className={styles.splitGrid}>
-        <Card
-          title="Cần liên hệ trước"
-          description="Yêu cầu chưa được liên hệ, cũ nhất lên đầu."
-          action={
-            <Link className={styles.link} href="/admin/requests?status=NEW">
-              Xem tất cả →
-            </Link>
-          }
-        >
-          {data.waiting.length ? (
-            <div className={styles.tableWrap}>
-              <table className={styles.table}>
-                <thead>
-                  <tr>
-                    <th>Mã</th>
-                    <th>Người học</th>
-                    <th>Gửi lúc</th>
-                    <th>Mốc 24 giờ</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.waiting.map((item) => (
-                    <tr key={String(item._id)}>
-                      <td data-label="Mã">
-                        <Link
-                          className={styles.tableLink}
-                          href={`/admin/requests/${String(item._id)}`}
-                        >
-                          {item.referenceCode}
-                        </Link>
-                      </td>
-                      <td data-label="Người học">
-                        {item.fullName}
-                        <span className={styles.cellSub}>
-                          {labelOf(goalLabels, item.goal)} ·{" "}
-                          {labelOf(formatLabels, item.format)}
-                        </span>
-                      </td>
-                      <td data-label="Gửi lúc">
-                        {formatDateTime(item.createdAt)}
-                      </td>
-                      <td data-label="Mốc 24 giờ">
-                        <SlaBadge
-                          sla={responseSla({
-                            status: item.status,
-                            createdAt: item.createdAt,
-                            contactedAt: item.contactedAt,
-                          })}
-                        />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+      {!data ? (
+        <ErrorNotice>
+          Could not connect to MongoDB. Check the configuration and the database
+          status, then reload the page.
+        </ErrorNotice>
+      ) : (
+        <div className={styles.overview}>
+          <Kpis data={data} />
+          <div className={styles.grid}>
+            <div className={styles.side}>
+              <Panel
+                title="Needs attention"
+                description="Oldest first. Open an item to handle it."
+              >
+                <AttentionQueue tabs={queueTabs(data)} />
+              </Panel>
+              <Panel
+                title="Requests and reply time"
+                description={`Requests received per ${range === "90d" ? "week" : "day"}, by how fast the team made contact.`}
+              >
+                <ReplyChart
+                  buckets={data.replies}
+                  unit={range === "90d" ? "week" : "day"}
+                />
+              </Panel>
             </div>
-          ) : (
-            <EmptyState title="Không có yêu cầu nào đang chờ liên hệ">
-              Khi người học gửi biểu mẫu, yêu cầu mới sẽ xuất hiện tại đây cho
-              đến khi đội ngũ ghi nhận đã liên hệ.
-            </EmptyState>
-          )}
-        </Card>
-
-        <div className={styles.stack}>
-          <Card
-            title="Phản hồi đúng hạn"
-            description="Tính trên các yêu cầu đã ghi nhận thời điểm liên hệ."
-          >
-            {total ? (
-              <p>
-                <strong style={{ fontSize: 28, fontFamily: "var(--display)" }}>
-                  {onTime}/{total}
-                </strong>{" "}
-                <span className={styles.mutedText}>
-                  yêu cầu được liên hệ trong 24 giờ
-                </span>
-              </p>
-            ) : (
-              <p className={styles.mutedText}>
-                Chưa có yêu cầu nào được ghi nhận đã liên hệ.
-              </p>
-            )}
-          </Card>
-          <Card
-            title="Hồ sơ gia sư"
-            action={
-              <Link className={styles.link} href="/admin/tutors">
-                Xem tất cả →
-              </Link>
-            }
-          >
-            <ul className={styles.miniStats}>
-              {tutorStatuses.map((status) => (
-                <li key={status}>
-                  <Link href={`/admin/tutors?status=${status}`}>
-                    {statusLabels.tutor[status]}
-                  </Link>
-                  <strong>{data.tutors[status]}</strong>
-                </li>
-              ))}
-            </ul>
-          </Card>
-          <Card
-            title="Kết nối"
-            action={
-              <Link className={styles.link} href="/admin/connections">
-                Xem tất cả →
-              </Link>
-            }
-          >
-            <ul className={styles.miniStats}>
-              {connectionStatuses.map((status) => (
-                <li key={status}>
-                  <Link href={`/admin/connections?status=${status}`}>
-                    {statusLabels.connection[status]}
-                  </Link>
-                  <strong>{data.connections[status]}</strong>
-                </li>
-              ))}
-            </ul>
-          </Card>
+            <div className={styles.side}>
+              <Panel
+                title="Matching funnel"
+                description={`Requests received in the last ${RANGE_LABELS[range]}.`}
+              >
+                <FunnelChart stages={data.funnel} />
+              </Panel>
+              <Panel
+                title="Demand vs available tutors"
+                description="Open requests by goal against approved tutors taking learners, right now."
+              >
+                <DemandChart rows={data.demand} />
+              </Panel>
+            </div>
+          </div>
         </div>
-      </div>
-
-      <Card
-        title="Yêu cầu theo trạng thái"
-        description={`${data.totals.learners} yêu cầu đã nhận.`}
-      >
-        <ul className={styles.miniStats}>
-          {learnerStatuses.map((status) => (
-            <li key={status}>
-              <Link href={`/admin/requests?status=${status}`}>
-                {statusLabels.learner[status]}
-              </Link>
-              <strong>{data.learners[status]}</strong>
-            </li>
-          ))}
-        </ul>
-      </Card>
+      )}
     </>
   );
 }
