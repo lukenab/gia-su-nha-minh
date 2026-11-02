@@ -1,24 +1,30 @@
+import { Ban } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { requireAdminPage } from "@/features/admin-auth/server/guard";
-import { StatusForm } from "@/features/admin/components/status-form";
+import { StatusActions } from "@/features/admin/components/detail-controls";
 import {
-  Card,
-  DefList,
+  Activity,
+  DetailHeader,
+  DetailLayout,
+  Fields,
+  Muted,
+  Properties,
+  Section,
+  detailStyles as detail,
+  type ActivityItem,
+} from "@/features/admin/components/detail-view";
+import { Ago, renderTime } from "@/features/admin/components/list-view";
+import {
+  AgreementPanel,
+  FeePanel,
+} from "@/features/admin/components/operation-forms";
+import {
   ErrorNotice,
-  HistoryList,
-  PageHeader,
   StatusBadge,
   adminStyles as styles,
 } from "@/features/admin/components/ui";
-import { compareTutor } from "@/features/admin/matching";
-import {
-  connectionsForRequest,
-  getConnection,
-} from "@/features/admin/server/queries";
-import { tutorFormatLabels } from "@/features/tutor-applications/validation";
-import { formatDateTime, formatVnd } from "@/shared/lib/format";
 import {
   formatLabels,
   goalLabels,
@@ -26,21 +32,53 @@ import {
   levelLabels,
   slotLabels,
   teachingAreaLabels,
-} from "@/shared/lib/options";
+  tutorFormatLabels,
+} from "@/features/admin/labels";
+import { compareTutor } from "@/features/admin/matching";
 import {
+  connectionsForRequest,
+  getConnection,
+} from "@/features/admin/server/queries";
+import { formatVnd } from "@/shared/lib/format";
+import {
+  connectionStatuses,
   normalizeStatus,
   statusLabel,
   statusOptions,
   suggestRequestStatus,
+  type ConnectionStatus,
 } from "@/shared/lib/workflow";
 
 export const dynamic = "force-dynamic";
 
 const stateLabel = {
-  match: "Khớp",
-  mismatch: "Lệch",
-  unknown: "Chưa rõ",
+  match: "Matches",
+  mismatch: "Differs",
+  unknown: "Unclear",
 } as const;
+
+const STEPS: { status: ConnectionStatus; label: string }[] = [
+  { status: "REVIEWING", label: "Proposed" },
+  { status: "INTRODUCED", label: "Introduced" },
+  { status: "CONFIRMED", label: "Agreed" },
+  { status: "STARTED", label: "Learning" },
+];
+
+const NEXT: Partial<Record<ConnectionStatus, ConnectionStatus>> = {
+  REVIEWING: "INTRODUCED",
+  CONFIRMED: "STARTED",
+};
+
+const HELP = {
+  INTRODUCED:
+    "Record this after the team has introduced the tutor to the learner. The system does not send messages or emails to anyone.",
+  STARTED: "Record that lessons have started between the learner and tutor.",
+  DECLINED:
+    "Give the reason the connection is not continuing. Recorded agreements are cleared.",
+};
+
+const isStatus = (value?: string) =>
+  (connectionStatuses as readonly string[]).includes(value ?? "");
 
 export default async function ConnectionDetailPage({
   params,
@@ -60,19 +98,14 @@ export default async function ConnectionDetailPage({
       );
   } catch {
     return (
-      <>
-        <PageHeader
-          back={{ href: "/admin/connections", label: "Tất cả kết nối" }}
-          title="Chi tiết kết nối"
-        />
-        <ErrorNotice>
-          Chưa thể tải kết nối từ MongoDB. Vui lòng thử lại sau.
-        </ErrorNotice>
-      </>
+      <ErrorNotice>
+        Could not load the connection from MongoDB. Please try again later.
+      </ErrorNotice>
     );
   }
   if (!data) notFound();
 
+  const now = renderTime();
   const { connection, request, tutor } = data;
   const status = normalizeStatus("connection", connection.status);
   const tutorStatus = tutor ? normalizeStatus("tutor", tutor.status) : null;
@@ -98,174 +131,272 @@ export default async function ConnectionDetailPage({
           tutor,
         )
       : [];
+  const stepIndex = STEPS.findIndex((step) => step.status === status);
+  const agreed =
+    Number(Boolean(connection.learnerConfirmedAt)) +
+    Number(Boolean(connection.tutorConfirmedAt));
+  const fee =
+    connection.paymentStatus === "PAID"
+      ? "Paid"
+      : connection.confirmedAt
+        ? "Due"
+        : "Not due";
+  const learnerName = request?.fullName ?? connection.requestCode;
+  const tutorName = tutor?.fullName ?? connection.tutorCode;
+  const iso = (value?: Date | string | null) =>
+    value ? new Date(value).toISOString() : null;
+
+  const activity: ActivityItem[] = [
+    {
+      kind: "created",
+      at: connection.createdAt,
+      by: connection.createdBy,
+      text: "Connection recorded",
+    },
+    ...(connection.history ?? [])
+      .filter((entry) => entry.from)
+      .map((entry): ActivityItem => ({
+        kind: "status",
+        at: entry.at,
+        by: entry.by,
+        note: entry.note,
+        text: `Status: ${statusLabel("connection", entry.from)} → ${statusLabel("connection", entry.to)}`,
+      })),
+    ...(connection.operationsHistory ?? []).map((entry): ActivityItem => ({
+      kind:
+        entry.to.includes("agreed") || entry.from === "Not confirmed"
+          ? "agreement"
+          : "payment",
+      at: entry.at,
+      by: entry.by,
+      note: entry.note,
+      text: isStatus(entry.to) ? statusLabel("connection", entry.to) : entry.to,
+    })),
+  ];
 
   return (
     <>
-      <PageHeader
-        back={{ href: "/admin/connections", label: "Tất cả kết nối" }}
-        eyebrow="Chi tiết kết nối"
-        title={`${connection.requestCode} ↔ ${connection.tutorCode}`}
-        description={`Tạo lúc ${formatDateTime(connection.createdAt)} bởi ${connection.createdBy}`}
-        actions={<StatusBadge kind="connection" status={status} large />}
+      <DetailHeader
+        back={{ href: "/admin/connections", label: "Connections" }}
+        title={`${learnerName} ↔ ${tutorName}`}
+        code={`${connection.requestCode} ↔ ${connection.tutorCode}`}
+        meta={
+          <>
+            Recorded <Ago value={connection.createdAt} now={now} />
+          </>
+        }
+        actions={
+          <StatusActions
+            kind="connection"
+            endpoint={`/api/admin/connections/${id}/status`}
+            current={status}
+            options={statusOptions("connection", status)}
+            primary={NEXT[status]}
+            help={HELP}
+          />
+        }
       />
 
-      {suggestion && request && (
-        <div className={styles.notice} style={{ marginBottom: 20 }}>
-          <span>
-            {suggestion.text} Có thể chuyển yêu cầu sang “
-            {statusLabel("learner", suggestion.to)}”.
-          </span>
-          <Link
-            className={styles.link}
-            href={`/admin/requests/${String(connection.request)}`}
-          >
-            Mở yêu cầu để xác nhận →
-          </Link>
-        </div>
-      )}
-      {tutorStatus && tutorStatus !== "ELIGIBLE" && (
-        <div
-          className={`${styles.notice} ${styles.noticeWarn}`}
-          style={{ marginBottom: 20 }}
-        >
-          Hồ sơ gia sư hiện là “{statusLabel("tutor", tutorStatus)}”, không còn
-          đủ điều kiện để giới thiệu thêm.
-        </div>
-      )}
+      <DetailLayout
+        main={
+          <>
+            <Section title="Progress">
+              {status === "DECLINED" ? (
+                <p className={detail.declined}>
+                  <Ban size={15} aria-hidden="true" />
+                  Ended. Reopen it to use this connection again.
+                </p>
+              ) : (
+                <ol className={detail.stepper} aria-label="Connection progress">
+                  {STEPS.map((step, index) => (
+                    <li
+                      key={step.status}
+                      className={
+                        index < stepIndex
+                          ? detail.stepDone
+                          : index === stepIndex
+                            ? detail.stepCurrent
+                            : undefined
+                      }
+                      aria-current={index === stepIndex ? "step" : undefined}
+                    >
+                      {step.label}
+                    </li>
+                  ))}
+                </ol>
+              )}
+              <div className={detail.blocks}>
+                <AgreementPanel
+                  key={`${connection.operationsRevision || 0}-agreement`}
+                  id={id}
+                  revision={connection.operationsRevision || 0}
+                  learnerAt={iso(connection.learnerConfirmedAt)}
+                  tutorAt={iso(connection.tutorConfirmedAt)}
+                  status={status}
+                />
+                <FeePanel
+                  key={`${connection.operationsRevision || 0}-fee`}
+                  id={id}
+                  revision={connection.operationsRevision || 0}
+                  status={connection.paymentStatus || "NOT_DUE"}
+                  confirmedAt={iso(connection.confirmedAt)}
+                  paidAt={iso(connection.paidAt)}
+                  method={connection.paymentMethod || ""}
+                  reference={connection.paymentReference || ""}
+                  amount={connection.feeAmount ?? 50000}
+                />
+              </div>
+            </Section>
 
-      <div className={styles.detailLayout}>
-        <div className={styles.stack}>
-          <Card
-            title="Yêu cầu của người học"
-            action={
-              request && (
-                <Link
-                  className={styles.link}
-                  href={`/admin/requests/${String(request._id)}`}
-                >
-                  Mở yêu cầu →
-                </Link>
-              )
-            }
-          >
-            {request ? (
-              <DefList
-                items={[
-                  { label: "Người học", value: request.fullName },
-                  {
-                    label: "Mục tiêu",
-                    value: labelOf(goalLabels, request.goal),
-                  },
-                  {
-                    label: "Trình độ",
-                    value: labelOf(levelLabels, request.currentLevel),
-                  },
-                  {
-                    label: "Hình thức",
-                    value: labelOf(formatLabels, request.format),
-                  },
-                  {
-                    label: "Lịch học",
-                    value: request.availabilitySlots?.length
-                      ? request.availabilitySlots
-                          .map((slot) => labelOf(slotLabels, slot))
-                          .join(", ")
-                      : request.availability,
-                  },
-                  {
-                    label: "Ngân sách tối đa",
-                    value: formatVnd(request.budgetMax) ?? "Chưa xác định",
-                  },
-                ]}
-              />
-            ) : (
-              <p className={styles.mutedText}>Không tìm thấy yêu cầu gốc.</p>
-            )}
-          </Card>
-
-          <Card
-            title="Hồ sơ gia sư"
-            action={
-              tutor && (
-                <Link
-                  className={styles.link}
-                  href={`/admin/tutors/${String(tutor._id)}`}
-                >
-                  Mở hồ sơ →
-                </Link>
-              )
-            }
-          >
-            {tutor ? (
-              <DefList
-                items={[
-                  { label: "Gia sư", value: tutor.fullName },
-                  {
-                    label: "Nội dung dạy",
-                    value: tutor.teachingAreas
-                      .map((area) => labelOf(teachingAreaLabels, area))
-                      .join(", "),
-                  },
-                  {
-                    label: "Hình thức",
-                    value: labelOf(tutorFormatLabels, tutor.format),
-                  },
-                  {
-                    label: "Học phí mong muốn",
-                    value: formatVnd(tutor.expectedFee) ?? "Thỏa thuận",
-                  },
-                ]}
-              />
-            ) : (
-              <p className={styles.mutedText}>Không tìm thấy hồ sơ gia sư.</p>
-            )}
-          </Card>
-
-          {checks.length > 0 && (
-            <Card
-              title="Đối chiếu tiêu chí"
-              description="Chỉ để tham khảo. Đây không phải điểm phù hợp và không quyết định việc kết nối."
+            <Section
+              title="Learner and tutor"
+              description="Side by side, for reference. This is not a match score and does not decide the connection."
             >
-              <ul className={styles.checks} style={{ marginTop: 0 }}>
-                {checks.map((check) => (
-                  <li
-                    key={check.key}
-                    className={`${styles.check} ${check.state === "match" ? styles.checkMatch : check.state === "mismatch" ? styles.checkMismatch : ""}`}
-                  >
-                    <strong>
-                      {check.label}
-                      <span>{stateLabel[check.state]}</span>
-                    </strong>
-                    <small>{check.detail}</small>
-                  </li>
-                ))}
-              </ul>
-            </Card>
-          )}
-        </div>
+              <div className={detail.compare}>
+                <div>
+                  <div className={detail.compareHead}>
+                    <h3>Learner</h3>
+                    {request && (
+                      <Link href={`/admin/requests/${String(request._id)}`}>
+                        Open request →
+                      </Link>
+                    )}
+                  </div>
+                  {request ? (
+                    <Fields
+                      items={[
+                        { label: "Name", value: request.fullName },
+                        {
+                          label: "Goal",
+                          value: labelOf(goalLabels, request.goal),
+                        },
+                        {
+                          label: "Level",
+                          value: labelOf(levelLabels, request.currentLevel),
+                        },
+                        {
+                          label: "Format",
+                          value: labelOf(formatLabels, request.format),
+                        },
+                        {
+                          label: "Schedule",
+                          value: request.availabilitySlots?.length
+                            ? request.availabilitySlots
+                                .map((slot) => labelOf(slotLabels, slot))
+                                .join(", ")
+                            : request.availability,
+                        },
+                        {
+                          label: "Budget",
+                          value: formatVnd(request.budgetMax) ?? "",
+                        },
+                      ]}
+                    />
+                  ) : (
+                    <Muted>The original request was not found.</Muted>
+                  )}
+                </div>
+                <div>
+                  <div className={detail.compareHead}>
+                    <h3>Tutor</h3>
+                    {tutor && (
+                      <Link href={`/admin/tutors/${String(tutor._id)}`}>
+                        Open profile →
+                      </Link>
+                    )}
+                  </div>
+                  {tutor ? (
+                    <Fields
+                      items={[
+                        { label: "Name", value: tutor.fullName },
+                        {
+                          label: "Teaches",
+                          value: tutor.teachingAreas
+                            .map((area) => labelOf(teachingAreaLabels, area))
+                            .join(", "),
+                        },
+                        {
+                          label: "Format",
+                          value: labelOf(tutorFormatLabels, tutor.format),
+                        },
+                        {
+                          label: "Time slots",
+                          value: tutor.availabilitySlots
+                            .map((slot) => labelOf(slotLabels, slot))
+                            .join(", "),
+                        },
+                        {
+                          label: "Expected fee",
+                          value: formatVnd(tutor.expectedFee) ?? "Negotiable",
+                        },
+                      ]}
+                    />
+                  ) : (
+                    <Muted>The tutor profile was not found.</Muted>
+                  )}
+                </div>
+              </div>
+              {checks.length > 0 && (
+                <ul className={styles.checks}>
+                  {checks.map((check) => (
+                    <li
+                      key={check.key}
+                      className={`${styles.check} ${check.state === "match" ? styles.checkMatch : check.state === "mismatch" ? styles.checkMismatch : ""}`}
+                    >
+                      <strong>
+                        {check.label}
+                        <span>{stateLabel[check.state]}</span>
+                      </strong>
+                      <small>{check.detail}</small>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Section>
 
-        <div className={styles.stack}>
-          <Card
-            title="Cập nhật kết nối"
-            description="Việc liên hệ và giới thiệu diễn ra ngoài hệ thống; hãy ghi lại kết quả tại đây."
-          >
-            <StatusForm
-              key={status}
-              endpoint={`/api/admin/connections/${id}/status`}
-              current={status}
-              options={statusOptions("connection", status)}
-              noteHelp="Ghi kết quả hoặc lý do. Hệ thống không gửi tin nhắn hay email cho ai."
+            <Activity items={activity} now={now} />
+          </>
+        }
+        aside={
+          <>
+            <Properties
+              items={[
+                {
+                  label: "Status",
+                  value: <StatusBadge kind="connection" status={status} />,
+                },
+                { label: "Agreement", value: `${agreed}/2 confirmed` },
+                { label: "Fee", value: fee },
+                {
+                  label: "Updated",
+                  value: (
+                    <>
+                      <Ago value={connection.statusUpdatedAt} now={now} />
+                      <Muted> · {connection.statusUpdatedBy}</Muted>
+                    </>
+                  ),
+                },
+                { label: "Recorded by", value: connection.createdBy },
+              ]}
             />
-          </Card>
-          <Card title="Lịch sử">
-            <HistoryList
-              kind="connection"
-              entries={connection.history}
-              emptyText="Chưa có lịch sử."
-            />
-          </Card>
-        </div>
-      </div>
+            {suggestion && request && (
+              <p className={detail.suggestion}>
+                {suggestion.text} You can move the request to “
+                {statusLabel("learner", suggestion.to)}”.
+                <Link href={`/admin/requests/${String(request._id)}`}>
+                  Open request →
+                </Link>
+              </p>
+            )}
+            {tutorStatus && tutorStatus !== "ELIGIBLE" && (
+              <p className={detail.suggestion}>
+                The tutor profile is now “{statusLabel("tutor", tutorStatus)}”
+                and can no longer be introduced.
+              </p>
+            )}
+          </>
+        }
+      />
     </>
   );
 }

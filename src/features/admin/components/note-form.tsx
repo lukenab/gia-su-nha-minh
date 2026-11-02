@@ -5,15 +5,19 @@ import { useId, useRef, useState, type FormEvent } from "react";
 
 import styles from "./admin.module.css";
 import { sendAdminJson } from "./api-client";
+import detail from "./detail.module.css";
 
 export function NoteForm({
   endpoint,
   initial,
   meta,
+  hideLabel = false,
 }: {
   endpoint: string;
   initial: string;
   meta?: string;
+  /** The surrounding panel already names the note. */
+  hideLabel?: boolean;
 }) {
   const router = useRouter();
   const id = useId();
@@ -32,7 +36,7 @@ export function NoteForm({
     setDone("");
     const result = await sendAdminJson(endpoint, "PATCH", { note });
     if (result.ok) {
-      setDone("Đã lưu ghi chú.");
+      setDone("Note saved.");
       router.refresh();
     } else {
       setError(result.error);
@@ -42,29 +46,35 @@ export function NoteForm({
   }
 
   return (
-    <form className={styles.formGrid} onSubmit={submit}>
-      <div className={styles.field}>
-        <label htmlFor={`${id}-note`}>Ghi chú nội bộ</label>
-        <textarea
-          id={`${id}-note`}
-          className={styles.textarea}
-          value={note}
-          maxLength={2000}
-          onChange={(event) => setNote(event.target.value)}
-          disabled={busy}
-        />
-        <small>
-          Chỉ đội ngũ nhìn thấy. {meta ?? "Chưa có ghi chú nào được lưu."}
-        </small>
-      </div>
-      <div className={styles.formActions}>
-        <button
-          type="submit"
-          className={`${styles.button} ${styles.buttonQuiet}`}
-          disabled={busy || note.trim() === initial.trim()}
-        >
-          {busy ? "Đang lưu..." : "Lưu ghi chú"}
-        </button>
+    <form className={detail.noteForm} onSubmit={submit}>
+      <label
+        htmlFor={`${id}-note`}
+        className={hideLabel ? styles.srOnly : detail.noteLabel}
+      >
+        Internal note
+      </label>
+      <textarea
+        id={`${id}-note`}
+        className={detail.noteInput}
+        value={note}
+        rows={3}
+        maxLength={2000}
+        placeholder="Add a note for the team"
+        onChange={(event) => setNote(event.target.value)}
+        disabled={busy}
+      />
+      <div className={detail.noteFoot}>
+        <small>Only the team can see this. {meta ?? ""}</small>
+        {/* Save appears only once there is something to save. */}
+        {(busy || note.trim() !== initial.trim()) && (
+          <button
+            type="submit"
+            className={`${detail.action} ${detail.actionPrimary}`}
+            disabled={busy}
+          >
+            {busy ? "Saving..." : "Save"}
+          </button>
+        )}
       </div>
       <div aria-live="polite">
         {done && (

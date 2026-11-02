@@ -1,17 +1,18 @@
 "use client";
 
+import { CircleCheck, Circle, Lock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useId, useRef, useState, type FormEvent } from "react";
 
-import styles from "./admin.module.css";
 import { sendAdminJson } from "./api-client";
+import styles from "./detail.module.css";
 
 export type ReviewView = {
   check: "identity" | "certificates" | "experience";
   title: string;
   hint: string;
   reviewed: boolean;
-  summary: string; // e.g. "Đã xem xét ngày 21/10/2026 bởi Thanh Trà"
+  summary: string; // e.g. "Reviewed on 21/10/2026 by Thanh Trà"
   note: string;
 };
 
@@ -28,11 +29,11 @@ function ReviewRow({
 }) {
   const router = useRouter();
   const id = useId();
+  const [open, setOpen] = useState(false);
   const [date, setDate] = useState(today);
   const [note, setNote] = useState(view.note);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [done, setDone] = useState("");
   const submitting = useRef(false);
 
   async function save(reviewed: boolean, event?: FormEvent) {
@@ -41,7 +42,6 @@ function ReviewRow({
     submitting.current = true;
     setBusy(true);
     setError("");
-    setDone("");
     const result = await sendAdminJson(endpoint, "PATCH", {
       check: view.check,
       reviewed,
@@ -49,7 +49,7 @@ function ReviewRow({
       ...(reviewed ? { reviewedOn: date } : {}),
     });
     if (result.ok) {
-      setDone(reviewed ? "Đã ghi nhận." : "Đã bỏ ghi nhận.");
+      setOpen(false);
       router.refresh();
     } else {
       setError(result.error);
@@ -59,32 +59,44 @@ function ReviewRow({
   }
 
   return (
-    <li className={styles.review}>
-      <div className={styles.reviewHead}>
-        <h3>{view.title}</h3>
-        <span
-          className={`${styles.badge} ${view.reviewed ? styles.toneGood : styles.toneMuted}`}
-        >
-          {view.reviewed ? "Đã xem xét" : "Chưa xem xét"}
-        </span>
+    <li className={`${styles.check} ${view.reviewed ? styles.checkDone : ""}`}>
+      <div className={styles.checkHead}>
+        {view.reviewed ? (
+          <CircleCheck size={18} aria-hidden="true" />
+        ) : (
+          <Circle size={18} aria-hidden="true" />
+        )}
+        <div className={styles.checkCopy}>
+          <h3>
+            {view.title}
+            <span className={styles.srOnly}>
+              {view.reviewed ? " (reviewed)" : " (not reviewed)"}
+            </span>
+          </h3>
+          <p className={styles.muted}>
+            {view.reviewed ? view.summary : view.hint}
+          </p>
+          {view.reviewed && view.note && (
+            <p className={styles.checkNote}>{view.note}</p>
+          )}
+        </div>
+        {editable && !open && (
+          <button
+            type="button"
+            className={styles.actionLink}
+            onClick={() => setOpen(true)}
+            aria-expanded={open}
+          >
+            {view.reviewed ? "Edit" : "Record"}
+          </button>
+        )}
       </div>
-      <p className={styles.mutedText}>{view.hint}</p>
-      {view.reviewed && (
-        <p className={styles.reviewNote}>
-          <strong>{view.summary}</strong>
-          {view.note ? ` — ${view.note}` : ""}
-        </p>
-      )}
-      {editable && (
-        <form
-          className={styles.formGrid}
-          onSubmit={(event) => save(true, event)}
-        >
-          <div className={styles.field}>
-            <label htmlFor={`${id}-date`}>Ngày xem xét</label>
+      {editable && open && (
+        <form className={styles.checkForm} onSubmit={(e) => save(true, e)}>
+          <label className={styles.dialogField} htmlFor={`${id}-date`}>
+            Review date
             <input
               id={`${id}-date`}
-              className={styles.input}
               type="date"
               value={date}
               max={today}
@@ -92,61 +104,58 @@ function ReviewRow({
               onChange={(event) => setDate(event.target.value)}
               disabled={busy}
             />
-          </div>
-          <div className={styles.field}>
-            <label htmlFor={`${id}-note`}>Đã xem xét những gì</label>
+          </label>
+          <label className={styles.dialogField} htmlFor={`${id}-note`}>
+            What was reviewed
             <textarea
               id={`${id}-note`}
-              className={styles.textarea}
               value={note}
               maxLength={500}
+              rows={3}
               onChange={(event) => setNote(event.target.value)}
               disabled={busy}
-              placeholder="Ví dụ: đối chiếu giấy tờ, gọi xác nhận, xem bản gốc chứng chỉ"
+              placeholder="e.g. checked documents, confirmed by phone, saw the original certificate"
             />
-          </div>
-          <div className={styles.formActions}>
-            <button
-              type="submit"
-              className={`${styles.button} ${styles.buttonPrimary}`}
-              disabled={busy}
-            >
-              {busy
-                ? "Đang lưu..."
-                : view.reviewed
-                  ? "Cập nhật ghi nhận"
-                  : "Ghi nhận đã xem xét"}
-            </button>
+          </label>
+          {error && (
+            <p role="alert" className={styles.dialogError}>
+              {error}
+            </p>
+          )}
+          <div className={styles.checkActions}>
             {view.reviewed && (
               <button
                 type="button"
-                className={`${styles.button} ${styles.buttonDanger}`}
+                className={`${styles.actionLink} ${styles.actionLinkDanger}`}
                 disabled={busy}
                 onClick={() => save(false)}
               >
-                Bỏ ghi nhận
+                Remove record
               </button>
             )}
+            <button
+              type="button"
+              className={styles.action}
+              onClick={() => setOpen(false)}
+              disabled={busy}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className={`${styles.action} ${styles.actionPrimary}`}
+              disabled={busy}
+            >
+              {busy ? "Saving..." : "Save"}
+            </button>
           </div>
         </form>
       )}
-      <div aria-live="polite">
-        {done && (
-          <p className={`${styles.message} ${styles.messageOk}`}>{done}</p>
-        )}
-        {error && (
-          <p
-            className={`${styles.message} ${styles.messageError}`}
-            role="alert"
-          >
-            {error}
-          </p>
-        )}
-      </div>
     </li>
   );
 }
 
+/** The three review steps as a checklist with progress. */
 export function TutorReviewForm({
   endpoint,
   views,
@@ -160,20 +169,34 @@ export function TutorReviewForm({
   editable: boolean;
   lockedReason?: string;
 }) {
+  const done = views.filter((view) => view.reviewed).length;
   return (
     <>
-      {!editable && lockedReason && (
-        <p
-          className={`${styles.notice} ${styles.noticeWarn}`}
-          style={{ marginBottom: 14 }}
+      <div className={styles.progress}>
+        <span>
+          <strong>
+            {done}/{views.length}
+          </strong>{" "}
+          verified
+        </span>
+        <span
+          className={styles.progressTrack}
+          role="progressbar"
+          aria-label="Review progress"
+          aria-valuemin={0}
+          aria-valuemax={views.length}
+          aria-valuenow={done}
         >
+          <span style={{ width: `${(done / views.length) * 100}%` }} />
+        </span>
+      </div>
+      {!editable && lockedReason && (
+        <p className={styles.locked}>
+          <Lock size={14} aria-hidden="true" />
           {lockedReason}
         </p>
       )}
-      <ul
-        className={styles.reviewList}
-        style={{ margin: 0, padding: 0, listStyle: "none" }}
-      >
+      <ul className={styles.checklist}>
         {views.map((view) => (
           <ReviewRow
             key={`${view.check}-${view.reviewed}-${view.summary}`}
