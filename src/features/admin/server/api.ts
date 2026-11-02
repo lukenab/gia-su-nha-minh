@@ -35,20 +35,17 @@ export async function adminMutation<S extends z.ZodType>(
     options.id !== undefined &&
     !objectIdSchema.safeParse(options.id).success
   ) {
-    return NextResponse.json(
-      { error: "Không tìm thấy bản ghi." },
-      { status: 404 },
-    );
+    return NextResponse.json({ error: "Record not found." }, { status: 404 });
   }
 
-  const parsedBody = await readJsonBody(request);
+  const parsedBody = await readJsonBody(request, "en");
   if ("response" in parsedBody) return parsedBody.response;
 
   const parsed = options.schema.safeParse(parsedBody.body);
   if (!parsed.success) {
     return NextResponse.json(
       {
-        error: "Dữ liệu chưa hợp lệ. Vui lòng kiểm tra lại các trường đã nhập.",
+        error: "Some fields are not valid. Check what you entered.",
       },
       { status: 400 },
     );
@@ -68,7 +65,7 @@ export async function adminMutation<S extends z.ZodType>(
     );
   } catch {
     return NextResponse.json(
-      { error: "Chưa thể lưu thay đổi. Vui lòng thử lại sau." },
+      { error: "Could not save the changes. Please try again later." },
       { status: 503 },
     );
   }

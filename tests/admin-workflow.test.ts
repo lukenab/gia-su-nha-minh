@@ -28,6 +28,7 @@ import {
   normalizeStatus,
   responseSla,
   statusLabel,
+  statusLabelsVi,
   statusNeedsNote,
   statusOptions,
   suggestRequestStatus,
@@ -81,7 +82,8 @@ test("records that only carry NEW (or nothing) stay valid", () => {
   assert.equal(normalizeStatus("learner", undefined), "NEW");
   assert.equal(normalizeStatus("learner", "garbage"), "NEW");
   assert.equal(normalizeStatus("tutor", undefined), "NEW");
-  assert.equal(statusLabel("learner", undefined), "Mới nhận");
+  assert.equal(statusLabel("learner", undefined), "New");
+  assert.equal(statusLabel("learner", undefined, statusLabelsVi), "Mới nhận");
   assert.deepEqual(
     statusOptions("learner", "NEW").map((option) => option.value),
     ["CONTACTED", "CLOSED"],
@@ -116,7 +118,7 @@ test("the 24-hour clock runs until the team records a contact", () => {
   });
   assert.equal(waiting.kind, "waiting");
   assert.equal(waiting.kind === "waiting" && waiting.ms, 19 * 3_600_000);
-  assert.equal(describeSla(waiting), "Còn 19 giờ");
+  assert.equal(describeSla(waiting), "19h left");
 
   const overdue = responseSla({
     status: "NEW",
@@ -124,7 +126,7 @@ test("the 24-hour clock runs until the team records a contact", () => {
     now: at(27),
   });
   assert.equal(overdue.kind, "overdue");
-  assert.equal(describeSla(overdue), "Quá hạn 3 giờ");
+  assert.equal(describeSla(overdue), "Overdue by 3h");
 });
 
 test("receiving the form is not a contact; only contactedAt stops the clock", () => {
@@ -156,10 +158,10 @@ test("receiving the form is not a contact; only contactedAt stops the clock", ()
 });
 
 test("durations read naturally in Vietnamese", () => {
-  assert.equal(formatDuration(5 * 60_000), "5 phút");
-  assert.equal(formatDuration(65 * 60_000), "1 giờ 5 phút");
-  assert.equal(formatDuration(3 * 3_600_000), "3 giờ");
-  assert.equal(formatDuration(26 * 3_600_000), "1 ngày 2 giờ");
+  assert.equal(formatDuration(5 * 60_000), "5m");
+  assert.equal(formatDuration(65 * 60_000), "1h 5m");
+  assert.equal(formatDuration(3 * 3_600_000), "3h");
+  assert.equal(formatDuration(26 * 3_600_000), "1d 2h");
 });
 
 /* ------------------------------- matching ------------------------------- */
@@ -251,9 +253,12 @@ test("comparison reports match, mismatch and unknown without scoring", () => {
 
 test("list query strings are sanitised", () => {
   assert.deepEqual(parseRequestListParams({}), {
+    assignedTo: "",
     page: 1,
+    size: 25,
     q: "",
     status: undefined,
+    stage: undefined,
     goal: undefined,
     format: undefined,
     overdue: false,
@@ -283,7 +288,9 @@ test("list query strings are sanitised", () => {
     "STARTED",
   );
   assert.equal(parseMatchParams({ level: "1", all: "1" }).soft.level, true);
-  assert.equal(PAGE_SIZE, 20);
+  assert.equal(PAGE_SIZE, 25);
+  assert.equal(parseRequestListParams({ size: "100" }).size, 100);
+  assert.equal(parseRequestListParams({ size: "7" }).size, 25);
 });
 
 test("search text cannot inject regular expressions", () => {

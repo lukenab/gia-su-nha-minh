@@ -41,8 +41,8 @@ const fail = (status: number, error: string): ServiceResult<never> => ({
 const ok = <T>(data: T): ServiceResult<T> => ({ ok: true, data });
 
 const STALE =
-  "Trạng thái đã thay đổi ở nơi khác. Hãy tải lại trang để xem trạng thái mới nhất.";
-const NOT_FOUND = "Không tìm thấy bản ghi.";
+  "The status was changed elsewhere. Reload the page to see the latest status.";
+const NOT_FOUND = "Record not found.";
 
 export const CONNECTABLE_REQUEST_STATUSES: readonly LearnerStatus[] = [
   "CONTACTED",
@@ -59,7 +59,7 @@ function reasonProblem(
     statusNeedsNote(kind, to as never) &&
     note.trim().length < MIN_REASON_LENGTH
   ) {
-    return `Vui lòng ghi lý do khi chuyển sang “${statusLabel(kind, to)}”.`;
+    return `Please give a reason for moving to “${statusLabel(kind, to)}”.`;
   }
   return null;
 }
@@ -83,7 +83,7 @@ export async function changeLearnerStatus(
   if (!canTransition("learner", from, input.to)) {
     return fail(
       422,
-      `Không thể chuyển từ “${statusLabel("learner", from)}” sang “${statusLabel("learner", input.to)}”.`,
+      `Cannot move from “${statusLabel("learner", from)}” to “${statusLabel("learner", input.to)}”.`,
     );
   }
   const problem = reasonProblem("learner", input.to, input.note);
@@ -145,9 +145,9 @@ export async function setLearnerNote(
 export const reviewChecks = ["identity", "certificates", "experience"] as const;
 export type ReviewCheck = (typeof reviewChecks)[number];
 export const reviewLabels: Record<ReviewCheck, string> = {
-  identity: "Danh tính",
-  certificates: "Chứng chỉ",
-  experience: "Kinh nghiệm",
+  identity: "Identity",
+  certificates: "Certificates",
+  experience: "Experience",
 };
 
 type ReviewsShape = Partial<
@@ -175,7 +175,7 @@ export async function changeTutorStatus(
   if (!canTransition("tutor", from, input.to)) {
     return fail(
       422,
-      `Không thể chuyển từ “${statusLabel("tutor", from)}” sang “${statusLabel("tutor", input.to)}”.`,
+      `Cannot move from “${statusLabel("tutor", from)}” to “${statusLabel("tutor", input.to)}”.`,
     );
   }
   const problem = reasonProblem("tutor", input.to, input.note);
@@ -187,7 +187,7 @@ export async function changeTutorStatus(
     if (missing.length) {
       return fail(
         422,
-        `Cần ghi nhận đã xem xét ${missing.map((check) => reviewLabels[check].toLowerCase()).join(", ")} trước khi đánh dấu đủ điều kiện giới thiệu.`,
+        `Record the ${missing.map((check) => reviewLabels[check].toLowerCase()).join(", ")} review before approving the profile.`,
       );
     }
   }
@@ -238,7 +238,7 @@ export async function setTutorReview(
   if (input.reviewed && input.note.trim().length < MIN_REASON_LENGTH) {
     return fail(
       422,
-      "Vui lòng ghi chú ngắn gọn bạn đã xem xét những gì (ví dụ giấy tờ, nguồn đối chiếu).",
+      "Add a short note on what you reviewed (for example documents or sources checked).",
     );
   }
   let reviewedAt: Date | null = null;
@@ -247,9 +247,9 @@ export async function setTutorReview(
       ? new Date(`${input.reviewedOn}T12:00:00+07:00`)
       : new Date();
     if (Number.isNaN(reviewedAt.getTime()))
-      return fail(422, "Ngày xem xét không hợp lệ.");
+      return fail(422, "The review date is not valid.");
     if (reviewedAt.getTime() > Date.now() + 24 * 3600 * 1000)
-      return fail(422, "Ngày xem xét không thể ở tương lai.");
+      return fail(422, "The review date cannot be in the future.");
   }
 
   await connectToDatabase();
@@ -273,7 +273,7 @@ export async function setTutorReview(
   return exists
     ? fail(
         409,
-        "Chỉ ghi nhận xem xét khi hồ sơ đang ở trạng thái “Đang xem xét”.",
+        "Reviews can only be recorded while the profile is “In review”.",
       )
     : fail(404, NOT_FOUND);
 }
@@ -311,7 +311,7 @@ export async function createConnection(
       .select("referenceCode status")
       .lean(),
     TutorApplication.findById(input.tutorId)
-      .select("referenceCode status")
+      .select("referenceCode status acceptingStudents")
       .lean(),
   ]);
   if (!request || !tutor) return fail(404, NOT_FOUND);
@@ -321,17 +321,19 @@ export async function createConnection(
     return fail(
       422,
       requestStatus === "NEW"
-        ? "Hãy liên hệ người học và ghi nhận “Đã liên hệ” trước khi kết nối gia sư."
-        : `Không thể thêm kết nối khi yêu cầu đang ở trạng thái “${statusLabel("learner", requestStatus)}”.`,
+        ? "Contact the learner and record “Contacted” before connecting a tutor."
+        : `Cannot add a connection while the request is “${statusLabel("learner", requestStatus)}”.`,
     );
   }
   if (normalizeStatus("tutor", tutor.status) !== "ELIGIBLE") {
-    return fail(
-      422,
-      "Chỉ hồ sơ gia sư đã được đánh dấu “Đủ điều kiện giới thiệu” mới có thể được kết nối.",
-    );
+    return fail(422, "Only approved tutor profiles can be connected.");
   }
 
+  if (tutor.acceptingStudents !== true)
+    return fail(
+      422,
+      "The tutor has not confirmed they are taking new learners.",
+    );
   // Make sure the unique index exists before relying on it for duplicates.
   await Connection.init();
   const now = new Date();
@@ -358,7 +360,7 @@ export async function createConnection(
     return ok({ id: String(created._id) });
   } catch (error) {
     if ((error as { code?: number }).code === 11000) {
-      return fail(409, "Gia sư này đã được ghi nhận cho yêu cầu này.");
+      return fail(409, "This tutor is already recorded for this request.");
     }
     throw error;
   }
@@ -372,7 +374,9 @@ export async function changeConnectionStatus(
   assertAdminActor(actor);
   await connectToDatabase();
   const current = await Connection.findById(id)
-    .select("status tutor introducedAt startedAt")
+    .select(
+      "status tutor introducedAt startedAt confirmedAt paymentStatus operationsRevision",
+    )
     .lean();
   if (!current) return fail(404, NOT_FOUND);
 
@@ -381,22 +385,38 @@ export async function changeConnectionStatus(
   if (!canTransition("connection", from, input.to)) {
     return fail(
       422,
-      `Không thể chuyển từ “${statusLabel("connection", from)}” sang “${statusLabel("connection", input.to)}”.`,
+      `Cannot move from “${statusLabel("connection", from)}” to “${statusLabel("connection", input.to)}”.`,
     );
   }
   const problem = reasonProblem("connection", input.to, input.note);
   if (problem) return fail(422, problem);
 
+  if (input.to === "CONFIRMED")
+    return fail(
+      422,
+      "Record the learner's and the tutor's confirmation separately.",
+    );
+  if (input.to === "STARTED" && !current.confirmedAt)
+    return fail(
+      422,
+      "Both sides must confirm before lessons can be recorded as started.",
+    );
+  if (input.to === "DECLINED" && current.paymentStatus === "PAID")
+    return fail(
+      422,
+      "Reconcile and reverse the payment before closing a paid connection.",
+    );
   // Only a qualified profile may be introduced or put back under review.
   if (input.to === "INTRODUCED" || input.to === "REVIEWING") {
     const tutor = await TutorApplication.findById(current.tutor)
-      .select("status")
+      .select("status acceptingStudents")
       .lean();
-    if (!tutor || normalizeStatus("tutor", tutor.status) !== "ELIGIBLE") {
-      return fail(
-        422,
-        "Hồ sơ gia sư không còn ở trạng thái “Đủ điều kiện giới thiệu”.",
-      );
+    if (
+      !tutor ||
+      tutor.acceptingStudents !== true ||
+      normalizeStatus("tutor", tutor.status) !== "ELIGIBLE"
+    ) {
+      return fail(422, "The tutor profile is no longer approved.");
     }
   }
 
@@ -410,10 +430,24 @@ export async function changeConnectionStatus(
     set.introducedAt = now;
   if (input.to === "STARTED" && !current.startedAt) set.startedAt = now;
 
+  if (input.to === "DECLINED")
+    Object.assign(set, {
+      learnerConfirmedAt: null,
+      tutorConfirmedAt: null,
+      confirmedAt: null,
+      paymentStatus: "NOT_DUE",
+    });
   const updated = await Connection.findOneAndUpdate(
-    { _id: id, status: current.status },
+    {
+      _id: id,
+      status: current.status,
+      ...(current.operationsRevision == null
+        ? { operationsRevision: { $exists: false } }
+        : { operationsRevision: current.operationsRevision }),
+    },
     {
       $set: set,
+      $inc: { operationsRevision: 1 },
       $push: {
         history: {
           from,

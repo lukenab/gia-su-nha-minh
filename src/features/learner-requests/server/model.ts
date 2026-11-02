@@ -45,6 +45,8 @@ const learnerRequestSchema = new Schema(
     // Set only when the team marks the request as contacted (not on intake).
     contactedAt: { type: Date, default: null },
     statusHistory: { type: [historyEntry], default: [] },
+    assignedTo: { type: String, default: "", index: true },
+    assignmentHistory: { type: [historyEntry], default: [] },
     internalNote: { type: String, default: "" },
     internalNoteUpdatedAt: { type: Date, default: null },
     internalNoteUpdatedBy: { type: String, default: "" },

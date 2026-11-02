@@ -7,12 +7,19 @@
 import "server-only";
 import mongoose from "mongoose";
 
-import type { ConnectionDoc, Paged, RequestDoc, TutorDoc } from "../types.ts";
+import type {
+  AdminNotification,
+  ConnectionDoc,
+  Paged,
+  RequestDoc,
+  TutorDoc,
+} from "../types.ts";
 
 import {
   RESPONSE_SLA_MS,
   connectionStatuses,
   learnerStatuses,
+  normalizeStatus,
   tutorStatuses,
 } from "../../../shared/lib/workflow.ts";
 import { connectToDatabase } from "../../../shared/server/mongodb.ts";
@@ -24,7 +31,8 @@ import { LearnerRequest } from "../../learner-requests/server/model.ts";
 import { TutorApplication } from "../../tutor-applications/server/model.ts";
 import { buildTutorFilter } from "../matching.ts";
 import {
-  PAGE_SIZE,
+  REQUEST_STAGES,
+  TUTOR_STAGES,
   escapeRegex,
   type parseConnectionListParams,
   type parseMatchParams,
@@ -67,70 +75,175 @@ function id(value: string) {
 
 /* ------------------------------- lists ------------------------------- */
 
-export async function listRequests(
+type Filter = Record<string, unknown>;
+
+/** Filters other than the status tab, shared by the list and its tab counts. */
+function requestFilter(params: ReturnType<typeof parseRequestListParams>) {
+  const filter: Filter = {};
+  if (params.q)
+    Object.assign(filter, search(params.q, ["referenceCode", "fullName"]));
+  if (params.assignedTo) filter.assignedTo = params.assignedTo;
+  if (params.goal) filter.goal = params.goal;
+  if (params.format) filter.format = params.format;
+  return filter;
+}
+
+function tutorFilter(params: ReturnType<typeof parseTutorListParams>) {
+  const filter: Filter = {};
+  if (params.q)
+    Object.assign(filter, search(params.q, ["referenceCode", "fullName"]));
+  if (params.accepting === "yes") filter.acceptingStudents = true;
+  if (params.accepting === "no") filter.acceptingStudents = { $ne: true };
+  if (params.area) filter.teachingAreas = params.area;
+  if (params.format) filter.format = params.format;
+  return filter;
+}
+
+function connectionFilter(
+  params: ReturnType<typeof parseConnectionListParams>,
+) {
+  const filter: Filter = {};
+  if (params.q)
+    Object.assign(filter, search(params.q, ["requestCode", "tutorCode"]));
+  if (params.status) filter.status = params.status;
+  if (params.confirmed) filter.confirmedAt = { $ne: null };
+  return filter;
+}
+
+const paymentFilter = (payment: "NOT_DUE" | "UNPAID" | "PAID") =>
+  payment === "NOT_DUE"
+    ? { paymentStatus: { $in: ["NOT_DUE", null] } }
+    : { paymentStatus: payment };
+
+async function countBy(
+  model: typeof LearnerRequest,
+  filter: Filter,
+  field: string,
+) {
+  const rows = (await model.aggregate([
+    { $match: filter },
+    { $group: { _id: `$${field}`, count: { $sum: 1 } } },
+  ])) as { _id: unknown; count: number }[];
+  return rows;
+}
+
+/** Counts for the status tabs, with every other filter applied. */
+export async function countRequestTabs(
   actor: AdminActor,
   params: ReturnType<typeof parseRequestListParams>,
 ) {
   assertAdminActor(actor);
   await connectToDatabase();
-  const filter: Record<string, unknown> = {};
-  if (params.q)
-    Object.assign(filter, search(params.q, ["referenceCode", "fullName"]));
-  if (params.status) filter.status = params.status;
-  if (params.goal) filter.goal = params.goal;
-  if (params.format) filter.format = params.format;
-  if (params.overdue) {
-    filter.status = "NEW";
-    filter.createdAt = { $lt: new Date(Date.now() - RESPONSE_SLA_MS) };
+  const rows = await countBy(LearnerRequest, requestFilter(params), "status");
+  const counts: Record<string, number> = { all: 0 };
+  for (const row of rows) {
+    const status = normalizeStatus("learner", row._id);
+    counts[status] = (counts[status] ?? 0) + row.count;
+    counts.all! += row.count;
   }
-  const total = await LearnerRequest.countDocuments(filter);
-  const page = clampPage(params.page, total, PAGE_SIZE);
-  const items = (await LearnerRequest.find(filter)
-    .sort({ createdAt: -1, _id: -1 })
-    .skip((page - 1) * PAGE_SIZE)
-    .limit(PAGE_SIZE)
-    .lean()) as unknown as RequestDoc[];
-  return paged(items, total, page, PAGE_SIZE);
+  return counts;
 }
 
-export async function listTutors(
+export async function countTutorTabs(
   actor: AdminActor,
   params: ReturnType<typeof parseTutorListParams>,
 ) {
   assertAdminActor(actor);
   await connectToDatabase();
-  const filter: Record<string, unknown> = {};
-  if (params.q)
-    Object.assign(filter, search(params.q, ["referenceCode", "fullName"]));
-  if (params.status) filter.status = params.status;
-  if (params.area) filter.teachingAreas = params.area;
-  if (params.format) filter.format = params.format;
-  const total = await TutorApplication.countDocuments(filter);
-  const page = clampPage(params.page, total, PAGE_SIZE);
-  const items = (await TutorApplication.find(filter)
-    .sort({ createdAt: -1, _id: -1 })
-    .skip((page - 1) * PAGE_SIZE)
-    .limit(PAGE_SIZE)
-    .lean()) as unknown as TutorDoc[];
-  return paged(items, total, page, PAGE_SIZE);
+  const rows = await countBy(
+    TutorApplication as unknown as typeof LearnerRequest,
+    tutorFilter(params),
+    "status",
+  );
+  const counts: Record<string, number> = { all: 0 };
+  for (const row of rows) {
+    const status = normalizeStatus("tutor", row._id);
+    counts[status] = (counts[status] ?? 0) + row.count;
+    counts.all! += row.count;
+  }
+  return counts;
 }
 
-export async function listConnections(
+export async function countConnectionTabs(
   actor: AdminActor,
   params: ReturnType<typeof parseConnectionListParams>,
 ) {
   assertAdminActor(actor);
   await connectToDatabase();
-  const filter: Record<string, unknown> = {};
-  if (params.q)
-    Object.assign(filter, search(params.q, ["requestCode", "tutorCode"]));
+  const rows = await countBy(
+    Connection as unknown as typeof LearnerRequest,
+    connectionFilter(params),
+    "paymentStatus",
+  );
+  const counts: Record<string, number> = { all: 0, NOT_DUE: 0 };
+  for (const row of rows) {
+    const key =
+      row._id === "UNPAID" || row._id === "PAID" ? row._id : "NOT_DUE";
+    counts[key] = (counts[key] ?? 0) + row.count;
+    counts.all! += row.count;
+  }
+  return counts;
+}
+
+export async function listRequests(
+  actor: AdminActor,
+  params: ReturnType<typeof parseRequestListParams>,
+  size = params.size,
+) {
+  assertAdminActor(actor);
+  await connectToDatabase();
+  const filter = requestFilter(params);
+  if (params.stage) filter.status = { $in: REQUEST_STAGES[params.stage] };
   if (params.status) filter.status = params.status;
+  if (params.overdue) {
+    filter.status = "NEW";
+    filter.createdAt = { $lt: new Date(Date.now() - RESPONSE_SLA_MS) };
+  }
+  const total = await LearnerRequest.countDocuments(filter);
+  const page = clampPage(params.page, total, size);
+  const items = (await LearnerRequest.find(filter)
+    .sort({ createdAt: -1, _id: -1 })
+    .skip((page - 1) * size)
+    .limit(size)
+    .lean()) as unknown as RequestDoc[];
+  return paged(items, total, page, size);
+}
+
+export async function listTutors(
+  actor: AdminActor,
+  params: ReturnType<typeof parseTutorListParams>,
+  size = params.size,
+) {
+  assertAdminActor(actor);
+  await connectToDatabase();
+  const filter = tutorFilter(params);
+  if (params.stage) filter.status = { $in: TUTOR_STAGES[params.stage] };
+  if (params.status) filter.status = params.status;
+  const total = await TutorApplication.countDocuments(filter);
+  const page = clampPage(params.page, total, size);
+  const items = (await TutorApplication.find(filter)
+    .sort({ createdAt: -1, _id: -1 })
+    .skip((page - 1) * size)
+    .limit(size)
+    .lean()) as unknown as TutorDoc[];
+  return paged(items, total, page, size);
+}
+
+export async function listConnections(
+  actor: AdminActor,
+  params: ReturnType<typeof parseConnectionListParams>,
+  size = params.size,
+) {
+  assertAdminActor(actor);
+  await connectToDatabase();
+  const filter = connectionFilter(params);
+  if (params.payment) Object.assign(filter, paymentFilter(params.payment));
   const total = await Connection.countDocuments(filter);
-  const page = clampPage(params.page, total, PAGE_SIZE);
+  const page = clampPage(params.page, total, size);
   const items = (await Connection.find(filter)
     .sort({ statusUpdatedAt: -1, _id: -1 })
-    .skip((page - 1) * PAGE_SIZE)
-    .limit(PAGE_SIZE)
+    .skip((page - 1) * size)
+    .limit(size)
     .lean()) as unknown as ConnectionDoc[];
 
   // Names are looked up only for the rows on this page.
@@ -156,7 +269,7 @@ export async function listConnections(
     })),
     total,
     page,
-    PAGE_SIZE,
+    size,
   );
 }
 
@@ -266,7 +379,7 @@ export async function findTutorCandidates(
         options.soft,
       );
   // Only profiles the team marked as eligible can ever be introduced.
-  const filter = { ...base, status: "ELIGIBLE" };
+  const filter = { ...base, status: "ELIGIBLE", acceptingStudents: true };
   const total = await TutorApplication.countDocuments(filter);
   const page = clampPage(options.page, total, MATCH_PAGE_SIZE);
   const items = (await TutorApplication.find(filter)
@@ -284,6 +397,7 @@ export async function findTutorCandidates(
   const byTutor = new Map(existing.map((item) => [String(item.tutor), item]));
   const eligibleTotal = await TutorApplication.countDocuments({
     status: "ELIGIBLE",
+    acceptingStudents: true,
   });
   return {
     ...paged(items, total, page, MATCH_PAGE_SIZE),
@@ -381,4 +495,91 @@ export async function getDashboard(actor: AdminActor) {
     },
     waiting,
   };
+}
+
+/* --------------------------- notifications --------------------------- */
+
+const NOTIFICATION_LIMIT = 6;
+
+/**
+ * Work waiting for the team, read from the saved statuses: requests not yet
+ * contacted, tutor profiles not yet reviewed and confirmed connections whose
+ * fee is not recorded. Nothing is stored; "read" is tracked by the browser.
+ */
+export async function getNotifications(
+  actor: AdminActor,
+): Promise<AdminNotification[]> {
+  assertAdminActor(actor);
+  await connectToDatabase();
+  const overdueBefore = Date.now() - RESPONSE_SLA_MS;
+  const [requests, tutors, unpaid] = await Promise.all([
+    LearnerRequest.find({ status: "NEW" })
+      .sort({ createdAt: -1 })
+      .limit(NOTIFICATION_LIMIT)
+      .select("referenceCode fullName createdAt")
+      .lean(),
+    TutorApplication.find({ status: "NEW" })
+      .sort({ createdAt: -1 })
+      .limit(NOTIFICATION_LIMIT)
+      .select("referenceCode fullName createdAt")
+      .lean(),
+    Connection.find({
+      paymentStatus: "UNPAID",
+      status: { $in: ["CONFIRMED", "STARTED"] },
+    })
+      .sort({ confirmedAt: -1 })
+      .limit(NOTIFICATION_LIMIT)
+      .select("requestCode tutorCode confirmedAt")
+      .lean(),
+  ]);
+  const items: AdminNotification[] = [
+    ...requests.map((doc) => {
+      const at = new Date(doc.createdAt);
+      return {
+        id: `request-${String(doc._id)}`,
+        title:
+          at.getTime() < overdueBefore
+            ? "Learner request past 24 hours"
+            : "New learner request",
+        message: `${doc.fullName} is waiting to be contacted.`,
+        context: String(doc.referenceCode),
+        href: `/admin/requests/${String(doc._id)}`,
+        at: at.toISOString(),
+      };
+    }),
+    ...tutors.map((doc) => ({
+      id: `tutor-${String(doc._id)}`,
+      title: "New tutor profile",
+      message: `${doc.fullName} sent a profile to review.`,
+      context: String(doc.referenceCode),
+      href: `/admin/tutors/${String(doc._id)}`,
+      at: new Date(doc.createdAt).toISOString(),
+    })),
+    ...unpaid.map((doc) => ({
+      id: `fee-${String(doc._id)}`,
+      title: "Connection fee not received",
+      message: "Both sides agreed. No payment is recorded yet.",
+      context: `${doc.requestCode} ↔ ${doc.tutorCode}`,
+      href: `/admin/connections/${String(doc._id)}`,
+      at: new Date(doc.confirmedAt ?? Date.now()).toISOString(),
+    })),
+  ];
+  return items
+    .sort((a, b) => b.at.localeCompare(a.at))
+    .slice(0, NOTIFICATION_LIMIT * 2);
+}
+
+/** Counts shown as badges beside the sidebar links. */
+export async function getNavCounts(actor: AdminActor) {
+  assertAdminActor(actor);
+  await connectToDatabase();
+  const [requests, overdue, tutors] = await Promise.all([
+    LearnerRequest.countDocuments({ status: "NEW" }),
+    LearnerRequest.countDocuments({
+      status: "NEW",
+      createdAt: { $lt: new Date(Date.now() - RESPONSE_SLA_MS) },
+    }),
+    TutorApplication.countDocuments({ status: "NEW" }),
+  ]);
+  return { requests, overdue, tutors };
 }

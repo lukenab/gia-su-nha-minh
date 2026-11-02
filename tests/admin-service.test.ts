@@ -51,6 +51,7 @@ function tutor(overrides: Record<string, unknown> = {}) {
     fullName: `Gia sư ${seq}`,
     phone: "0901234567",
     preferredChannel: "zalo",
+    acceptingStudents: true,
     teachingAreas: ["ielts"],
     learnerLevels: ["intermediate"],
     experience: "one_to_two",
@@ -67,6 +68,7 @@ async function withDatabase(run: () => Promise<void>) {
   const mongo = await MongoMemoryServer.create();
   process.env.MONGODB_URI = mongo.getUri("gsnm_admin_service");
   try {
+    await mongoose.connect(process.env.MONGODB_URI!);
     await run();
   } finally {
     await mongoose.disconnect();
@@ -408,11 +410,13 @@ test("lists are paged from the database and searchable", async () => {
 
     const first = await listRequests(WHO, params(1));
     assert.equal(first.total, 45);
-    assert.equal(first.items.length, 20);
-    assert.equal(first.pages, 3);
-    assert.equal((await listRequests(WHO, params(3))).items.length, 5);
+    assert.equal(first.items.length, 25);
+    assert.equal(first.pages, 2);
+    assert.equal((await listRequests(WHO, params(2))).items.length, 20);
     // A page past the end falls back to the last real page.
-    assert.equal((await listRequests(WHO, params(99))).page, 3);
+    assert.equal((await listRequests(WHO, params(99))).page, 2);
+    const wide = await listRequests(WHO, params(1, { size: "50" }));
+    assert.deepEqual([wide.items.length, wide.pages], [45, 1]);
 
     const found = await listRequests(WHO, params(1, { q: "đặc biệt" }));
     assert.equal(found.total, 1);
@@ -429,8 +433,11 @@ test("lists are paged from the database and searchable", async () => {
       (
         await listTutors(WHO, {
           page: 1,
+          size: 25,
           q: "",
           status: undefined,
+          stage: undefined,
+          accepting: undefined,
           area: undefined,
           format: undefined,
         })
@@ -438,7 +445,16 @@ test("lists are paged from the database and searchable", async () => {
       0,
     );
     assert.equal(
-      (await listConnections(WHO, { page: 1, q: "", status: undefined })).total,
+      (
+        await listConnections(WHO, {
+          page: 1,
+          size: 25,
+          q: "",
+          status: undefined,
+          payment: undefined,
+          confirmed: false,
+        })
+      ).total,
       0,
     );
   });
