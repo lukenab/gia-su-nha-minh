@@ -6,19 +6,23 @@
     "dev": "next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
-    "test": "node --test tests/learner-request.test.ts tests/tutor-application.test.ts tests/landing-content.test.ts tests/admin-workflow.test.ts tests/admin-session.test.ts",
-    "test:db": "node --test tests/mongodb.test.ts tests/admin-service.test.ts tests/admin-auth.test.ts",
-    "test:e2e": "node --test tests/e2e.test.ts tests/admin-e2e.test.ts",
+    "test": "node --conditions=react-server --test tests/learner-request.test.ts tests/tutor-application.test.ts tests/landing-content.test.ts tests/admin-workflow.test.ts tests/admin-session.test.ts tests/admin-actor.test.ts tests/form-validation.test.ts tests/admin-csv.test.ts tests/admin-overview.test.ts",
+    "test:db": "node --conditions=react-server --test tests/mongodb.test.ts tests/admin-service.test.ts tests/admin-auth.test.ts tests/admin-operations.test.ts",
+    "test:e2e": "node --conditions=react-server --test tests/e2e.test.ts tests/admin-e2e.test.ts",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
-    "fmt": "oxfmt app components lib tests next.config.ts package.json",
-    "fmt:check": "oxfmt --check app components lib tests next.config.ts package.json"
+    "fmt": "oxfmt src tests next.config.ts package.json",
+    "fmt:check": "oxfmt --check src tests next.config.ts package.json",
+    "admin:create": "node --conditions=react-server --env-file-if-exists=.env.local scripts/create-admin.mjs",
+    "admin:migrate-en": "node --conditions=react-server --env-file-if-exists=.env.local scripts/migrate-admin-history-en.mjs"
   },
   "dependencies": {
+    "lucide-react": "1.17.0",
     "mongoose": "^9.11.2",
-    "next": "16.4.0",
+    "next": "16.4.3",
     "react": "19.3.0",
     "react-dom": "19.3.0",
+    "server-only": "0.0.1",
     "zod": "^4.6.7"
   },
   "devDependencies": {
@@ -26,7 +30,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.4.0",
+    "eslint-config-next": "16.4.3",
     "mongodb-memory-server": "^11.3.0",
     "oxfmt": "^0.72.0",
     "oxlint": "^1.87.0",

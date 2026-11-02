@@ -1,0 +1,87 @@
+.lockup {
+  --brand-gradient: linear-gradient(125deg, #74b1f6, #3b82f6 45%, #1d4ed8);
+  --brand-name: #182e50;
+  --brand-start: #78aff5;
+  --brand-middle: #4289f4;
+  --brand-end: #2563da;
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  gap: 11px;
+  white-space: nowrap;
+  font-family: var(--admin-font-latin), "Segoe UI", Arial, sans-serif;
+  text-align: left;
+}
+.mark {
+  display: block;
+  flex: none;
+  width: 39px;
+  height: 39px;
+}
+.start {
+  stop-color: var(--brand-start);
+}
+.middle {
+  stop-color: var(--brand-middle);
+}
+.end {
+  stop-color: var(--brand-end);
+}
+.wordmark {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  line-height: 1;
+}
+.name {
+  display: block;
+  font-size: 21px;
+  font-weight: 850;
+  line-height: 1;
+  letter-spacing: 1.2px;
+  color: var(--brand-name);
+}
+.descriptor {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 1px;
+  color: #2563eb;
+  background: var(--brand-gradient);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+[data-theme="dark"] .lockup,
+.lockup[data-tone="dark"] {
+  --brand-gradient: linear-gradient(125deg, #7cc4ff, #409dff 48%, #3978f6);
+  --brand-name: #fff;
+  --brand-start: #7cc4ff;
+  --brand-middle: #409dff;
+  --brand-end: #3978f6;
+}
+[data-theme="dark"] .lockup .ribbons path,
+.lockup[data-tone="dark"] .ribbons path {
+  opacity: 1;
+}
+@media (max-width: 600px) {
+  .mark {
+    width: 32px;
+    height: 32px;
+  }
+  .name {
+    font-size: 19px;
+    letter-spacing: 1.1px;
+  }
+}
+@media (forced-colors: active) {
+  .ribbons {
+    fill: LinkText;
+  }
+  .descriptor {
+    background: none;
+    color: LinkText;
+    -webkit-text-fill-color: currentColor;
+  }
+}

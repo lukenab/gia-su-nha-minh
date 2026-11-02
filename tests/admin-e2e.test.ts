@@ -2,8 +2,8 @@ import mongoose from "mongoose";
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { LearnerRequest } from "../lib/learner-request-model.ts";
-import { TutorApplication } from "../lib/tutor-application-model.ts";
+import { LearnerRequest } from "../src/features/learner-requests/server/model.ts";
+import { TutorApplication } from "../src/features/tutor-applications/server/model.ts";
 import { startTestApp } from "./support/next-server.ts";
 
 const json = { "Content-Type": "application/json" };
@@ -215,6 +215,24 @@ test(
         200,
       );
 
+      assert.equal(
+        (
+          await patch(`/api/admin/tutors/${tutorId}/availability`, {
+            accepting: true,
+            expected: false,
+          })
+        ).status,
+        200,
+      );
+      assert.equal(
+        (
+          await patch(`/api/admin/requests/${requestId}/assignment`, {
+            email: "tra@example.com",
+            expected: "",
+          })
+        ).status,
+        200,
+      );
       const match = await fetch(
         `${app.base}/admin/requests/${requestId}/match`,
         { headers: { Cookie: cookie } },
@@ -236,6 +254,82 @@ test(
         }),
       ]);
       assert.deepEqual([one.status, two.status].sort(), [201, 409]);
+      const { id: connectionId } = await (
+        one.status === 201 ? one : two
+      ).json();
+      assert.equal(
+        (
+          await patch(`/api/admin/connections/${connectionId}/status`, {
+            from: "REVIEWING",
+            to: "INTRODUCED",
+          })
+        ).status,
+        200,
+      );
+      assert.equal(
+        (
+          await patch(`/api/admin/connections/${connectionId}/confirmation`, {
+            side: "learner",
+            revision: 1,
+            note: "Đồng ý qua điện thoại",
+          })
+        ).status,
+        200,
+      );
+      assert.equal(
+        (
+          await patch(`/api/admin/connections/${connectionId}/confirmation`, {
+            side: "tutor",
+            revision: 2,
+            note: "Đồng ý qua Zalo",
+          })
+        ).status,
+        200,
+      );
+      assert.equal(
+        (
+          await patch(`/api/admin/connections/${connectionId}/payment`, {
+            action: "receive",
+            revision: 3,
+            method: "transfer",
+            reference: "TEST-001",
+            paidOn: new Date().toISOString(),
+            note: "Đối soát trong database tạm",
+          })
+        ).status,
+        200,
+      );
+      for (const kind of ["requests", "tutors", "connections"]) {
+        assert.equal(
+          (await fetch(`${app.base}/api/admin/export/${kind}`)).status,
+          401,
+        );
+        const exported = await fetch(`${app.base}/api/admin/export/${kind}`, {
+          headers: { Cookie: cookie },
+        });
+        assert.equal(exported.status, 200);
+        assert.match(exported.headers.get("content-type") || "", /text\/csv/);
+      }
+      const receiptCsv = await (
+        await fetch(`${app.base}/api/admin/export/connections?payment=PAID`, {
+          headers: { Cookie: cookie },
+        })
+      ).text();
+      assert.ok(receiptCsv.includes("PAID") && receiptCsv.includes("50000"));
+      assert.equal(
+        (await fetch(`${app.base}/api/admin/auth/google`)).status,
+        410,
+      );
+      assert.equal(
+        (await fetch(`${app.base}/api/admin/auth/google/callback`)).status,
+        410,
+      );
+      const detail = await fetch(
+        `${app.base}/admin/connections/${connectionId}`,
+        { headers: { Cookie: cookie } },
+      );
+      assert.equal(detail.status, 200);
+      assert.ok((await detail.text()).includes("Connection fee"));
     } finally {
       await mongoose.disconnect();
       await app.stop();

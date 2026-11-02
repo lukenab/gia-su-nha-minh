@@ -3,8 +3,8 @@ import mongoose from "mongoose";
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { LearnerRequest } from "../lib/learner-request-model.ts";
-import { connectToDatabase } from "../lib/mongodb.ts";
+import { LearnerRequest } from "../src/features/learner-requests/server/model.ts";
+import { connectToDatabase } from "../src/shared/server/mongodb.ts";
 
 test("stores and retrieves a learner request in MongoDB", async () => {
   const mongo = await MongoMemoryServer.create();

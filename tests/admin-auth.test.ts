@@ -10,9 +10,9 @@ import {
   recordGoogleLogin,
   requestPasswordReset,
   resetPassword,
-} from "../lib/admin-auth.ts";
-import { AdminUser } from "../lib/admin-user-model.ts";
-import { hashPassword } from "../lib/password.ts";
+} from "../src/features/admin-auth/server/auth.ts";
+import { hashPassword } from "../src/features/admin-auth/server/password.ts";
+import { AdminUser } from "../src/features/admin-auth/server/user-model.ts";
 
 process.env.ADMIN_SESSION_SECRET = "s".repeat(48);
 process.env.ADMIN_ALLOWED_EMAILS = "tra@example.com,anh@example.com";
@@ -22,6 +22,7 @@ async function withDatabase(run: () => Promise<void>) {
   const mongo = await MongoMemoryServer.create();
   process.env.MONGODB_URI = mongo.getUri("gsnm_admin_auth");
   try {
+    await mongoose.connect(process.env.MONGODB_URI!);
     await run();
   } finally {
     await mongoose.disconnect();
@@ -85,7 +86,7 @@ test("password sign-in: allow-list, generic errors and lockout", async () => {
       assert.equal(result.ok, false);
       assert.equal(
         !result.ok && result.error,
-        "Email hoặc mật khẩu không đúng.",
+        "The email or password is incorrect.",
       );
     }
 
@@ -109,6 +110,10 @@ test("first password and reset links are single-use and allow-listed", async () 
     assert.equal(none, "");
     assert.equal(await AdminUser.countDocuments({}), 0);
 
+    await AdminUser.create({
+      email: "anh@example.com",
+      passwordHash: await hashPassword("initial provisioned password"),
+    });
     const token = await captureLink(() =>
       requestPasswordReset("anh@example.com", "http://localhost:3000"),
     );
@@ -125,7 +130,7 @@ test("first password and reset links are single-use and allow-listed", async () 
 
     assert.deepEqual(await inspectResetToken(token), {
       needsName: true,
-      isFirstPassword: true,
+      isFirstPassword: false,
     });
     const noName = await resetPassword({
       token,
@@ -181,5 +186,61 @@ test("Google sign-ins keep a chosen name and record the method", async () => {
     const saved = await AdminUser.findOne({ email: "tra@example.com" }).lean();
     assert.equal(saved?.lastLoginMethod, "google");
     assert.equal(saved?.passwordHash, null);
+  });
+});
+
+test("own account: display name and password change", async () => {
+  await withDatabase(async () => {
+    const { changePassword, getAccount, updateDisplayName } =
+      await import("../src/features/admin-auth/server/account.ts");
+    await AdminUser.create({
+      email: "tra@example.com",
+      name: "Thanh Trà",
+      passwordHash: await hashPassword("cầu Ninh Kiều lúc 7 giờ"),
+    });
+    const identity = {
+      email: "tra@example.com",
+      operator: "Thanh Trà",
+      method: "password" as const,
+    };
+
+    const renamed = await updateDisplayName(identity, "  Trà  Nguyễn ");
+    assert.deepEqual(renamed, {
+      ok: true,
+      data: { ...identity, operator: "Trà Nguyễn" },
+    });
+    assert.equal((await updateDisplayName(identity, "x")).ok, false);
+    assert.equal(
+      (await getAccount({ ...identity, operator: "Trà Nguyễn" })).name,
+      "Trà Nguyễn",
+    );
+
+    const wrong = await changePassword(
+      identity,
+      "sai",
+      "một cụm từ mới đủ dài",
+    );
+    assert.deepEqual([wrong.ok, !wrong.ok && wrong.status], [false, 401]);
+    const weak = await changePassword(
+      identity,
+      "cầu Ninh Kiều lúc 7 giờ",
+      "ngắn",
+    );
+    assert.deepEqual([weak.ok, !weak.ok && weak.status], [false, 422]);
+    const changed = await changePassword(
+      identity,
+      "cầu Ninh Kiều lúc 7 giờ",
+      "một cụm từ mới đủ dài",
+    );
+    assert.equal(changed.ok, true);
+    assert.equal(
+      (await loginWithPassword("tra@example.com", "một cụm từ mới đủ dài")).ok,
+      true,
+    );
+    assert.equal(
+      (await loginWithPassword("tra@example.com", "cầu Ninh Kiều lúc 7 giờ"))
+        .ok,
+      false,
+    );
   });
 });

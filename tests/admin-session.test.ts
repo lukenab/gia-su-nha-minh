@@ -5,9 +5,10 @@ import test from "node:test";
 process.env.ADMIN_SESSION_SECRET = "s".repeat(48);
 process.env.ADMIN_ALLOWED_EMAILS = "Tra@Example.com, anh@example.com;bad-entry";
 
-const token = await import("../lib/admin-token.ts");
-const google = await import("../lib/google-oauth.ts");
-const password = await import("../lib/password.ts");
+const token = await import("../src/features/admin-auth/server/token.ts");
+const google =
+  await import("../src/features/admin-auth/server/google-oauth.ts");
+const password = await import("../src/features/admin-auth/server/password.ts");
 
 const tra = {
   email: "tra@example.com",
@@ -84,9 +85,9 @@ test("the shared development password never works outside `next dev`", () => {
     const cookie = token.createAdminSession(token.localIdentity());
     assert.equal(token.readAdminSession(cookie), null);
     env.NODE_ENV = "development";
-    assert.ok(token.localLoginEnabled());
-    assert.ok(token.checkLocalPassword("local-password"));
-    assert.ok(token.readAdminSession(cookie));
+    assert.equal(token.localLoginEnabled(), false);
+    assert.equal(token.checkLocalPassword("local-password"), false);
+    assert.equal(token.readAdminSession(cookie), null);
   } finally {
     env.NODE_ENV = before;
     delete env.ADMIN_PASSWORD;
