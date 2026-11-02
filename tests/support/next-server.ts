@@ -48,6 +48,10 @@ export async function startTestApp() {
       env: {
         ...process.env,
         MONGODB_URI: mongoUri,
+        RESEND_API_KEY: "",
+        GOOGLE_CLIENT_ID: "",
+        GOOGLE_CLIENT_SECRET: "",
+        APP_URL: base,
         ADMIN_ALLOWED_EMAILS: "tra@example.com",
         ADMIN_SESSION_SECRET: randomBytes(48).toString("hex"),
       },

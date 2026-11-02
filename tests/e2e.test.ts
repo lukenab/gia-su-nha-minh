@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { LearnerRequest } from "../src/features/learner-requests/server/model.ts";
+import { TutorApplication } from "../src/features/tutor-applications/server/model.ts";
 import { startTestApp } from "./support/next-server.ts";
 
 test(
@@ -28,6 +29,8 @@ test(
           currentLevel: "basic",
           concerns: ["schedule"],
           format: "either",
+          area: "Ninh Kiều",
+          acceptingStudents: true,
           startTime: "within_month",
           budgetMax: 150000,
           availabilitySlots: ["weekday_evening"],
@@ -52,27 +55,39 @@ test(
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fullName: "Trần Minh Thư",
-          email: "",
+          email: "thu@example.com",
           phone: "0901234567",
-          preferredChannel: "zalo",
+          phoneHasZalo: true,
+          education: "bachelor",
+          school: "Trường Đại học Cần Thơ – Ngôn ngữ Anh",
+          certificateList: [{ type: "ielts", name: "", score: "7.5" }],
           teachingAreas: ["communication"],
+          otherTeachingArea: "",
           learnerLevels: ["basic"],
           experience: "one_to_two",
-          experienceNote: "Hai năm dạy giao tiếp cho sinh viên.",
-          certificates: "IELTS 7.5",
           format: "online",
           area: "",
           availabilitySlots: ["weekend_morning"],
           expectedFee: null,
-          consent: true,
+          bio: "Hai năm dạy tiếng Anh giao tiếp cho sinh viên, tập trung vào phản xạ nói qua các tình huống thực tế trong học tập và công việc. Học viên được luyện nói mỗi buổi và nhận nhận xét chi tiết.",
+          photo: `data:image/jpeg;base64,${Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]).toString("base64")}`,
+          consentPrivacy: true,
           website: "",
         }),
       });
       assert.equal(tutor.status, 201);
-      assert.match(
-        (await tutor.json()).referenceCode,
-        /^GSNM-GS-\d{8}-[A-F0-9]{8}$/,
-      );
+      const tutorCode = (await tutor.json()).referenceCode;
+      assert.match(tutorCode, /^GSNM-GS-\d{8}-[A-F0-9]{8}$/);
+      const savedTutor = await TutorApplication.findOne({
+        referenceCode: tutorCode,
+      }).lean();
+      assert.equal(savedTutor?.hasPhoto, true);
+      assert.equal(savedTutor?.certificates, "IELTS 7.5");
+      assert.equal(savedTutor?.preferredChannel, "zalo");
+      assert.equal(savedTutor?.acceptingStudents, true);
+      // The photo is private: no session, no image.
+      const photoPath = `${app.base}/api/admin/tutors/${String(savedTutor?._id)}/photo`;
+      assert.equal((await fetch(photoPath)).status, 401);
 
       const { response: login, cookie } = await app.login();
       assert.equal(login.status, 200);
@@ -83,6 +98,11 @@ test(
       });
       assert.equal(dashboard.status, 200);
       assert.ok((await dashboard.text()).includes(referenceCode));
+
+      const photo = await fetch(photoPath, { headers: { Cookie: cookie } });
+      assert.equal(photo.status, 200);
+      assert.equal(photo.headers.get("content-type"), "image/jpeg");
+      assert.equal(photo.headers.get("cache-control"), "private, no-store");
     } finally {
       await mongoose.disconnect();
       await app.stop();
