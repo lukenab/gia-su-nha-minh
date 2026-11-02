@@ -55,16 +55,30 @@ test("learner custom budget and contact channel rules", () => {
   assert.deepEqual(validateLearner(2, { ...contact, phone: "0901234567" }), {});
 });
 
-test("tutor steps and contact rules", () => {
+test("tutor steps check each part and the privacy consent", () => {
   const s = tutorInitial();
-  assert.ok(validateTutor(0, s).teachingAreas);
-  assert.ok(validateTutor(1, s).experienceNote);
-  const contact = {
+  assert.deepEqual(Object.keys(validateTutor(0, s)).sort(), [
+    "education",
+    "email",
+    "fullName",
+    "phone",
+    "school",
+  ]);
+  const basics = {
     ...s,
     fullName: "Trần Bình",
-    preferredChannel: "email",
-    consent: true,
+    email: "a@b.vn",
+    phone: "0901234567",
+    education: "student",
+    school: "Đại học Cần Thơ – Ngôn ngữ Anh",
+    certificates: [{ type: "other", name: "", score: "" }],
   };
-  assert.ok(validateTutor(2, contact).email);
-  assert.deepEqual(validateTutor(2, { ...contact, email: "a@b.vn" }), {});
+  assert.ok(validateTutor(0, basics)["certificates.0.name"]);
+  assert.deepEqual(validateTutor(0, { ...basics, certificates: [] }), {});
+
+  assert.ok(validateTutor(1, s).teachingAreas);
+  // Photo and introduction are optional.
+  assert.deepEqual(validateTutor(2, s), {});
+  assert.ok(validateTutor(2, { ...s, bio: "x".repeat(1001) }).bio);
+  assert.deepEqual(Object.keys(validateTutor(3, s)), ["consentPrivacy"]);
 });

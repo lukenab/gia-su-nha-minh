@@ -2,22 +2,29 @@ import type { WizardStep } from "@/shared/forms/wizard";
 
 export const steps: WizardStep[] = [
   {
+    id: "basics",
+    title: "Thông tin cơ bản",
+    short: "Cơ bản",
+    description:
+      "Thông tin liên hệ và học vấn. Đội ngũ sẽ đối chiếu bản gốc chứng chỉ khi trao đổi trực tiếp với Anh/Chị.",
+  },
+  {
     id: "teaching",
-    title: "Chuyên môn giảng dạy",
+    title: "Giảng dạy",
     description:
-      "Nội dung bạn dạy tốt nhất và nhóm người học bạn tự tin hỗ trợ.",
+      "Nội dung, đối tượng học viên, hình thức, lịch dạy và học phí dự kiến.",
   },
   {
-    id: "experience",
-    title: "Kinh nghiệm và lịch dạy",
+    id: "profile",
+    title: "Giới thiệu",
     description:
-      "Thông tin giúp giới thiệu người học phù hợp với thế mạnh của bạn.",
+      "Không bắt buộc. Ảnh và phần giới thiệu chỉ dùng nội bộ, và chỉ được gửi cho người học khi đội ngũ giới thiệu Anh/Chị.",
   },
   {
-    id: "contact",
-    title: "Thông tin liên hệ",
-    description:
-      "Đội ngũ sẽ liên hệ trong vòng 24 giờ để trao đổi và kiểm tra hồ sơ.",
+    id: "review",
+    title: "Xem lại và gửi",
+    short: "Xem lại",
+    description: "Vui lòng kiểm tra lại thông tin trước khi gửi hồ sơ.",
   },
 ];
 
@@ -30,44 +37,63 @@ export const feeOptions = [
   { value: "negotiable", label: "Thỏa thuận" },
 ];
 
+export type CertificateRow = {
+  type: string;
+  name: string;
+  score: string;
+};
+
 export type State = {
+  fullName: string;
+  email: string;
+  phone: string;
+  phoneHasZalo: boolean;
+  education: string;
+  school: string;
+  certificates: CertificateRow[];
   teachingAreas: string[];
+  otherTeachingArea: string;
   learnerLevels: string[];
+  experience: string;
   format: string;
+  area: string;
+  availabilitySlots: string[];
   feeChoice: string;
   feeCustom: string;
-  experience: string;
-  experienceNote: string;
-  certificates: string;
-  availabilitySlots: string[];
-  area: string;
-  fullName: string;
-  phone: string;
-  email: string;
-  preferredChannel: string;
-  consent: boolean;
+  photo: string;
+  bio: string;
+  consentPrivacy: boolean;
   website: string;
 };
 
-export type Errors = Partial<Record<keyof State, string>>;
+/** Errors by field; certificate rows use keys like "certificates.0.name". */
+export type Errors = Partial<Record<keyof State | string, string>>;
+
+export function emptyCertificate(): CertificateRow {
+  return { type: "", name: "", score: "" };
+}
 
 export function initialState(): State {
   return {
+    fullName: "",
+    email: "",
+    phone: "",
+    phoneHasZalo: false,
+    education: "",
+    school: "",
+    certificates: [],
     teachingAreas: [],
+    otherTeachingArea: "",
     learnerLevels: [],
+    experience: "",
     format: "",
+    area: "",
+    availabilitySlots: [],
     feeChoice: "",
     feeCustom: "",
-    experience: "",
-    experienceNote: "",
-    certificates: "",
-    availabilitySlots: [],
-    area: "",
-    fullName: "",
-    phone: "",
-    email: "",
-    preferredChannel: "",
-    consent: false,
+    photo: "",
+    bio: "",
+    consentPrivacy: false,
     website: "",
   };
 }
