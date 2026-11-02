@@ -61,14 +61,14 @@ export async function verifyPassword(
 /** Returns an error message, or null when the password is acceptable. */
 export function passwordProblem(password: string, email?: string) {
   if (password.length < MIN_PASSWORD_LENGTH)
-    return `Mật khẩu cần ít nhất ${MIN_PASSWORD_LENGTH} ký tự.`;
+    return `The password needs at least ${MIN_PASSWORD_LENGTH} characters.`;
   if (password.length > MAX_PASSWORD_LENGTH)
-    return `Mật khẩu tối đa ${MAX_PASSWORD_LENGTH} ký tự.`;
+    return `The password can have at most ${MAX_PASSWORD_LENGTH} characters.`;
   if (
     email &&
     password.toLowerCase().includes(email.split("@")[0]!.toLowerCase())
   )
-    return "Mật khẩu không nên chứa tên email của bạn.";
-  if (/^(.)\1+$/.test(password)) return "Mật khẩu quá dễ đoán.";
+    return "The password should not contain your email name.";
+  if (/^(.)\1+$/.test(password)) return "The password is too easy to guess.";
   return null;
 }

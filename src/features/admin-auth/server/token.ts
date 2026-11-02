@@ -50,10 +50,7 @@ export function isAllowedEmail(email: string) {
 /* ---------------------------- sign-in methods ---------------------------- */
 
 export function googleIsConfigured() {
-  return Boolean(
-    process.env.GOOGLE_CLIENT_ID?.trim() &&
-    process.env.GOOGLE_CLIENT_SECRET?.trim(),
-  );
+  return false;
 }
 
 /**
@@ -61,11 +58,7 @@ export function googleIsConfigured() {
  * never in a production build, so it cannot be used on Vercel.
  */
 export function localLoginEnabled() {
-  return (
-    process.env.NODE_ENV === "development" &&
-    Boolean(process.env.ADMIN_PASSWORD?.trim()) &&
-    Boolean(secret())
-  );
+  return false;
 }
 
 export function checkLocalPassword(candidate: string) {
@@ -122,7 +115,7 @@ export function createAdminSession(identity: AdminIdentity) {
 
 export function localIdentity(): AdminIdentity {
   return {
-    operator: "Quản trị viên (local)",
+    operator: "Administrator (local)",
     email: LOCAL_EMAIL,
     method: "local",
   };
@@ -159,7 +152,7 @@ export function readAdminSession(value?: string): AdminIdentity | null {
   if (method === "local") {
     return localLoginEnabled() ? localIdentity() : null;
   }
-  if (method !== "google" && method !== "password") return null;
+  if (method !== "password") return null;
   const email = normalizeEmail(data.e);
   if (!email || !isAllowedEmail(email)) return null;
   return { email, operator: displayNameFor(data.n, email), method };

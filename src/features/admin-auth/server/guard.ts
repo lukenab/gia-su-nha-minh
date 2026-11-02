@@ -6,7 +6,7 @@ import { NextResponse } from "next/server";
 import { ADMIN_PATH_HEADER } from "../admin-path";
 import { createAdminActor, type AdminActor } from "./actor.ts";
 import { getAdminSession } from "./session";
-import { safeNextPath } from "./token";
+import { safeNextPath, type AdminIdentity } from "./token";
 
 /**
  * Every admin read and write checks the session on the server. Layouts alone
@@ -31,12 +31,14 @@ export async function requireAdminPage(): Promise<AdminActor> {
 
 export async function requireAdminApi(
   request?: Request,
-): Promise<{ actor: AdminActor } | { response: NextResponse }> {
+): Promise<
+  { actor: AdminActor; identity: AdminIdentity } | { response: NextResponse }
+> {
   const session = await getAdminSession();
   if (!session) {
     return {
       response: NextResponse.json(
-        { error: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại." },
+        { error: "Your session has expired. Please sign in again." },
         { status: 401 },
       ),
     };
@@ -54,11 +56,11 @@ export async function requireAdminApi(
     if (originHost !== host) {
       return {
         response: NextResponse.json(
-          { error: "Yêu cầu không hợp lệ." },
+          { error: "The request is not valid." },
           { status: 403 },
         ),
       };
     }
   }
-  return { actor: createAdminActor(session.operator) };
+  return { actor: createAdminActor(session.operator), identity: session };
 }

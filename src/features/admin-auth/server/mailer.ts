@@ -24,31 +24,31 @@ export async function sendPasswordResetEmail(
     if (process.env.NODE_ENV === "development") {
       // Local development only: the link is printed instead of emailed.
       console.info(
-        `[admin] Liên kết đặt mật khẩu (chỉ hiện khi chạy local): ${link}`,
+        `[admin] Password link (shown only when running locally): ${link}`,
       );
       return true;
     }
     console.error(
-      "[admin] Email chưa được cấu hình (RESEND_API_KEY, EMAIL_FROM).",
+      "[admin] Email is not configured (RESEND_API_KEY, EMAIL_FROM).",
     );
     return false;
   }
 
   const text = [
-    "Xin chào,",
+    "Hello,",
     "",
-    "Chúng tôi nhận được yêu cầu đặt mật khẩu cho tài khoản quản trị Gia Sư Nhà Mình.",
-    `Mở liên kết sau trong ${minutes} phút để đặt mật khẩu mới:`,
+    "We received a request to set the password for your Gia Sư Nhà Mình admin account.",
+    `Open this link within ${minutes} minutes to set a new password:`,
     link,
     "",
-    "Nếu bạn không yêu cầu, hãy bỏ qua email này. Mật khẩu hiện tại sẽ không thay đổi.",
+    "If you did not ask for this, ignore this email. Your current password will not change.",
   ].join("\n");
-  const html = `<div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6;color:#132145;max-width:520px">
-<p>Xin chào,</p>
-<p>Chúng tôi nhận được yêu cầu đặt mật khẩu cho tài khoản quản trị <strong>Gia Sư Nhà Mình</strong>.</p>
-<p><a href="${escapeHtml(link)}" style="display:inline-block;padding:12px 20px;border-radius:10px;background:#4361ee;color:#fff;text-decoration:none;font-weight:bold">Đặt mật khẩu</a></p>
-<p>Liên kết có hiệu lực trong ${minutes} phút và chỉ dùng được một lần.</p>
-<p style="color:#5f6b86">Nếu bạn không yêu cầu, hãy bỏ qua email này. Mật khẩu hiện tại sẽ không thay đổi.</p>
+  const html = `<div lang="en" style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6;color:#132145;max-width:520px">
+<p>Hello,</p>
+<p>We received a request to set the password for your <strong>Gia Sư Nhà Mình</strong> admin account.</p>
+<p><a href="${escapeHtml(link)}" style="display:inline-block;padding:12px 20px;border-radius:10px;background:#4361ee;color:#fff;text-decoration:none;font-weight:bold">Set password</a></p>
+<p>The link is valid for ${minutes} minutes and can only be used once.</p>
+<p style="color:#5f6b86">If you did not ask for this, ignore this email. Your current password will not change.</p>
 </div>`;
 
   try {
@@ -61,17 +61,19 @@ export async function sendPasswordResetEmail(
       body: JSON.stringify({
         from: process.env.EMAIL_FROM,
         to: [to],
-        subject: "Đặt mật khẩu quản trị Gia Sư Nhà Mình",
+        subject: "Set your Gia Sư Nhà Mình admin password",
         text,
         html,
       }),
       signal: AbortSignal.timeout(10_000),
     });
     if (!response.ok)
-      console.error(`[admin] Gửi email thất bại (HTTP ${response.status}).`);
+      console.error(
+        `[admin] Sending the email failed (HTTP ${response.status}).`,
+      );
     return response.ok;
   } catch {
-    console.error("[admin] Không kết nối được dịch vụ gửi email.");
+    console.error("[admin] Could not reach the email service.");
     return false;
   }
 }

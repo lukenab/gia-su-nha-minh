@@ -27,7 +27,7 @@ export type AuthResult<T> =
   | { ok: true; data: T }
   | { ok: false; status: number; error: string };
 
-const INVALID = "Email hoặc mật khẩu không đúng.";
+const INVALID = "The email or password is incorrect.";
 
 const hashToken = (token: string) =>
   createHash("sha256").update(token).digest("hex");
@@ -51,7 +51,7 @@ export async function loginWithPassword(
     return {
       ok: false,
       status: 400,
-      error: "Vui lòng nhập email và mật khẩu.",
+      error: "Enter your email and password.",
     };
   }
   await connectToDatabase();
@@ -69,7 +69,7 @@ export async function loginWithPassword(
     return {
       ok: false,
       status: 429,
-      error: `Đăng nhập sai quá nhiều lần. Vui lòng thử lại sau ${minutes} phút hoặc đặt lại mật khẩu.`,
+      error: `Too many failed sign-ins. Try again in ${minutes} minutes or reset your password.`,
     };
   }
 
@@ -119,6 +119,7 @@ export async function requestPasswordReset(rawEmail: unknown, origin: string) {
   const email = normalizeEmail(rawEmail);
   if (!email || !isAllowedEmail(email)) return;
   await connectToDatabase();
+  if (!(await AdminUser.exists({ email, passwordHash: { $ne: null } }))) return;
   await AdminUser.init(); // the unique email index guards the cooldown
 
   const now = new Date();
@@ -164,11 +165,11 @@ export async function resetPassword(input: {
     return {
       ok: false,
       status: 400,
-      error: "Liên kết không hợp lệ hoặc đã hết hạn.",
+      error: "The link is not valid or has expired.",
     };
   }
   if (typeof input.password !== "string") {
-    return { ok: false, status: 400, error: "Vui lòng nhập mật khẩu mới." };
+    return { ok: false, status: 400, error: "Enter a new password." };
   }
   await connectToDatabase();
   const tokenHash = hashToken(input.token);
@@ -180,7 +181,7 @@ export async function resetPassword(input: {
     return {
       ok: false,
       status: 400,
-      error: "Liên kết không hợp lệ hoặc đã hết hạn.",
+      error: "The link is not valid or has expired.",
     };
   }
 
@@ -191,7 +192,7 @@ export async function resetPassword(input: {
     return {
       ok: false,
       status: 422,
-      error: "Vui lòng nhập tên hiển thị (2–60 ký tự).",
+      error: "Enter a display name (2–60 characters).",
     };
   }
 
@@ -215,7 +216,7 @@ export async function resetPassword(input: {
     return {
       ok: false,
       status: 400,
-      error: "Liên kết không hợp lệ hoặc đã hết hạn.",
+      error: "The link is not valid or has expired.",
     };
   }
   return { ok: true, data: { email: user.email } };

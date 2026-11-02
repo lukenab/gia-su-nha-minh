@@ -85,9 +85,9 @@ test("the shared development password never works outside `next dev`", () => {
     const cookie = token.createAdminSession(token.localIdentity());
     assert.equal(token.readAdminSession(cookie), null);
     env.NODE_ENV = "development";
-    assert.ok(token.localLoginEnabled());
-    assert.ok(token.checkLocalPassword("local-password"));
-    assert.ok(token.readAdminSession(cookie));
+    assert.equal(token.localLoginEnabled(), false);
+    assert.equal(token.checkLocalPassword("local-password"), false);
+    assert.equal(token.readAdminSession(cookie), null);
   } finally {
     env.NODE_ENV = before;
     delete env.ADMIN_PASSWORD;
