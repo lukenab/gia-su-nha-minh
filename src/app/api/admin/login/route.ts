@@ -14,11 +14,11 @@ export const runtime = "nodejs";
 export async function POST(request: Request) {
   if (!adminIsConfigured()) {
     return NextResponse.json(
-      { error: "Khu vực quản trị chưa được cấu hình." },
+      { error: "The admin area is not configured." },
       { status: 503 },
     );
   }
-  const parsed = await readJsonBody(request);
+  const parsed = await readJsonBody(request, "en");
   if ("response" in parsed) return parsed.response;
   const body = (parsed.body ?? {}) as { email?: unknown; password?: unknown };
 
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("[admin-auth]", error);
     return NextResponse.json(
-      { error: "Chưa thể đăng nhập lúc này. Vui lòng thử lại sau." },
+      { error: "Could not sign in right now. Please try again later." },
       { status: 503 },
     );
   }

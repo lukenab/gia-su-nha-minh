@@ -6,7 +6,7 @@ import { readJsonBody } from "@/shared/server/api";
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  const parsed = await readJsonBody(request);
+  const parsed = await readJsonBody(request, "en");
   if ("response" in parsed) return parsed.response;
   const body = (parsed.body ?? {}) as {
     token?: unknown;
@@ -29,7 +29,9 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("[admin-auth]", error);
     return NextResponse.json(
-      { error: "Chưa thể đặt mật khẩu lúc này. Vui lòng thử lại sau." },
+      {
+        error: "Could not set the password right now. Please try again later.",
+      },
       { status: 503 },
     );
   }
