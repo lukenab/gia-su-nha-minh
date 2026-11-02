@@ -145,6 +145,7 @@ type TextFieldProps = {
   error?: string;
   required?: boolean;
   multiline?: boolean;
+  rows?: number;
   type?: "text" | "email" | "tel";
   inputMode?: "text" | "email" | "tel" | "numeric";
   autoComplete?: string;
@@ -162,6 +163,7 @@ export function TextField({
   error,
   required,
   multiline,
+  rows = 3,
   type = "text",
   inputMode,
   autoComplete,
@@ -205,7 +207,7 @@ export function TextField({
         {multiline ? (
           <textarea
             {...common}
-            rows={3}
+            rows={rows}
             onChange={(event) => onChange(event.target.value)}
           />
         ) : (

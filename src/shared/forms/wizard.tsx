@@ -6,7 +6,13 @@ import { ArrowUpRight, Check } from "@/features/landing/components/icons";
 
 import styles from "./form.module.css";
 
-export type WizardStep = { id: string; title: string; description: string };
+export type WizardStep = {
+  id: string;
+  title: string;
+  description: string;
+  /** Shorter label for the progress bar when the title is long. */
+  short?: string;
+};
 
 type WizardProps = {
   steps: WizardStep[];
@@ -70,7 +76,9 @@ export function Wizard({
             <span className={styles.progressDot} aria-hidden="true">
               {index < current ? <Check /> : index + 1}
             </span>
-            <span className={styles.progressLabel}>{item.title}</span>
+            <span className={styles.progressLabel}>
+              {item.short ?? item.title}
+            </span>
           </li>
         ))}
       </ol>
