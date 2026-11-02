@@ -84,6 +84,23 @@ export const experienceLabels = {
   over_5: "Trên 5 năm",
 } as const;
 
+export const educationLabels = {
+  student: "Sinh viên đại học / cao đẳng",
+  bachelor: "Đã tốt nghiệp đại học",
+  postgraduate: "Thạc sĩ trở lên",
+} as const;
+
+export const certificateLabels = {
+  ielts: "IELTS",
+  toeic: "TOEIC",
+  vstep: "VSTEP",
+  toefl: "TOEFL iBT",
+  cambridge: "Cambridge (B2 First, C1 Advanced...)",
+  tesol: "TESOL / TEFL",
+  celta: "CELTA",
+  other: "Chứng chỉ khác",
+} as const;
+
 export function labelOf<T extends Record<string, string>>(
   labels: T,
   value: unknown,

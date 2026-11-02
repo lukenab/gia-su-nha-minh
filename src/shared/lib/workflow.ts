@@ -29,6 +29,7 @@ export const connectionStatuses = [
   "REVIEWING",
   "INTRODUCED",
   "DECLINED",
+  "CONFIRMED",
   "STARTED",
 ] as const;
 export type ConnectionStatus = (typeof connectionStatuses)[number];
@@ -39,9 +40,35 @@ export type StatusOf = {
   connection: ConnectionStatus;
 };
 
-export const statusLabels: {
-  [K in WorkflowKind]: Record<StatusOf[K], string>;
-} = {
+type StatusLabels = { [K in WorkflowKind]: Record<StatusOf[K], string> };
+
+/** Labels shown in the admin area. */
+export const statusLabels: StatusLabels = {
+  learner: {
+    NEW: "New",
+    CONTACTED: "Contacted",
+    SEARCHING: "Matching",
+    INTRODUCED: "Introduced",
+    STARTED: "Learning",
+    CLOSED: "Closed",
+  },
+  tutor: {
+    NEW: "New",
+    REVIEWING: "In review",
+    ELIGIBLE: "Approved",
+    INELIGIBLE: "Rejected",
+  },
+  connection: {
+    REVIEWING: "Proposed",
+    INTRODUCED: "Introduced",
+    CONFIRMED: "Agreed",
+    DECLINED: "Ended",
+    STARTED: "Learning",
+  },
+};
+
+/** Vietnamese labels, kept for the CSV export the team opens in Excel. */
+export const statusLabelsVi: StatusLabels = {
   learner: {
     NEW: "Mới nhận",
     CONTACTED: "Đã liên hệ",
@@ -59,6 +86,7 @@ export const statusLabels: {
   connection: {
     REVIEWING: "Đang xem xét",
     INTRODUCED: "Đã giới thiệu",
+    CONFIRMED: "Hai bên đã xác nhận",
     DECLINED: "Không tiếp tục",
     STARTED: "Đã bắt đầu học",
   },
@@ -84,7 +112,8 @@ export const transitions: {
   },
   connection: {
     REVIEWING: ["INTRODUCED", "DECLINED"],
-    INTRODUCED: ["STARTED", "DECLINED"],
+    INTRODUCED: ["CONFIRMED", "DECLINED"],
+    CONFIRMED: ["STARTED", "DECLINED"],
     STARTED: [],
     DECLINED: ["REVIEWING"],
   },
@@ -118,8 +147,12 @@ export function normalizeStatus<K extends WorkflowKind>(
   return (known.includes(value) ? value : initialStatus[kind]) as StatusOf[K];
 }
 
-export function statusLabel<K extends WorkflowKind>(kind: K, value: unknown) {
-  const labels = statusLabels[kind] as Record<string, string>;
+export function statusLabel<K extends WorkflowKind>(
+  kind: K,
+  value: unknown,
+  labelSet: StatusLabels = statusLabels,
+) {
+  const labels = labelSet[kind] as Record<string, string>;
   return labels[normalizeStatus(kind, value)];
 }
 
@@ -200,23 +233,23 @@ export function formatDuration(ms: number) {
   const days = Math.floor(minutes / 1440);
   const hours = Math.floor((minutes % 1440) / 60);
   const rest = minutes % 60;
-  if (days > 0) return hours ? `${days} ngày ${hours} giờ` : `${days} ngày`;
-  if (hours > 0) return rest ? `${hours} giờ ${rest} phút` : `${hours} giờ`;
-  return `${rest} phút`;
+  if (days > 0) return hours ? `${days}d ${hours}h` : `${days}d`;
+  if (hours > 0) return rest ? `${hours}h ${rest}m` : `${hours}h`;
+  return `${rest}m`;
 }
 
 export function describeSla(sla: ResponseSla) {
   switch (sla.kind) {
     case "waiting":
-      return `Còn ${formatDuration(sla.ms)}`;
+      return `${formatDuration(sla.ms)} left`;
     case "overdue":
-      return `Quá hạn ${formatDuration(sla.ms)}`;
+      return `Overdue by ${formatDuration(sla.ms)}`;
     case "met":
-      return `Đúng hạn (${formatDuration(sla.ms)})`;
+      return `On time (${formatDuration(sla.ms)})`;
     case "late":
-      return `Trễ hạn (${formatDuration(sla.ms)})`;
+      return `Late (${formatDuration(sla.ms)})`;
     default:
-      return "Chưa ghi nhận liên hệ";
+      return "No contact recorded";
   }
 }
 
@@ -229,11 +262,13 @@ export function statusOptions<K extends WorkflowKind>(
   from: StatusOf[K],
 ) {
   const labels = statusLabels[kind] as Record<string, string>;
-  return nextStatuses(kind, from).map((value) => ({
-    value: value as string,
-    label: labels[value as string] as string,
-    needsNote: statusNeedsNote(kind, value),
-  }));
+  return nextStatuses(kind, from)
+    .filter((value) => kind !== "connection" || value !== "CONFIRMED")
+    .map((value) => ({
+      value: value as string,
+      label: labels[value as string] as string,
+      needsNote: statusNeedsNote(kind, value),
+    }));
 }
 
 /**
@@ -246,14 +281,17 @@ export function suggestRequestStatus(
 ): { to: LearnerStatus; text: string } | null {
   const has = (...wanted: string[]) =>
     connections.some((status) => wanted.includes(status));
-  if (requestStatus === "SEARCHING" && has("INTRODUCED", "STARTED")) {
+  if (
+    requestStatus === "SEARCHING" &&
+    has("INTRODUCED", "CONFIRMED", "STARTED")
+  ) {
     return {
       to: "INTRODUCED",
-      text: "Đã có gia sư được giới thiệu cho yêu cầu này.",
+      text: "A tutor has been introduced for this request.",
     };
   }
   if (requestStatus === "INTRODUCED" && has("STARTED")) {
-    return { to: "STARTED", text: "Đã có kết nối bắt đầu học." };
+    return { to: "STARTED", text: "A connection has started lessons." };
   }
   if (
     requestStatus === "INTRODUCED" &&
@@ -262,7 +300,7 @@ export function suggestRequestStatus(
   ) {
     return {
       to: "SEARCHING",
-      text: "Mọi gia sư đã giới thiệu đều không tiếp tục, có thể quay lại tìm gia sư.",
+      text: "No introduced tutor is continuing. You can go back to finding a tutor.",
     };
   }
   return null;
