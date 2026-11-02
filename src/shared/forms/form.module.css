@@ -422,6 +422,33 @@
   min-width: 0;
 }
 
+/* Tutor intake: keep labels, guidance and controls close together. */
+.compact .stepBody {
+  gap: 20px;
+}
+
+.compact .stepHead p {
+  margin-bottom: 18px;
+}
+
+.compact .field {
+  align-content: start;
+}
+
+.compact .label {
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+.compact .hint {
+  margin: 0 0 8px;
+  line-height: 1.45;
+}
+
+.compact .label + .hint {
+  margin-top: 0;
+}
+
 .input {
   width: 100%;
   min-height: 50px;

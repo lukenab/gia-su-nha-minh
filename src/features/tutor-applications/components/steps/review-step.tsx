@@ -200,13 +200,12 @@ export function ReviewStep({
           onChange={(value) => set("consentPrivacy", value)}
           error={errors.consentPrivacy}
         >
-          Tôi đồng ý để Gia Sư Nhà Mình thu thập và xử lý các thông tin trên,
-          bao gồm ảnh chân dung, nhằm liên hệ, xác minh hồ sơ và giới thiệu
-          người học phù hợp, theo{" "}
+          Tôi đồng ý để Gia Sư Nhà Mình xử lý thông tin và ảnh đã cung cấp để
+          liên hệ, xác minh hồ sơ và giới thiệu người học theo{" "}
           <Link href={PRIVACY_HREF} target="_blank">
             Chính sách bảo mật
           </Link>
-          . Tôi có thể yêu cầu rút lại sự đồng ý và xóa hồ sơ bất cứ lúc nào.
+          . Tôi có thể rút lại sự đồng ý và yêu cầu xóa hồ sơ bất cứ lúc nào.
         </Consent>
         <p className={local.declaration}>
           Khi bấm “Gửi hồ sơ”, Anh/Chị xác nhận các thông tin trên là trung thực
