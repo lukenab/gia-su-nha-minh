@@ -1,31 +1,55 @@
 import Link from "next/link";
 
 import { requireAdminPage } from "@/features/admin-auth/server/guard";
+import { ExportButton } from "@/features/admin/components/export-button";
 import {
-  Card,
-  EmptyState,
+  ListPager,
+  ListToolbar,
+} from "@/features/admin/components/list-controls";
+import {
+  Ago,
+  Empty,
+  Initials,
+  ListEmpty,
+  ListFrame,
+  ListTabs,
+  PrimaryCell,
+  listStyles as list,
+  renderTime,
+} from "@/features/admin/components/list-view";
+import {
   ErrorNotice,
-  FilterBar,
   PageHeader,
-  Pagination,
-  SlaBadge,
-  StatusBadge,
-  adminStyles as styles,
+  RequestStatus,
+  hrefWith,
 } from "@/features/admin/components/ui";
-import { listRequests } from "@/features/admin/server/queries";
-import { parseRequestListParams } from "@/features/admin/validation";
-import { formatDate } from "@/shared/lib/format";
-import { formatLabels, goalLabels, labelOf } from "@/shared/lib/options";
+import { formatLabels, goalLabels, labelOf } from "@/features/admin/labels";
+import { listOperators } from "@/features/admin/server/operations";
 import {
-  learnerStatuses,
-  responseSla,
-  statusLabels,
-} from "@/shared/lib/workflow";
+  countRequestTabs,
+  listRequests,
+} from "@/features/admin/server/queries";
+import {
+  PAGE_SIZE,
+  PAGE_SIZES,
+  REQUEST_STAGES,
+  parseRequestListParams,
+  type RequestStage,
+} from "@/features/admin/validation";
+import { learnerStatuses, statusLabels } from "@/shared/lib/workflow";
 
 export const dynamic = "force-dynamic";
 
+const PATH = "/admin/requests";
 const toOptions = (labels: Record<string, string>) =>
   Object.entries(labels).map(([value, label]) => ({ value, label }));
+
+const STAGE_TABS: { key: RequestStage; label: string }[] = [
+  { key: "new", label: "Needs contact" },
+  { key: "active", label: "In progress" },
+  { key: "learning", label: "Learning" },
+  { key: "closed", label: "Closed" },
+];
 
 export default async function RequestsPage({
   searchParams,
@@ -34,154 +58,214 @@ export default async function RequestsPage({
 }) {
   const actor = await requireAdminPage();
   const params = parseRequestListParams(await searchParams);
-  let result: Awaited<ReturnType<typeof listRequests>> | null = null;
+  let data: {
+    result: Awaited<ReturnType<typeof listRequests>>;
+    counts: Record<string, number>;
+    operators: Awaited<ReturnType<typeof listOperators>>;
+  } | null = null;
   try {
-    result = await listRequests(actor, params);
+    const [result, counts, operators] = await Promise.all([
+      listRequests(actor, params),
+      countRequestTabs(actor, params),
+      listOperators(actor),
+    ]);
+    data = { result, counts, operators };
   } catch {
-    result = null;
+    data = null;
   }
+
+  // Tabs group statuses; switching tab keeps the other filters.
+  const kept = {
+    q: params.q,
+    assignedTo: params.assignedTo,
+    goal: params.goal,
+    format: params.format,
+    size: params.size === PAGE_SIZE ? undefined : params.size,
+  };
+  const exact = params.overdue ? "NEW" : params.status;
+  const activeStage =
+    params.stage ??
+    STAGE_TABS.find((tab) =>
+      (REQUEST_STAGES[tab.key] as readonly string[]).includes(exact ?? ""),
+    )?.key;
   const filtered = Boolean(
-    params.q || params.status || params.goal || params.format || params.overdue,
+    params.q || params.assignedTo || params.goal || params.format || exact,
   );
+  const now = renderTime();
+  const stageCount = (stage: RequestStage) =>
+    REQUEST_STAGES[stage].reduce(
+      (sum, status) => sum + (data?.counts[status] ?? 0),
+      0,
+    );
 
   return (
     <>
       <PageHeader
-        eyebrow="Tiếp nhận người học"
-        title="Yêu cầu học"
-        description="Tìm theo mã hoặc tên, lọc theo trạng thái, mục tiêu hoặc hình thức. Chọn mã để xử lý."
+        eyebrow="Intake"
+        title="Learner requests"
+        description="Requests sent from the learner form. Open one to contact the learner and find a tutor."
+        actions={<ExportButton kind="requests" />}
       />
-      <Card>
-        <FilterBar
-          action="/admin/requests"
-          q={params.q}
-          searchLabel="Tìm theo mã hoặc tên"
-          clearHref="/admin/requests"
-          fields={[
-            {
-              name: "status",
-              label: "Trạng thái",
-              value: params.status,
-              options: learnerStatuses.map((value) => ({
-                value,
-                label: statusLabels.learner[value],
+      {!data ? (
+        <ErrorNotice>
+          Could not load requests from MongoDB. Check the connection and reload
+          the page.
+        </ErrorNotice>
+      ) : (
+        <>
+          <ListTabs
+            label="Request stage"
+            tabs={[
+              {
+                key: "all",
+                label: "All",
+                count: data.counts.all ?? 0,
+                href: hrefWith(PATH, kept),
+                active: !activeStage,
+              },
+              ...STAGE_TABS.map((tab) => ({
+                key: tab.key,
+                label: tab.label,
+                count: stageCount(tab.key),
+                href: hrefWith(PATH, kept, { stage: tab.key }),
+                active: activeStage === tab.key,
               })),
-            },
-            {
-              name: "goal",
-              label: "Mục tiêu",
-              value: params.goal,
-              options: toOptions(goalLabels),
-            },
-            {
-              name: "format",
-              label: "Hình thức",
-              value: params.format,
-              options: toOptions(formatLabels),
-            },
-          ]}
-        />
-        {params.overdue && (
-          <p className={styles.mutedText} style={{ marginBottom: 12 }}>
-            Đang lọc: yêu cầu chưa liên hệ và đã quá 24 giờ.{" "}
-            <Link className={styles.link} href="/admin/requests">
-              Bỏ lọc quá hạn
-            </Link>
-          </p>
-        )}
-        {!result ? (
-          <ErrorNotice>
-            Chưa thể tải yêu cầu từ MongoDB. Vui lòng kiểm tra kết nối rồi tải
-            lại trang.
-          </ErrorNotice>
-        ) : result.items.length ? (
-          <>
-            <div className={styles.tableWrap}>
-              <table className={styles.table}>
+            ]}
+          />
+          <ListFrame
+            toolbar={
+              <ListToolbar
+                searchLabel="Search by code or name"
+                placeholder="Search code or name"
+                clearKeys={["q", "status", "assignedTo", "goal", "format"]}
+                selects={[
+                  {
+                    name: "status",
+                    label: "Status",
+                    allLabel: "Any status",
+                    options: learnerStatuses.map((value) => ({
+                      value,
+                      label: statusLabels.learner[value],
+                    })),
+                  },
+                  {
+                    name: "assignedTo",
+                    label: "Assignee",
+                    allLabel: "Any assignee",
+                    options: data.operators.map((o) => ({
+                      value: o.email,
+                      label: o.name,
+                    })),
+                  },
+                  {
+                    name: "goal",
+                    label: "Goal",
+                    allLabel: "Any goal",
+                    options: toOptions(goalLabels),
+                  },
+                  {
+                    name: "format",
+                    label: "Format",
+                    allLabel: "Any format",
+                    options: toOptions(formatLabels),
+                  },
+                ]}
+              />
+            }
+            notice={
+              params.overdue && (
+                <p className={list.notice}>
+                  Showing requests not contacted after more than 24 hours.
+                  <Link href={hrefWith(PATH, kept, { stage: "new" })}>
+                    Show all that need contact
+                  </Link>
+                </p>
+              )
+            }
+            footer={
+              <ListPager
+                first={data.result.first}
+                last={data.result.last}
+                total={data.result.total}
+                page={data.result.page}
+                pages={data.result.pages}
+                size={params.size}
+                sizes={PAGE_SIZES}
+                noun={["request", "requests"]}
+              />
+            }
+          >
+            {data.result.items.length ? (
+              <table className={list.table}>
                 <thead>
                   <tr>
-                    <th>Mã yêu cầu</th>
-                    <th>Người học</th>
-                    <th>Mục tiêu</th>
-                    <th>Hình thức</th>
-                    <th>Ngày gửi</th>
-                    <th>Mốc 24 giờ</th>
-                    <th>Trạng thái</th>
+                    <th scope="col">Learner</th>
+                    <th scope="col">Goal</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Assignee</th>
+                    <th scope="col" className={list.end}>
+                      Received
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {result.items.map((item) => (
-                    <tr key={String(item._id)}>
-                      <td data-label="Mã">
-                        <Link
-                          className={styles.tableLink}
-                          href={`/admin/requests/${String(item._id)}`}
-                        >
-                          {item.referenceCode}
-                        </Link>
-                      </td>
-                      <td data-label="Người học">{item.fullName}</td>
-                      <td data-label="Mục tiêu">
-                        {labelOf(goalLabels, item.goal)}
-                      </td>
-                      <td data-label="Hình thức">
-                        {labelOf(formatLabels, item.format)}
-                      </td>
-                      <td data-label="Ngày gửi">
-                        {formatDate(item.createdAt)}
-                      </td>
-                      <td data-label="Mốc 24 giờ">
-                        <SlaBadge
-                          sla={responseSla({
-                            status: item.status,
-                            createdAt: item.createdAt,
-                            contactedAt: item.contactedAt,
-                          })}
-                        />
-                      </td>
-                      <td data-label="Trạng thái">
-                        <StatusBadge kind="learner" status={item.status} />
-                      </td>
-                    </tr>
-                  ))}
+                  {data.result.items.map((item) => {
+                    const assignee = data.operators.find(
+                      (o) => o.email === item.assignedTo,
+                    );
+                    return (
+                      <tr key={String(item._id)}>
+                        <td>
+                          <PrimaryCell
+                            href={`${PATH}/${String(item._id)}`}
+                            title={item.fullName}
+                            subtitle={item.referenceCode}
+                          />
+                        </td>
+                        <td>{labelOf(goalLabels, item.goal)}</td>
+                        <td>
+                          <RequestStatus
+                            status={item.status}
+                            createdAt={item.createdAt}
+                            contactedAt={item.contactedAt}
+                          />
+                        </td>
+                        <td>
+                          {item.assignedTo ? (
+                            <span className={list.person}>
+                              <Initials
+                                name={assignee?.name ?? item.assignedTo}
+                              />
+                              {assignee?.name ?? item.assignedTo}
+                            </span>
+                          ) : (
+                            <Empty>Unassigned</Empty>
+                          )}
+                        </td>
+                        <td className={list.end}>
+                          <Ago value={item.createdAt} now={now} />
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
-            </div>
-            <Pagination
-              result={result}
-              path="/admin/requests"
-              noun="yêu cầu"
-              params={{
-                q: params.q,
-                status: params.overdue ? undefined : params.status,
-                goal: params.goal,
-                format: params.format,
-                overdue: params.overdue,
-              }}
-            />
-          </>
-        ) : (
-          <EmptyState
-            title={
-              filtered ? "Không có yêu cầu phù hợp" : "Chưa có yêu cầu nào"
-            }
-            action={
-              filtered ? (
-                <Link
-                  className={`${styles.button} ${styles.buttonQuiet}`}
-                  href="/admin/requests"
-                >
-                  Xóa bộ lọc
-                </Link>
-              ) : undefined
-            }
-          >
-            {filtered
-              ? "Thử đổi từ khóa hoặc bỏ bớt bộ lọc."
-              : "Khi người học gửi biểu mẫu, yêu cầu sẽ xuất hiện tại đây."}
-          </EmptyState>
-        )}
-      </Card>
+            ) : (
+              <ListEmpty
+                title={
+                  filtered || activeStage
+                    ? "No matching requests"
+                    : "No requests yet"
+                }
+              >
+                {filtered || activeStage
+                  ? "Try another search term, tab or filter."
+                  : "Requests appear here when learners send the form."}
+              </ListEmpty>
+            )}
+          </ListFrame>
+        </>
+      )}
     </>
   );
 }

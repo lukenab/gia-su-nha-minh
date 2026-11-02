@@ -1,21 +1,48 @@
-import Link from "next/link";
-
 import { requireAdminPage } from "@/features/admin-auth/server/guard";
+import { ExportButton } from "@/features/admin/components/export-button";
 import {
-  Card,
-  EmptyState,
+  ListPager,
+  ListToolbar,
+} from "@/features/admin/components/list-controls";
+import {
+  Ago,
+  Empty,
+  ListEmpty,
+  ListFrame,
+  ListTabs,
+  PrimaryCell,
+  TwoLine,
+  listStyles as list,
+  renderTime,
+} from "@/features/admin/components/list-view";
+import {
   ErrorNotice,
-  FilterBar,
-  Pagination,
+  PageHeader,
   StatusBadge,
-  adminStyles as styles,
+  adminStyles,
+  hrefWith,
 } from "@/features/admin/components/ui";
-import { listConnections } from "@/features/admin/server/queries";
-import { parseConnectionListParams } from "@/features/admin/validation";
-import { formatDateTime } from "@/shared/lib/format";
+import {
+  countConnectionTabs,
+  listConnections,
+} from "@/features/admin/server/queries";
+import {
+  PAGE_SIZE,
+  PAGE_SIZES,
+  parseConnectionListParams,
+} from "@/features/admin/validation";
+import { formatVnd } from "@/shared/lib/format";
 import { connectionStatuses, statusLabels } from "@/shared/lib/workflow";
 
 export const dynamic = "force-dynamic";
+
+const PATH = "/admin/connections";
+
+const PAYMENT_TABS = [
+  { key: "UNPAID", label: "Fee due" },
+  { key: "PAID", label: "Paid" },
+  { key: "NOT_DUE", label: "Not due" },
+] as const;
 
 export default async function ConnectionsPage({
   searchParams,
@@ -24,128 +51,171 @@ export default async function ConnectionsPage({
 }) {
   const actor = await requireAdminPage();
   const params = parseConnectionListParams(await searchParams);
-  let result: Awaited<ReturnType<typeof listConnections>> | null = null;
+  let data: {
+    result: Awaited<ReturnType<typeof listConnections>>;
+    counts: Record<string, number>;
+  } | null = null;
   try {
-    result = await listConnections(actor, params);
+    const [result, counts] = await Promise.all([
+      listConnections(actor, params),
+      countConnectionTabs(actor, params),
+    ]);
+    data = { result, counts };
   } catch {
-    result = null;
+    data = null;
   }
-  const filtered = Boolean(params.q || params.status);
+
+  const kept = {
+    q: params.q,
+    status: params.status,
+    confirmed: params.confirmed,
+    size: params.size === PAGE_SIZE ? undefined : params.size,
+  };
+  const filtered = Boolean(params.q || params.status || params.confirmed);
+  const now = renderTime();
 
   return (
-    <div className={styles.connectionsPage}>
-      <div className={`${styles.pageHeader} ${styles.connectionsHeader}`}>
-        <span className={styles.eyebrow}>Kết nối thủ công</span>
-        <h1>Kết nối</h1>
-        <p>
-          Lịch sử các gia sư đã được xem xét hoặc giới thiệu cho từng yêu cầu.
-          Để tạo kết nối mới, mở một yêu cầu đã liên hệ và chọn gia sư.
-        </p>
-        <Link
-          className={`${styles.button} ${styles.buttonQuiet} ${styles.connectionsHeaderAction}`}
-          href="/admin/requests"
-        >
-          Mở danh sách yêu cầu
-        </Link>
-      </div>
-      <Card>
-        <FilterBar
-          action="/admin/connections"
-          q={params.q}
-          searchLabel="Tìm theo mã yêu cầu hoặc mã gia sư"
-          clearHref="/admin/connections"
-          fields={[
-            {
-              name: "status",
-              label: "Trạng thái",
-              value: params.status,
-              options: connectionStatuses.map((value) => ({
-                value,
-                label: statusLabels.connection[value],
+    <>
+      <PageHeader
+        eyebrow="Matching"
+        title="Connections"
+        description="Tutors reviewed or introduced for each request. To add one, open a contacted learner request and choose a tutor."
+        actions={<ExportButton kind="connections" />}
+      />
+      {!data ? (
+        <ErrorNotice>
+          Could not load connections from MongoDB. Check the connection and
+          reload the page.
+        </ErrorNotice>
+      ) : (
+        <>
+          <ListTabs
+            label="Connection fee"
+            tabs={[
+              {
+                key: "all",
+                label: "All",
+                count: data.counts.all ?? 0,
+                href: hrefWith(PATH, kept),
+                active: !params.payment,
+              },
+              ...PAYMENT_TABS.map((tab) => ({
+                key: tab.key,
+                label: tab.label,
+                count: data.counts[tab.key] ?? 0,
+                href: hrefWith(PATH, kept, { payment: tab.key }),
+                active: params.payment === tab.key,
               })),
-            },
-          ]}
-        />
-        {!result ? (
-          <ErrorNotice>
-            Chưa thể tải kết nối từ MongoDB. Vui lòng kiểm tra kết nối rồi tải
-            lại trang.
-          </ErrorNotice>
-        ) : result.items.length ? (
-          <>
-            <div className={styles.tableWrap}>
-              <table className={styles.table}>
+            ]}
+          />
+          <ListFrame
+            toolbar={
+              <ListToolbar
+                searchLabel="Search by request or tutor code"
+                placeholder="Search request or tutor code"
+                clearKeys={["q", "status", "confirmed"]}
+                selects={[
+                  {
+                    name: "status",
+                    label: "Status",
+                    allLabel: "Any status",
+                    options: connectionStatuses.map((value) => ({
+                      value,
+                      label: statusLabels.connection[value],
+                    })),
+                  },
+                  {
+                    name: "confirmed",
+                    label: "Agreement",
+                    allLabel: "Any agreement",
+                    options: [{ value: "1", label: "Both sides agreed" }],
+                  },
+                ]}
+              />
+            }
+            footer={
+              <ListPager
+                first={data.result.first}
+                last={data.result.last}
+                total={data.result.total}
+                page={data.result.page}
+                pages={data.result.pages}
+                size={params.size}
+                sizes={PAGE_SIZES}
+                noun={["connection", "connections"]}
+              />
+            }
+          >
+            {data.result.items.length ? (
+              <table className={list.table}>
                 <thead>
                   <tr>
-                    <th>Yêu cầu</th>
-                    <th>Gia sư</th>
-                    <th>Trạng thái</th>
-                    <th>Cập nhật</th>
-                    <th>Tạo bởi</th>
+                    <th scope="col">Learner</th>
+                    <th scope="col">Tutor</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Fee</th>
+                    <th scope="col" className={list.end}>
+                      Updated
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {result.items.map((item) => (
+                  {data.result.items.map((item) => (
                     <tr key={String(item._id)}>
-                      <td data-label="Yêu cầu">
-                        <Link
-                          className={styles.tableLink}
-                          href={`/admin/connections/${String(item._id)}`}
-                        >
-                          {item.requestCode}
-                        </Link>
-                        <span className={styles.cellSub}>
-                          {item.learnerName}
-                        </span>
+                      <td>
+                        <PrimaryCell
+                          href={`${PATH}/${String(item._id)}`}
+                          title={item.learnerName}
+                          subtitle={item.requestCode}
+                        />
                       </td>
-                      <td data-label="Gia sư">
-                        {item.tutorCode}
-                        <span className={styles.cellSub}>{item.tutorName}</span>
+                      <td>
+                        <TwoLine main={item.tutorName} sub={item.tutorCode} />
                       </td>
-                      <td data-label="Trạng thái">
+                      <td>
                         <StatusBadge kind="connection" status={item.status} />
                       </td>
-                      <td data-label="Cập nhật">
-                        {formatDateTime(item.statusUpdatedAt)}
-                        <span className={styles.cellSub}>
-                          {item.statusUpdatedBy}
-                        </span>
+                      <td>
+                        {item.paymentStatus === "PAID" ? (
+                          <span className={`${list.dot} ${list.dotGood}`}>
+                            Paid · {formatVnd(item.feeAmount ?? 50000)}
+                          </span>
+                        ) : item.confirmedAt ? (
+                          <span
+                            className={`${adminStyles.badge} ${adminStyles.toneAttention}`}
+                          >
+                            Due · {formatVnd(item.feeAmount ?? 50000)}
+                          </span>
+                        ) : (
+                          <Empty>Not due</Empty>
+                        )}
                       </td>
-                      <td data-label="Tạo bởi">{item.createdBy}</td>
+                      <td className={list.end}>
+                        <TwoLine
+                          main={<Ago value={item.statusUpdatedAt} now={now} />}
+                          sub={item.statusUpdatedBy}
+                        />
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </div>
-            <Pagination
-              result={result}
-              path="/admin/connections"
-              noun="kết nối"
-              params={{ q: params.q, status: params.status }}
-            />
-          </>
-        ) : (
-          <EmptyState
-            title={
-              filtered ? "Không có kết nối phù hợp" : "Chưa có kết nối nào"
-            }
-            action={
-              filtered ? (
-                <Link
-                  className={`${styles.button} ${styles.buttonQuiet}`}
-                  href="/admin/connections"
-                >
-                  Xóa bộ lọc
-                </Link>
-              ) : undefined
-            }
-          >
-            {filtered
-              ? "Thử đổi từ khóa hoặc bỏ bớt bộ lọc."
-              : "Mở một yêu cầu đã liên hệ, chọn “Chọn gia sư” để ghi nhận gia sư được xem xét."}
-          </EmptyState>
-        )}
-      </Card>
-    </div>
+            ) : (
+              <ListEmpty
+                title={
+                  filtered || params.payment
+                    ? "No matching connections"
+                    : "No connections yet"
+                }
+              >
+                {filtered || params.payment
+                  ? "Try another search term, tab or filter."
+                  : "Open a contacted request and choose “Choose a tutor” to record the tutors you review."}
+              </ListEmpty>
+            )}
+          </ListFrame>
+        </>
+      )}
+    </>
   );
 }
