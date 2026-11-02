@@ -3,7 +3,11 @@
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 
-import { LEARNER_REQUEST_HREF, navLinks } from "@/features/landing/content";
+import {
+  LEARNER_REQUEST_HREF,
+  navLinks,
+  tutorCta,
+} from "@/features/landing/content";
 
 import { BrandLogo } from "./brand-logo";
 import { ArrowUpRight, Close, Menu } from "./icons";
@@ -37,9 +41,14 @@ export function LandingHeader() {
             </Link>
           ))}
         </nav>
-        <Link className={styles.navCta} href={LEARNER_REQUEST_HREF}>
-          Bắt đầu ngay <ArrowUpRight />
-        </Link>
+        <div className={styles.navActions}>
+          <Link className={styles.navTutor} href={tutorCta.href}>
+            Trở thành gia sư
+          </Link>
+          <Link className={styles.navCta} href={LEARNER_REQUEST_HREF}>
+            Bắt đầu ngay <ArrowUpRight />
+          </Link>
+        </div>
         <button
           ref={toggle}
           type="button"
@@ -64,6 +73,9 @@ export function LandingHeader() {
             {link.label}
           </Link>
         ))}
+        <Link href={tutorCta.href} onClick={() => setOpen(false)}>
+          Trở thành gia sư
+        </Link>
         <Link
           className={styles.mobileNavCta}
           href={LEARNER_REQUEST_HREF}

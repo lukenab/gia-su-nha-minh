@@ -177,6 +177,25 @@
   color: var(--primary-strong);
 }
 
+.navActions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.navTutor {
+  padding: 6px 0;
+  color: #3553b5;
+  font-size: 14px;
+  font-weight: 700;
+  transition: color 0.2s;
+}
+
+.navTutor:hover {
+  color: var(--primary-strong);
+  text-decoration: underline;
+}
+
 .navCta {
   display: inline-flex;
   align-items: center;
@@ -2524,7 +2543,7 @@
 
 @media (max-width: 860px) {
   .navLinks,
-  .navCta {
+  .navActions {
     display: none;
   }
 
